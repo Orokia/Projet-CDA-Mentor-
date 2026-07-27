@@ -1,0 +1,222 @@
+{# {% extends 'base.html.twig' %}
+
+{% block title %}Hello HomeController!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+    <h1>Hello {{ controller_name }}! ✅</h1>
+
+    This friendly message is coming from:
+    <ul>
+        <li>Your controller at <code>C:/Users/COULIBALI ROKIA/Desktop/Mentor/src/Controller/HomeController.php</code></li>
+        <li>Your template at <code>C:/Users/COULIBALI ROKIA/Desktop/Mentor/templates/home/index.html.twig</code></li>
+    </ul>
+</div>
+{% endblock %} #}
+
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello HomeController!
+{% endblock %}
+
+{% block body %}
+
+
+	<!-- HERO -->
+
+	<section class="hero">
+
+		<div class="container">
+
+			<div class="row align-items-center">
+
+				<div class="col-lg-6">
+
+					<span class="badge bg-primary mb-3">
+						Plateforme de formation
+					</span>
+
+					<h1 class="display-4 fw-bold">
+
+						Apprenez avec les meilleurs formateurs.
+
+					</h1>
+
+					<p class="text-muted mt-4">
+
+						Réservez une session de formation individuelle
+						ou en groupe avec des professionnels qualifiés.
+
+					</p>
+
+					<div class="mt-4">
+
+						<a href="#" class="btn btn-primary btn-lg me-2">
+							Découvrir les formations
+						</a>
+
+						<a href="#" class="btn btn-outline-primary btn-lg">
+							Trouver un formateur
+						</a>
+
+					</div>
+
+				</div>
+
+				<div class="col-lg-6 text-center">
+
+					<img src="{{ asset('images/hero.png') }}" class="img-fluid" alt="Hero">
+
+				</div>
+
+			</div>
+
+		</div>
+
+	</section>
+
+	<!-- FORMATIONS -->
+
+	<section class="py-5">
+
+		<div class="container">
+
+			<div class="text-center mb-5">
+
+				<h2 class="fw-bold">
+					Nos formations
+				</h2>
+
+				<p class="text-muted">
+					Choisissez la formation adaptée à vos besoins.
+				</p>
+
+			</div>
+
+			<div class="row">
+
+				{% for i in 1..6 %}
+
+					<div class="col-md-4 mb-4">
+
+						<div class="card border-0 shadow-sm formation-card">
+
+							<img src="{{ asset('images/formation1.jpg') }}" class="card-img-top">
+
+							<div class="card-body">
+
+								<span class="badge bg-success mb-2">
+
+									Développement Web
+
+								</span>
+
+								<h5 class="fw-bold">
+
+									Symfony 7
+
+								</h5>
+
+								<p class="text-muted">
+
+									Apprenez à créer des applications professionnelles avec Symfony.
+
+								</p>
+
+								<div class="d-flex justify-content-between">
+
+									<strong>250 €</strong>
+
+									<a href="#" class="btn btn-primary btn-sm">
+
+										Voir
+
+									</a>
+
+								</div>
+
+							</div>
+
+						</div>
+
+					</div>
+
+				{% endfor %}
+
+			</div>
+
+		</div>
+
+	</section>
+
+	<!-- FORMATEURS -->
+
+	<section class="bg-light py-5">
+
+		<div class="container">
+
+			<div class="row align-items-center">
+
+				<div class="col-lg-5">
+
+					<img src="{{ asset('images/instructor.jpg') }}" class="img-fluid rounded">
+
+				</div>
+
+				<div class="col-lg-7">
+
+					<h2 class="fw-bold">
+
+						Nos formateurs
+
+					</h2>
+
+					<p class="text-muted">
+
+						Des experts dans leur domaine,
+						disponibles pour des formations personnalisées.
+
+					</p>
+
+					<ul class="list-group list-group-flush">
+
+						<li class="list-group-item bg-light">
+							✔ Plus de 50 formateurs
+						</li>
+
+						<li class="list-group-item bg-light">
+							✔ Sessions en ligne
+						</li>
+
+						<li class="list-group-item bg-light">
+							✔ Planning flexible
+						</li>
+
+						<li class="list-group-item bg-light">
+							✔ Avis vérifiés
+						</li>
+
+					</ul>
+
+					<a href="#" class="btn btn-primary mt-4">
+
+						Voir tous les formateurs
+
+					</a>
+
+				</div>
+
+			</div>
+
+		</div>
+
+	</section>
+
+
+{% endblock %}

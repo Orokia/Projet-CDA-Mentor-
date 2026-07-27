@@ -1,0 +1,47 @@
+body{
+
+font-family: "Poppins", sans-serif;
+
+background:#f8f9fa;
+
+}
+
+.hero{
+
+padding:100px 0;
+
+background:white;
+
+}
+
+.formation-card{
+
+border-radius:20px;
+
+overflow:hidden;
+
+transition:.3s;
+
+}
+
+.formation-card:hover{
+
+transform:translateY(-8px);
+
+box-shadow:0 20px 40px rgba(0,0,0,.12);
+
+}
+
+.card img{
+
+height:220px;
+
+object-fit:cover;
+
+}
+
+footer{
+
+margin-top:80px;
+
+}

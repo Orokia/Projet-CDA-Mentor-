@@ -1,0 +1,78 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register{% endblock %}
+
+{% block body %}
+    {% for flash_error in app.flashes('verify_email_error') %}
+        <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+    {% endfor %}
+    <div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+
+            <div class="card shadow p-4">
+                <h2 class="text-center mb-4">Creer un compte</h2>
+
+                {{ form_start(registrationForm) }}
+
+                {{ form_errors(registrationForm) }}
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.email) }}
+                    {{ form_widget(registrationForm.email, {
+                        attr: { class: 'form-control', placeholder: 'Entrer votre Email' }
+                    }) }}
+                    {{ form_errors(registrationForm.email) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.nomUtilisateur) }}
+                    {{ form_widget(registrationForm.nomUtilisateur, {
+                        attr: { class: 'form-control', placeholder: 'Nom' }
+                    }) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.prenomUtilisateur) }}
+                    {{ form_widget(registrationForm.prenomUtilisateur, {
+                        attr: { class: 'form-control', placeholder: 'Prenom' }
+                    }) }}
+                </div>
+
+                <div class="mb-3">
+                    {{ form_label(registrationForm.plainPassword) }}
+                    {{ form_widget(registrationForm.plainPassword, {
+                        attr: { class: 'form-control', placeholder: 'Password' }
+                    }) }}
+                    {{ form_errors(registrationForm.plainPassword) }}
+                </div>
+
+                <div class="form-check mb-3">
+                    {{ form_widget(registrationForm.agreeTerms, {
+                        attr: { class: 'form-check-input' }
+                    }) }}
+                    {{ form_label(registrationForm.agreeTerms, null, {
+                        label_attr: { class: 'form-check-label' }
+                    }) }}
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    Valider
+                </button>
+
+                {{ form_end(registrationForm) }}
+
+                <p class="text-center mt-3">
+                    Vous n'avez pas de compte ?
+                    {# <a href="{{ path('app_login') }}">Login</a> #}
+                </p>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+   
+{% endblock %}
+

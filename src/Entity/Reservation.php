@@ -31,6 +31,10 @@ class Reservation
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?Paiement $paiement = null;
 
+    #[ORM\OneToOne(inversedBy: 'reservation', cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?MeetingRoom $MeetingRoom = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -104,6 +108,18 @@ class Reservation
     public function setPaiement(?Paiement $paiement): static
     {
         $this->paiement = $paiement;
+
+        return $this;
+    }
+
+    public function getMeetingRoom(): ?MeetingRoom
+    {
+        return $this->MeetingRoom;
+    }
+
+    public function setMeetingRoom(MeetingRoom $MeetingRoom): static
+    {
+        $this->MeetingRoom = $MeetingRoom;
 
         return $this;
     }

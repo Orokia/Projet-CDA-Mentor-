@@ -32,9 +32,11 @@ class Specialite
      */
     #[ORM\OneToMany(targetEntity: Formation::class, mappedBy: 'specialite')]
     private Collection $formation;
+    
 
     public function __construct()
     {
+           
         $this->fomateur = new ArrayCollection();
         $this->formation = new ArrayCollection();
     }
@@ -108,6 +110,10 @@ class Specialite
         }
 
         return $this;
+    }
+    public function __toString()  //pour pouvoir afficher categorie dans produit
+    {
+       return $this->titre;
     }
 
     public function removeFormation(Formation $formation): static

@@ -43,7 +43,7 @@ class Formation
     /**
      * @var Collection<int, Student>
      */
-    #[ORM\ManyToMany(targetEntity: Student::class, mappedBy: 'Formation')]
+    #[ORM\ManyToMany(targetEntity: Student::class, mappedBy: 'formation')]
     private Collection $students;
 
     /**
@@ -52,14 +52,31 @@ class Formation
     #[ORM\ManyToMany(targetEntity: Formateur::class, mappedBy: 'formation')]
     private Collection $formateurs;
 
+    #[ORM\OneToMany(
+    mappedBy: 'formation',
+    targetEntity: Disponibilite::class
+)]
+private Collection $disponibilites;
+
 
 
     public function __construct()
     {
+
         $this->reservations = new ArrayCollection();
         $this->students = new ArrayCollection();
         $this->formateurs = new ArrayCollection();
+        $this->disponibilites = new ArrayCollection();
     }
+  
+    public function __toString(): string
+    {
+    return $this->titre ?? '';
+    }
+
+
+
+    
 
     public function getId(): ?int
     {
@@ -223,4 +240,30 @@ class Formation
 
         return $this;
     }
+
+    public function getDisponibilites(): Collection
+{
+    return $this->disponibilites;
+}
+
+public function addDisponibilite(Disponibilite $disponibilite): static
+{
+    if (!$this->disponibilites->contains($disponibilite)) {
+        $this->disponibilites->add($disponibilite);
+        $disponibilite->setFormation($this);
+    }
+
+    return $this;
+}
+
+public function removeDisponibilite(Disponibilite $disponibilite): static
+{
+    if ($this->disponibilites->removeElement($disponibilite)) {
+        if ($disponibilite->getFormation() === $this) {
+            $disponibilite->setFormation(null);
+        }
+    }
+
+    return $this;
+}
 }

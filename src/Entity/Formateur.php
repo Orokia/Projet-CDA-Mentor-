@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\FormateurRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FormateurRepository::class)]
@@ -21,8 +22,11 @@ class Formateur
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $photo = null;
+    #[ORM\Column(length: 180)]
+private ?string $email = null;
+
+#[ORM\Column(nullable: true)]
+private ?string $password = null;
 
     #[ORM\Column(length: 255)]
     private ?string $experience = null;
@@ -34,17 +38,19 @@ class Formateur
     private ?string $localisation = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $dateCreation = null;
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 255)]
     private ?string $videoPresentation = null;
 
     /**
-     * @var Collection<int, User>
+     * Un formateur possède un seul compte utilisateur.
      */
-    #[ORM\OneToOne(targetEntity: User::class, mappedBy: 'formateur')]
-    private Collection $compteUtilisateur;
-
+   #[ORM\OneToOne(
+    mappedBy: 'formateur',
+    cascade: ['persist', 'remove']
+)]
+private ?User $compteUtilisateur = null;
     /**
      * @var Collection<int, Specialite>
      */
@@ -69,19 +75,39 @@ class Formateur
     #[ORM\ManyToMany(targetEntity: Formation::class, inversedBy: 'formateurs')]
     private Collection $formation;
 
+    /**
+     * Images du formateur
+     */
+     #[ORM\Column(length: 255, nullable:true)]
+    private ?string $image = null;
+
     public function __construct()
     {
-        $this->compteUtilisateur = new ArrayCollection();
         $this->specialites = new ArrayCollection();
         $this->disponibilites = new ArrayCollection();
         $this->reservations = new ArrayCollection();
         $this->formation = new ArrayCollection();
+
+        $this->createdAt = new \DateTimeImmutable();
     }
+
+    public function __toString(): string
+{
+    return trim(($this->prenom ?? '') . ' ' . ($this->nom ?? ''));
+}
+
+    // =========================================================
+    // ID
+    // =========================================================
 
     public function getId(): ?int
     {
         return $this->id;
     }
+
+    // =========================================================
+    // NOM
+    // =========================================================
 
     public function getNom(): ?string
     {
@@ -95,6 +121,10 @@ class Formateur
         return $this;
     }
 
+    // =========================================================
+    // PRENOM
+    // =========================================================
+
     public function getPrenom(): ?string
     {
         return $this->prenom;
@@ -107,17 +137,33 @@ class Formateur
         return $this;
     }
 
-    public function getPhoto(): ?string
+    public function getEmail(): ?string
     {
-        return $this->photo;
+        return $this->email;
     }
 
-    public function setPhoto(string $photo): static
+    public function setEmail(string $email): static
     {
-        $this->photo = $photo;
+        $this->email = $email;
 
         return $this;
     }
+
+     public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+
+    // =========================================================
+    // EXPERIENCE
+    // =========================================================
 
     public function getExperience(): ?string
     {
@@ -131,6 +177,10 @@ class Formateur
         return $this;
     }
 
+    // =========================================================
+    // LANGUE
+    // =========================================================
+
     public function getLangue(): ?string
     {
         return $this->langue;
@@ -142,6 +192,10 @@ class Formateur
 
         return $this;
     }
+
+    // =========================================================
+    // LOCALISATION
+    // =========================================================
 
     public function getLocalisation(): ?string
     {
@@ -155,17 +209,25 @@ class Formateur
         return $this;
     }
 
-    public function getDateCreation(): ?\DateTimeImmutable
+    // =========================================================
+    // DATE DE CREATION
+    // =========================================================
+
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->dateCreation;
+        return $this->createdAt;
     }
 
-    public function setDateCreation(\DateTimeImmutable $dateCreation): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
-        $this->dateCreation = $dateCreation;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
+
+    // =========================================================
+    // VIDEO PRESENTATION
+    // =========================================================
 
     public function getVideoPresentation(): ?string
     {
@@ -179,35 +241,28 @@ class Formateur
         return $this;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
-    public function getCompteUtilisateur(): Collection
+    // =========================================================
+    // COMPTE UTILISATEUR
+    // =========================================================
+
+    public function getCompteUtilisateur(): ?User
     {
         return $this->compteUtilisateur;
     }
 
-    public function addCompteUtilisateur(User $compteUtilisateur): static
-    {
-        if (!$this->compteUtilisateur->contains($compteUtilisateur)) {
-            $this->compteUtilisateur->add($compteUtilisateur);
-            $compteUtilisateur->setFormateur($this);
-        }
+   public function setCompteUtilisateur(?User $compteUtilisateur): static
+{
+    $this->compteUtilisateur = $compteUtilisateur;
 
+    if ($compteUtilisateur !== null && $compteUtilisateur->getFormateur() !== $this) {
+        $compteUtilisateur->setFormateur($this);
+    }
         return $this;
     }
 
-    public function removeCompteUtilisateur(User $compteUtilisateur): static
-    {
-        if ($this->compteUtilisateur->removeElement($compteUtilisateur)) {
-            // set the owning side to null (unless already changed)
-            if ($compteUtilisateur->getFormateur() === $this) {
-                $compteUtilisateur->setFormateur(null);
-            }
-        }
-
-        return $this;
-    }
+    // =========================================================
+    // SPECIALITES
+    // =========================================================
 
     /**
      * @return Collection<int, Specialite>
@@ -236,6 +291,10 @@ class Formateur
         return $this;
     }
 
+    // =========================================================
+    // DISPONIBILITES
+    // =========================================================
+
     /**
      * @return Collection<int, Disponibilite>
      */
@@ -257,7 +316,6 @@ class Formateur
     public function removeDisponibilite(Disponibilite $disponibilite): static
     {
         if ($this->disponibilites->removeElement($disponibilite)) {
-            // set the owning side to null (unless already changed)
             if ($disponibilite->getFormateur() === $this) {
                 $disponibilite->setFormateur(null);
             }
@@ -265,6 +323,10 @@ class Formateur
 
         return $this;
     }
+
+    // =========================================================
+    // RESERVATIONS
+    // =========================================================
 
     /**
      * @return Collection<int, Reservation>
@@ -287,7 +349,6 @@ class Formateur
     public function removeReservation(Reservation $reservation): static
     {
         if ($this->reservations->removeElement($reservation)) {
-            // set the owning side to null (unless already changed)
             if ($reservation->getFormateur() === $this) {
                 $reservation->setFormateur(null);
             }
@@ -295,6 +356,10 @@ class Formateur
 
         return $this;
     }
+
+    // =========================================================
+    // FORMATIONS
+    // =========================================================
 
     /**
      * @return Collection<int, Formation>
@@ -308,6 +373,7 @@ class Formateur
     {
         if (!$this->formation->contains($formation)) {
             $this->formation->add($formation);
+            $formation->addFormateur($this);
         }
 
         return $this;
@@ -315,7 +381,25 @@ class Formateur
 
     public function removeFormation(Formation $formation): static
     {
-        $this->formation->removeElement($formation);
+        if ($this->formation->removeElement($formation)) {
+            $formation->removeFormateur($this);
+        }
+
+        return $this;
+    }
+
+    // =========================================================
+    // IMAGES
+    // =========================================================
+
+    public function getImage(): ?string
+    {
+        return $this->image;
+    }
+
+    public function setImage(?string $image): static
+    {
+        $this->image = $image;
 
         return $this;
     }

@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\DisponibiliteRepository;
 use Doctrine\DBAL\Types\Types;
+use App\Entity\Formation;
+use App\Entity\Formateur;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DisponibiliteRepository::class)]
@@ -28,6 +30,11 @@ class Disponibilite
 
     #[ORM\ManyToOne(inversedBy: 'disponibilites')]
     private ?Formateur $formateur = null;
+
+    #[ORM\ManyToOne(inversedBy: 'disponibilites')]
+    #[ORM\JoinColumn(nullable: false)]
+   private ?Formation $formation = null;
+    
 
     public function getId(): ?int
     {
@@ -93,4 +100,16 @@ class Disponibilite
 
         return $this;
     }
+
+    public function getFormation(): ?Formation
+{
+    return $this->formation;
+}
+
+public function setFormation(?Formation $formation): static
+{
+    $this->formation = $formation;
+
+    return $this;
+}
 }

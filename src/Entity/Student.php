@@ -21,38 +21,61 @@ class Student
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
+    #[ORM\Column(length: 180)]
+    private ?string $email = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $photo = null;
 
     /**
-     * @var Collection<int, User>
+     * Compte utilisateur associé à l'étudiant.
      */
-    #[ORM\OneToOne(targetEntity: User::class, mappedBy: 'student')]
-    private Collection $User;
+    #[ORM\OneToOne(
+        targetEntity: User::class,
+        mappedBy: 'student'
+    )]
+    private ?User $user = null;
 
     /**
+     * Réservations de l'étudiant.
+     *
      * @var Collection<int, Reservation>
      */
-    #[ORM\OneToMany(targetEntity: Reservation::class, mappedBy: 'student')]
+    #[ORM\OneToMany(
+        targetEntity: Reservation::class,
+        mappedBy: 'student'
+    )]
     private Collection $reservations;
 
     /**
+     * Formations suivies par l'étudiant.
+     *
      * @var Collection<int, Formation>
      */
-    #[ORM\ManyToMany(targetEntity: Formation::class, inversedBy: 'students')]
-    private Collection $Formation;
+    #[ORM\ManyToMany(
+        targetEntity: Formation::class,
+        inversedBy: 'students'
+    )]
+    private Collection $formations;
 
     public function __construct()
     {
-        $this->User = new ArrayCollection();
         $this->reservations = new ArrayCollection();
-        $this->Formation = new ArrayCollection();
+        $this->formations = new ArrayCollection();
     }
+
+    // =========================================================
+    // ID
+    // =========================================================
 
     public function getId(): ?int
     {
         return $this->id;
     }
+
+    // =========================================================
+    // NOM
+    // =========================================================
 
     public function getNom(): ?string
     {
@@ -66,6 +89,10 @@ class Student
         return $this;
     }
 
+    // =========================================================
+    // PRÉNOM
+    // =========================================================
+
     public function getPrenom(): ?string
     {
         return $this->prenom;
@@ -77,6 +104,22 @@ class Student
 
         return $this;
     }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    // =========================================================
+    // PHOTO
+    // =========================================================
 
     public function getPhoto(): ?string
     {
@@ -90,35 +133,25 @@ class Student
         return $this;
     }
 
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUser(): Collection
+    // =========================================================
+    // USER
+    // =========================================================
+
+    public function getUser(): ?User
     {
-        return $this->User;
+        return $this->user;
     }
 
-    public function addUser(User $user): static
+    public function setUser(?User $user): static
     {
-        if (!$this->User->contains($user)) {
-            $this->User->add($user);
-            $user->setStudent($this);
-        }
+        $this->user = $user;
 
         return $this;
     }
 
-    public function removeUser(User $user): static
-    {
-        if ($this->User->removeElement($user)) {
-            // set the owning side to null (unless already changed)
-            if ($user->getStudent() === $this) {
-                $user->setStudent(null);
-            }
-        }
-
-        return $this;
-    }
+    // =========================================================
+    // RESERVATIONS
+    // =========================================================
 
     /**
      * @return Collection<int, Reservation>
@@ -128,8 +161,9 @@ class Student
         return $this->reservations;
     }
 
-    public function addReservation(Reservation $reservation): static
-    {
+    public function addReservation(
+        Reservation $reservation
+    ): static {
         if (!$this->reservations->contains($reservation)) {
             $this->reservations->add($reservation);
             $reservation->setStudent($this);
@@ -138,10 +172,11 @@ class Student
         return $this;
     }
 
-    public function removeReservation(Reservation $reservation): static
-    {
+    public function removeReservation(
+        Reservation $reservation
+    ): static {
         if ($this->reservations->removeElement($reservation)) {
-            // set the owning side to null (unless already changed)
+
             if ($reservation->getStudent() === $this) {
                 $reservation->setStudent(null);
             }
@@ -150,26 +185,32 @@ class Student
         return $this;
     }
 
+    // =========================================================
+    // FORMATIONS
+    // =========================================================
+
     /**
      * @return Collection<int, Formation>
      */
-    public function getFormation(): Collection
+    public function getFormations(): Collection
     {
-        return $this->Formation;
+        return $this->formations;
     }
 
-    public function addFormation(Formation $formation): static
-    {
-        if (!$this->Formation->contains($formation)) {
-            $this->Formation->add($formation);
+    public function addFormation(
+        Formation $formation
+    ): static {
+        if (!$this->formations->contains($formation)) {
+            $this->formations->add($formation);
         }
 
         return $this;
     }
 
-    public function removeFormation(Formation $formation): static
-    {
-        $this->Formation->removeElement($formation);
+    public function removeFormation(
+        Formation $formation
+    ): static {
+        $this->formations->removeElement($formation);
 
         return $this;
     }

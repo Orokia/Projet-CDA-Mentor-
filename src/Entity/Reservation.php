@@ -16,24 +16,32 @@ class Reservation
     #[ORM\Column]
     private ?\DateTime $dateReservation = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column]
+    private ?\DateTime $dateHeureDebut = null;
+
+    #[ORM\Column]
+    private ?\DateTime $dateHeureFin = null;
+
+    #[ORM\Column(length: 50)]
     private ?string $statut = null;
 
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $lienVisio = null;
+
     #[ORM\ManyToOne(inversedBy: 'reservations')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Student $student = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Formateur $formateur = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Formation $formation = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    private ?Paiement $paiement = null;
-
     #[ORM\OneToOne(inversedBy: 'reservation', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?MeetingRoom $MeetingRoom = null;
+    private ?Paiement $paiement = null;
 
     public function getId(): ?int
     {
@@ -52,6 +60,30 @@ class Reservation
         return $this;
     }
 
+    public function getDateHeureDebut(): ?\DateTime
+    {
+        return $this->dateHeureDebut;
+    }
+
+    public function setDateHeureDebut(\DateTime $dateHeureDebut): static
+    {
+        $this->dateHeureDebut = $dateHeureDebut;
+
+        return $this;
+    }
+
+    public function getDateHeureFin(): ?\DateTime
+    {
+        return $this->dateHeureFin;
+    }
+
+    public function setDateHeureFin(\DateTime $dateHeureFin): static
+    {
+        $this->dateHeureFin = $dateHeureFin;
+
+        return $this;
+    }
+
     public function getStatut(): ?string
     {
         return $this->statut;
@@ -60,6 +92,18 @@ class Reservation
     public function setStatut(string $statut): static
     {
         $this->statut = $statut;
+
+        return $this;
+    }
+
+    public function getLienVisio(): ?string
+    {
+        return $this->lienVisio;
+    }
+
+    public function setLienVisio(?string $lienVisio): static
+    {
+        $this->lienVisio = $lienVisio;
 
         return $this;
     }
@@ -108,18 +152,6 @@ class Reservation
     public function setPaiement(?Paiement $paiement): static
     {
         $this->paiement = $paiement;
-
-        return $this;
-    }
-
-    public function getMeetingRoom(): ?MeetingRoom
-    {
-        return $this->MeetingRoom;
-    }
-
-    public function setMeetingRoom(MeetingRoom $MeetingRoom): static
-    {
-        $this->MeetingRoom = $MeetingRoom;
 
         return $this;
     }

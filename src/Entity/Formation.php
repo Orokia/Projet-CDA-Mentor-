@@ -258,11 +258,7 @@ public function addDisponibilite(Disponibilite $disponibilite): static
 
 public function removeDisponibilite(Disponibilite $disponibilite): static
 {
-    if ($this->disponibilites->removeElement($disponibilite)) {
-        if ($disponibilite->getFormation() === $this) {
-            $disponibilite->setFormation(null);
-        }
-    }
+    $this->disponibilites->removeElement($disponibilite);
 
     return $this;
 }

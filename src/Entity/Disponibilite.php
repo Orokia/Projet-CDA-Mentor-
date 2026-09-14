@@ -4,8 +4,6 @@ namespace App\Entity;
 
 use App\Repository\DisponibiliteRepository;
 use Doctrine\DBAL\Types\Types;
-use App\Entity\Formation;
-use App\Entity\Formateur;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: DisponibiliteRepository::class)]
@@ -17,74 +15,89 @@ class Disponibilite
     private ?int $id = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTime $date = null;
+    private ?\DateTimeInterface $dateDebut = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    private ?\DateTimeInterface $dateFin = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
-    private ?\DateTime $heureDebut = null;
+    private ?\DateTimeInterface $heureDebut = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
-    private ?\DateTime $heureFin = null;
+    private ?\DateTimeInterface $heureFin = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $statut = null;
+    #[ORM\Column(type: Types::JSON)]
+    private array $joursSemaine = [];
 
     #[ORM\ManyToOne(inversedBy: 'disponibilites')]
+    #[ORM\JoinColumn(nullable: false)]
     private ?Formateur $formateur = null;
 
     #[ORM\ManyToOne(inversedBy: 'disponibilites')]
     #[ORM\JoinColumn(nullable: false)]
-   private ?Formation $formation = null;
-    
+    private ?Formation $formation = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDate(): ?\DateTime
+    public function getDateDebut(): ?\DateTimeInterface
     {
-        return $this->date;
+        return $this->dateDebut;
     }
 
-    public function setDate(\DateTime $date): static
+    public function setDateDebut(\DateTimeInterface $dateDebut): static
     {
-        $this->date = $date;
+        $this->dateDebut = $dateDebut;
 
         return $this;
     }
 
-    public function getHeureDebut(): ?\DateTime
+    public function getDateFin(): ?\DateTimeInterface
+    {
+        return $this->dateFin;
+    }
+
+    public function setDateFin(\DateTimeInterface $dateFin): static
+    {
+        $this->dateFin = $dateFin;
+
+        return $this;
+    }
+
+    public function getHeureDebut(): ?\DateTimeInterface
     {
         return $this->heureDebut;
     }
 
-    public function setHeureDebut(\DateTime $heureDebut): static
+    public function setHeureDebut(\DateTimeInterface $heureDebut): static
     {
         $this->heureDebut = $heureDebut;
 
         return $this;
     }
 
-    public function getHeureFin(): ?\DateTime
+    public function getHeureFin(): ?\DateTimeInterface
     {
         return $this->heureFin;
     }
 
-    public function setHeureFin(\DateTime $heureFin): static
+    public function setHeureFin(\DateTimeInterface $heureFin): static
     {
         $this->heureFin = $heureFin;
 
         return $this;
     }
 
-    public function getStatut(): ?string
+    public function getJoursSemaine(): array
     {
-        return $this->statut;
+        return $this->joursSemaine;
     }
 
-    public function setStatut(?string $statut): static
+    public function setJoursSemaine(array $joursSemaine): static
     {
-        $this->statut = $statut;
+        $this->joursSemaine = $joursSemaine;
 
         return $this;
     }
@@ -102,14 +115,14 @@ class Disponibilite
     }
 
     public function getFormation(): ?Formation
-{
-    return $this->formation;
-}
+    {
+        return $this->formation;
+    }
 
-public function setFormation(?Formation $formation): static
-{
-    $this->formation = $formation;
+    public function setFormation(?Formation $formation): static
+    {
+        $this->formation = $formation;
 
-    return $this;
-}
+        return $this;
+    }
 }

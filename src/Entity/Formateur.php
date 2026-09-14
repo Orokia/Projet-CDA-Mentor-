@@ -314,15 +314,11 @@ private ?User $compteUtilisateur = null;
     }
 
     public function removeDisponibilite(Disponibilite $disponibilite): static
-    {
-        if ($this->disponibilites->removeElement($disponibilite)) {
-            if ($disponibilite->getFormateur() === $this) {
-                $disponibilite->setFormateur(null);
-            }
-        }
+{
+    $this->disponibilites->removeElement($disponibilite);
 
-        return $this;
-    }
+    return $this;
+}
 
     // =========================================================
     // RESERVATIONS

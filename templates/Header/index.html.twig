@@ -29,13 +29,22 @@
 
 						</ul>
 
-						<a href="/login" class="btn btn-outline-dark me-2">
+						
+                         {% if app.user %}
+						
+                          <a href="/logout" class="btn btn-outline-dark me-2">
+							se deconnecter
+						</a>
+						{% else %}
+						 <a href="/login" class="btn btn-outline-dark me-2">
 							Connexion
 						</a>
-
-						<a href="/register" class="btn btn-dark">
+						 
+						   <a href="/register" class="btn btn-dark">
 							S'inscrire
 						</a>
+						 {% endif %}
+						
 
 					</div>
 

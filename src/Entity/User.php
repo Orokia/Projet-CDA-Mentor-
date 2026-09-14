@@ -7,6 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -42,8 +43,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
    
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255, nullable:true)]
     private ?string $photoUtilisateur = null;
+       
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $createdAt = null;
@@ -53,6 +55,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column]
     private bool $isVerified = false;
+
+ #[ORM\OneToOne(
+    inversedBy: 'user'
+)]
+private ?Student $student = null;
+
+  #[ORM\OneToOne(
+    inversedBy: 'compteUtilisateur',
+    cascade: ['persist', 'remove']
+)]
+#[ORM\JoinColumn(nullable: true)]
+private ?Formateur $formateur = null;
 
     public function __construct(){
           $now = new \DateTimeImmutable();
@@ -166,7 +180,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getPhotoUtilisateur(): ?string
+     public function getPhotoUtilisateur(): ?string
     {
         return $this->photoUtilisateur;
     }
@@ -210,6 +224,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsVerified(bool $isVerified): static
     {
         $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function getStudent(): ?Student
+    {
+        return $this->student;
+    }
+
+    public function setStudent(?Student $student): static
+    {
+        $this->student = $student;
+
+        return $this;
+    }
+
+    public function getFormateur(): ?Formateur
+    {
+        return $this->formateur;
+    }
+
+   public function setFormateur(?Formateur $formateur): static
+{
+    $this->formateur = $formateur;
+
+    if ($formateur !== null && $formateur->getCompteUtilisateur() !== $this) {
+        $formateur->setCompteUtilisateur($this);
+    }
 
         return $this;
     }

@@ -1,0 +1,113 @@
+{# {% extends 'base.html.twig' %}
+
+{% block title %}Test Jitsi{% endblock %}
+
+{% block body %}
+
+<div class="container mt-5">
+
+    <h2 class="mb-4">Test d'intégration Jitsi Meet</h2>
+
+    <button id="startMeeting" class="btn btn-primary">
+         Lancer la visioconférence
+    </button>
+   
+
+    <hr>
+
+    <div id="meet" style="height:700px;"></div>
+
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script src="https://meet.jit.si/external_api.js"></script>
+
+    <script>
+
+        const domain = "meet.jit.si";
+
+        const options = {
+
+            roomName: "MentorTestRoom123",
+
+            width: "100%",
+
+            height: 700,
+
+            parentNode: document.querySelector('#meet'),
+
+        };
+
+        const api = new JitsiMeetExternalAPI(domain, options);
+
+    </script>
+
+{% endblock %} #}
+
+
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<script src="https://meet.jit.si/external_api.js"></script>
+
+<style>
+
+body{
+margin:0;
+}
+
+#meet{
+
+width:100%;
+
+height:100vh;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="meet"></div>
+
+
+<script>
+
+const api = new JitsiMeetExternalAPI(
+    "meet.jit.si",
+    {
+
+        roomName: "MentorTestRoom123",
+
+        parentNode: document.querySelector("#meet"),
+
+        width:"100%",
+
+        height:"100%",
+
+       
+
+    }
+);
+// const options = {
+//         roomName: "<?php echo htmlspecialchars($room, ENT_QUOTES, 'UTF-8'); ?>",
+//         width: "100%",
+//         height: "100%",
+//         parentNode: document.querySelector("#jitsi-container")
+//     };
+
+</script>
+
+</body>
+
+</html>

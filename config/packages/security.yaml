@@ -11,7 +11,11 @@ security:
                 class: App\Entity\User
                 property: email
         # used to reload user from session & other features (e.g. switch_user)
+    role_hierarchy:
+        ROLE_FORMATEUR: ROLE_USER
+        ROLE_ADMIN: ROLE_FORMATEUR
 
+        
     firewalls:
         dev:
             # Ensure dev tools and static assets are always allowed
@@ -42,7 +46,11 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
+         - { path: ^/admin, roles: ROLE_ADMIN }
+         - { path: ^/formateur, roles: ROLE_FORMATEUR }
+         - { path: ^/reservation, roles: ROLE_USER }
+         - { path: ^/login, roles: PUBLIC_ACCESS }
+         - { path: ^/register, roles: PUBLIC_ACCESS }
         # - { path: ^/profile, roles: ROLE_USER }
 
 when@test:

@@ -81,6 +81,8 @@ private ?User $compteUtilisateur = null;
      #[ORM\Column(length: 255, nullable:true)]
     private ?string $image = null;
 
+   
+
     public function __construct()
     {
         $this->specialites = new ArrayCollection();
@@ -399,4 +401,6 @@ private ?User $compteUtilisateur = null;
 
         return $this;
     }
+
+  
 }

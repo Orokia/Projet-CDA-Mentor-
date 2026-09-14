@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\StudentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: StudentRepository::class)]
@@ -57,6 +58,8 @@ class Student
         inversedBy: 'students'
     )]
     private Collection $formations;
+
+   
 
     public function __construct()
     {
@@ -214,4 +217,7 @@ class Student
 
         return $this;
     }
+
+    
+
 }

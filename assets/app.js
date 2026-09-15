@@ -8,6 +8,7 @@ import './stimulus_bootstrap.js';
 
 import './styles/navbar.css';
 import './styles/footer.css';
+import './styles/header.css';
 import './styles/home.css';
 import './styles/formation.css';
 import './styles/formateur.css';

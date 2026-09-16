@@ -1,0 +1,112 @@
+/* =========================================================
+   MENTOR FOOTER
+   ========================================================= */
+
+.mentor-footer {
+
+    margin-top: 80px;
+
+    padding: 60px 0 25px;
+
+    background-color: #111827;
+
+    color: #FFFFFF;
+}
+
+.mentor-footer-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        2fr
+        1fr
+        1fr
+        1.5fr;
+
+    gap: 50px;
+}
+
+.mentor-footer-brand h3 {
+
+    margin-bottom: 12px;
+
+    font-size: 22px;
+}
+
+.mentor-footer-brand p {
+
+    max-width: 280px;
+
+    color: #9CA3AF;
+
+    font-size: 14px;
+}
+
+.mentor-footer-column h4 {
+
+    margin-bottom: 18px;
+
+    font-size: 15px;
+}
+
+.mentor-footer-column a {
+
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: #9CA3AF;
+
+    font-size: 13px;
+
+    transition: color 0.2s ease;
+}
+
+.mentor-footer-column a:hover {
+
+    color: #FFFFFF;
+}
+
+
+/* BOTTOM */
+
+.mentor-footer-bottom {
+
+    margin-top: 50px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #374151;
+
+    text-align: center;
+}
+
+.mentor-footer-bottom p {
+
+    color: #9CA3AF;
+
+    font-size: 12px;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+
+    .mentor-footer-grid {
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 35px;
+    }
+
+}
+
+@media (max-width: 500px) {
+
+    .mentor-footer-grid {
+
+        grid-template-columns: 1fr;
+    }
+
+}

@@ -1,222 +1,212 @@
-{# {% extends 'base.html.twig' %}
-
-{% block title %}Hello HomeController!{% endblock %}
-
-{% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/COULIBALI ROKIA/Desktop/Mentor/src/Controller/HomeController.php</code></li>
-        <li>Your template at <code>C:/Users/COULIBALI ROKIA/Desktop/Mentor/templates/home/index.html.twig</code></li>
-    </ul>
-</div>
-{% endblock %} #}
-
-
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!
-{% endblock %}
+{% block title %}Mentor - Plateforme de formation{% endblock %}
 
 {% block body %}
 
+    {# =========================
+       HERO
+    ========================== #}
 
-	<!-- HERO -->
+    <section class="hero">
+        <div class="container-mentor">
 
-	<section class="hero">
+            <div class="hero-content">
 
-		<div class="container">
+                <div class="hero-text">
 
-			<div class="row align-items-center">
+                    <span class="hero-badge">
+                        Plateforme de formation
+                    </span>
 
-				<div class="col-lg-6">
+                    <h1>
+                        Apprenez avec les meilleurs formateurs.
+                    </h1>
 
-					<span class="badge bg-primary mb-3">
-						Plateforme de formation
-					</span>
+                    <p>
+                        Réservez une session de formation individuelle
+                        ou en groupe avec des professionnels qualifiés.
+                    </p>
 
-					<h1 class="display-4 fw-bold">
+                    <div class="hero-actions">
 
-						Apprenez avec les meilleurs formateurs.
+                        <a href="#" class="btn-mentor btn-mentor-primary">
+                            Découvrir les formations
+                        </a>
 
-					</h1>
+                        <a href="#" class="btn-mentor btn-mentor-outline">
+                            Trouver un formateur
+                        </a>
 
-					<p class="text-muted mt-4">
+                    </div>
 
-						Réservez une session de formation individuelle
-						ou en groupe avec des professionnels qualifiés.
+                </div>
 
-					</p>
+                <div class="hero-image">
 
-					<div class="mt-4">
+                    <img
+                        src="{{ asset('images/hero.png') }}"
+                        alt="Formation en ligne avec Mentor"
+                    >
 
-						<a href="#" class="btn btn-primary btn-lg me-2">
-							Découvrir les formations
-						</a>
+                </div>
 
-						<a href="#" class="btn btn-outline-primary btn-lg">
-							Trouver un formateur
-						</a>
+            </div>
 
-					</div>
+        </div>
+    </section>
 
-				</div>
 
-				<div class="col-lg-6 text-center">
+    {# =========================
+       FORMATIONS
+    ========================== #}
 
-					<img src="{{ asset('images/hero.png') }}" class="img-fluid" alt="Hero">
+    <section class="formations-section">
 
-				</div>
+        <div class="container-mentor">
 
-			</div>
+            <div class="section-heading">
 
-		</div>
+                <span class="section-label">
+                    Nos formations
+                </span>
 
-	</section>
+                <h2>
+                    Développez vos compétences
+                </h2>
 
-	<!-- FORMATIONS -->
+                <p>
+                    Choisissez la formation adaptée à vos besoins
+                    et progressez avec un formateur qualifié.
+                </p>
 
-	<section class="py-5">
+            </div>
 
-		<div class="container">
 
-			<div class="text-center mb-5">
+            <div class="formations-grid">
 
-				<h2 class="fw-bold">
-					Nos formations
-				</h2>
+                {% for i in 1..6 %}
 
-				<p class="text-muted">
-					Choisissez la formation adaptée à vos besoins.
-				</p>
+                    <article class="formation-card">
 
-			</div>
+                        <div class="formation-image">
 
-			<div class="row">
+                            <img
+                                src="{{ asset('images/formation1.jpg') }}"
+                                alt="Formation Développement Web"
+                            >
 
-				{% for i in 1..6 %}
+                        </div>
 
-					<div class="col-md-4 mb-4">
+                        <div class="formation-content">
 
-						<div class="card border-0 shadow-sm formation-card">
+                            <span class="formation-category">
+                                Développement Web
+                            </span>
 
-							<img src="{{ asset('images/formation1.jpg') }}" class="card-img-top">
+                            <h3>
+                                Symfony 7
+                            </h3>
 
-							<div class="card-body">
+                            <p>
+                                Apprenez à créer des applications
+                                professionnelles avec Symfony.
+                            </p>
 
-								<span class="badge bg-success mb-2">
+                            <div class="formation-footer">
 
-									Développement Web
+                                <strong>
+                                    250 €
+                                </strong>
 
-								</span>
+                                <a href="#" class="btn-mentor btn-mentor-primary">
+                                    Voir
+                                </a>
 
-								<h5 class="fw-bold">
+                            </div>
 
-									Symfony 7
+                        </div>
 
-								</h5>
+                    </article>
 
-								<p class="text-muted">
+                {% endfor %}
 
-									Apprenez à créer des applications professionnelles avec Symfony.
+            </div>
 
-								</p>
+        </div>
 
-								<div class="d-flex justify-content-between">
+    </section>
 
-									<strong>250 €</strong>
 
-									<a href="#" class="btn btn-primary btn-sm">
+    {# =========================
+       FORMATEURS
+    ========================== #}
 
-										Voir
+    <section class="formateurs-section">
 
-									</a>
+        <div class="container-mentor">
 
-								</div>
+            <div class="formateurs-content">
 
-							</div>
+                <div class="formateurs-image">
 
-						</div>
+                    <img
+                        src="{{ asset('images/instructor.jpg') }}"
+                        alt="Formateur Mentor"
+                    >
 
-					</div>
+                </div>
 
-				{% endfor %}
+                <div class="formateurs-text">
 
-			</div>
+                    <span class="section-label">
+                        Nos formateurs
+                    </span>
 
-		</div>
+                    <h2>
+                        Apprenez auprès de professionnels expérimentés
+                    </h2>
 
-	</section>
+                    <p>
+                        Des experts dans leur domaine, disponibles
+                        pour vous accompagner avec des formations
+                        personnalisées.
+                    </p>
 
-	<!-- FORMATEURS -->
+                    <ul>
 
-	<section class="bg-light py-5">
+                        <li>
+                            <span>✓</span>
+                            Plus de 50 formateurs
+                        </li>
 
-		<div class="container">
+                        <li>
+                            <span>✓</span>
+                            Sessions en ligne
+                        </li>
 
-			<div class="row align-items-center">
+                        <li>
+                            <span>✓</span>
+                            Planning flexible
+                        </li>
 
-				<div class="col-lg-5">
+                        <li>
+                            <span>✓</span>
+                            Avis vérifiés
+                        </li>
 
-					<img src="{{ asset('images/instructor.jpg') }}" class="img-fluid rounded">
+                    </ul>
 
-				</div>
+                    <a href="#" class="btn-mentor btn-mentor-primary">
+                        Voir tous les formateurs
+                    </a>
 
-				<div class="col-lg-7">
+                </div>
 
-					<h2 class="fw-bold">
+            </div>
 
-						Nos formateurs
+        </div>
 
-					</h2>
-
-					<p class="text-muted">
-
-						Des experts dans leur domaine,
-						disponibles pour des formations personnalisées.
-
-					</p>
-
-					<ul class="list-group list-group-flush">
-
-						<li class="list-group-item bg-light">
-							✔ Plus de 50 formateurs
-						</li>
-
-						<li class="list-group-item bg-light">
-							✔ Sessions en ligne
-						</li>
-
-						<li class="list-group-item bg-light">
-							✔ Planning flexible
-						</li>
-
-						<li class="list-group-item bg-light">
-							✔ Avis vérifiés
-						</li>
-
-					</ul>
-
-					<a href="#" class="btn btn-primary mt-4">
-
-						Voir tous les formateurs
-
-					</a>
-
-				</div>
-
-			</div>
-
-		</div>
-
-	</section>
-
+    </section>
 
 {% endblock %}

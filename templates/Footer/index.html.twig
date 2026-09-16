@@ -1,72 +1,101 @@
-	<!-- FOOTER -->
+<footer class="mentor-footer">
 
-			<footer class="bg-dark text-white py-5">
+    <div class="container-mentor">
 
-				<div class="container">
+        <div class="mentor-footer-grid">
 
-					<div class="row">
+            {# MARQUE #}
 
-						<div class="col-lg-4">
+            <div class="mentor-footer-brand">
 
-							<h4>
+                <h3>
+                    Mentor
+                </h3>
 
-								MENTOR
+                <p>
+                    Apprendre aujourd'hui,
+                    réussir demain.
+                </p>
 
-							</h4>
+            </div>
 
-							<p>
 
-								Plateforme de réservation de formations.
+            {# NAVIGATION #}
 
-							</p>
+            <div class="mentor-footer-column">
 
-						</div>
+                <h4>
+                    Mentor
+                </h4>
 
-						<div class="col-lg-4">
+                <a href="{{ path('app_home') }}">
+                    Accueil
+                </a>
 
-							<h5>
+                <a href="#">
+                    Formations
+                </a>
 
-								Navigation
+                <a href="#">
+                    Formateurs
+                </a>
 
-							</h5>
+            </div>
 
-							<ul class="list-unstyled">
 
-								<li>Accueil</li>
+            {# SUPPORT #}
 
-								<li>Formations</li>
+            <div class="mentor-footer-column">
 
-								<li>Formateurs</li>
+                <h4>
+                    Support
+                </h4>
 
-							</ul>
+                <a href="#">
+                    Contact
+                </a>
 
-						</div>
+                <a href="#">
+                    FAQ
+                </a>
 
-						<div class="col-lg-4">
+                <a href="#">
+                    Aide
+                </a>
 
-							<h5>
+            </div>
 
-								Contact
 
-							</h5>
+            {# LEGAL #}
 
-							<p>
+            <div class="mentor-footer-column">
 
-								contact@mentor.fr
+                <h4>
+                    Informations
+                </h4>
 
-							</p>
-							<div class="container text-center">
-								<p class="mb-0">
-									©
-									{{ "now"|date("Y") }}
-									MENTOR - Tous droits réservés.
-								</p>
-							</div>
+                <a href="#">
+                    Conditions générales
+                </a>
 
-						</div>
+                <a href="#">
+                    Politique de confidentialité
+                </a>
 
-					</div>
+            </div>
 
-				</div>
+        </div>
 
-			</footer>
+
+        <div class="mentor-footer-bottom">
+
+            <p>
+                © {{ "now"|date("Y") }} Mentor.
+                Tous droits réservés.
+            </p>
+
+        </div>
+
+    </div>
+
+</footer>

@@ -15,6 +15,7 @@ import './styles/formateur.css';
 import './styles/reservation.css';
 import './styles/dashboard.css';
 import './styles/auth.css';
+import './profile-menu.js';
 import './styles/app.css';
 
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');

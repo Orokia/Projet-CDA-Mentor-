@@ -1,0 +1,144 @@
+<header class="mentor-header">
+
+    <div class="container-mentor mentor-header-container">
+
+        {# LOGO #}
+
+        <a href="{{ path('app_home') }}"
+           class="mentor-logo">
+
+            <div class="mentor-logo-icon">
+                
+            </div>
+
+            <div class="mentor-logo-text">
+
+                <strong>
+                    Mentor
+                </strong>
+
+                <span>
+                    Apprendre. Progresser. Réussir.
+                </span>
+
+            </div>
+
+        </a>
+
+
+        {# NAVIGATION #}
+
+        <nav class="mentor-navigation">
+
+            <a href="{{ path('app_home') }}">
+                Accueil
+            </a>
+
+            <a href="#">
+                Formations
+            </a>
+
+            <a href="#">
+                Formateurs
+            </a>
+
+            <a href="#">
+                À propos
+            </a>
+
+        </nav>
+
+
+        {# ACTIONS #}
+
+        <div class="mentor-header-actions">
+
+            {% if app.user %}
+
+                 <div class="navbar-profile">
+
+                    
+
+                        <button
+                            type="button"
+                            class="profile-avatar"
+                            id="profileMenuButton"
+                        >
+                            CO
+                        </button>
+
+                        <div class="profile-dropdown">
+
+                            <div class="profile-dropdown-header">
+
+                                <div class="profile-avatar-large">
+                                    CO
+                                </div>
+
+                                <div>
+
+                                    <strong>
+                                        {{ app.user.email|split('@')[0] }}
+                                    </strong>
+
+                                    <span>
+                                        {{ app.user.email }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="profile-dropdown-links">
+
+                                <a href="#">
+                                    Mon profil
+                                </a>
+
+                               
+                                <a href="#">
+                                    Mes réservations
+                                </a>
+
+                               
+
+                            </div>
+
+
+                            <div class="profile-dropdown-footer">
+
+                                <a href="{{ path('app_logout') }}">
+                                    Déconnexion
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                  
+
+                </div>
+
+            {% else %}
+
+                <a href="{{ path('app_login') }}">
+
+                    Se connecter
+
+                </a>
+
+                <a href="{{ path('app_register') }}"
+                   class="btn-mentor btn-mentor-primary">
+
+                    S'inscrire
+
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</header>

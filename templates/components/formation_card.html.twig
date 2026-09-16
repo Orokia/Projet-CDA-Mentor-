@@ -1,0 +1,71 @@
+<article class="formation-card">
+
+    <div class="formation-image">
+
+        <img
+            src="{{ asset('images/formations/' ~ formation.image) }}"
+            alt="{{ formation.titre }}"
+        >
+
+    </div>
+
+
+    <div class="formation-content">
+
+        {% if formation.specialite %}
+
+            <span class="formation-category">
+                {{ formation.specialite }}
+            </span>
+
+        {% endif %}
+
+
+        <h2>
+            {{ formation.titre }}
+        </h2>
+
+
+        <p>
+            {{ formation.description|slice(0, 120) }}
+
+            {% if formation.description|length > 120 %}
+                ...
+            {% endif %}
+        </p>
+
+
+        <div class="formation-meta">
+
+            <span>
+                 En ligne
+            </span>
+
+            <span>
+                {{ formation.duree }} h
+            </span>
+
+        </div>
+
+
+        <div class="formation-footer">
+
+            <strong>
+                {{ formation.prix|number_format(2, ',', ' ') }} €
+            </strong>
+
+
+            <a
+                href="{{ path('app_formation_show', {
+                    id: formation.id
+                }) }}"
+                class="btn-mentor btn-mentor-primary"
+            >
+                Découvrir
+            </a>
+
+        </div>
+
+    </div>
+
+</article>

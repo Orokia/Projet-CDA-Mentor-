@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mentor - Nos formations{% endblock %}
+
+{% block body %}
+
+<section class="formations-page">
+
+    <div class="container-mentor">
+
+        <div class="formations-header">
+
+            <span class="section-label">
+                Mentor
+            </span>
+
+            <h1>
+                Découvrez nos formations
+            </h1>
+
+            <p>
+                Développez vos compétences avec des formateurs
+                qualifiés et des sessions adaptées à vos besoins.
+            </p>
+
+        </div>
+
+
+        {# RECHERCHE #}
+
+        <div class="formation-search">
+
+            <div class="search-input">
+
+                <span>⌕</span>
+
+                <input
+                    type="search"
+                    placeholder="Rechercher une formation..."
+                >
+
+            </div>
+
+
+            <select>
+
+                <option value="">
+                    Toutes les spécialités
+                </option>
+
+            </select>
+
+        </div>
+
+
+        {# LISTE DES FORMATIONS #}
+
+        <div class="formations-grid">
+
+            {% for formation in formations %}
+
+                {% include 'components/formation_card.html.twig' with {
+                    formation: formation
+                } %}
+
+            {% else %}
+
+                <div class="formation-empty">
+
+                    <h2>
+                        Aucune formation disponible
+                    </h2>
+
+                    <p>
+                        Les formations seront bientôt disponibles.
+                    </p>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</section>
+
+{% endblock %}

@@ -1,25 +1,256 @@
-.card {
-    border: none;
-    border-radius: 16px;
+/* =========================================================
+   FORMATION - DESCRIPTION
+   ========================================================= */
+
+.formation-empty p {
+    margin: 0;
+    color: #6B7280;
+    font-size: 14px;
+}
+
+/* =========================================================
+   DESCRIPTION - HERO
+   ========================================================= */
+
+.formation-detail-description {
+    margin-top: 20px;
+    margin-bottom: 0;
+
+    color: #6B7280;
+    font-size: 17px;
+    line-height: 1.8;
+
+    height: auto;
+    max-height: none;
+    overflow: visible;
+
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+/* =========================================================
+   DESCRIPTION - À PROPOS
+   ========================================================= */
+
+.formation-description-block {
+    margin-bottom: 45px;
+}
+
+.formation-description-text {
+    width: 100%;
+
+    color: #4B5563;
+    font-size: 16px;
+    line-height: 1.8;
+
+    height: auto;
+    max-height: none;
+    overflow: visible;
+
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+}
+
+/* Paragraphes générés par l'éditeur */
+.formation-description-text p {
+    margin: 0 0 18px 0;
+}
+
+/* Listes */
+.formation-description-text ul,
+.formation-description-text ol {
+    margin: 0 0 18px 0;
+    padding-left: 25px;
+}
+
+.formation-description-text li {
+    margin-bottom: 8px;
+}
+
+/* Texte en gras */
+.formation-description-text strong {
+    font-weight: 700;
+}
+
+/* Titres éventuellement présents dans la description */
+.formation-description-text h1,
+.formation-description-text h2,
+.formation-description-text h3,
+.formation-description-text h4 {
+    margin-top: 20px;
+    margin-bottom: 12px;
+}
+
+/* =========================================================
+   INFORMATIONS PRATIQUES
+   ========================================================= */
+
+.formation-informations {
+    margin-bottom: 30px;
+}
+
+.formation-info-item {
+    padding: 20px;
+
+    background: #FFFFFF;
+
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+}
+
+.formation-info-label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #6B7280;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.formation-info-item strong {
+    display: block;
+
+    color: #1F2937;
+    font-size: 16px;
+}
+
+/* =========================================================
+   CARD PHOTO / PRIX
+   ========================================================= */
+
+.formation-purchase-card {
+    position: sticky;
+    top: 30px;
+
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    background: #FFFFFF;
+
+    border: 1px solid #E4E4E7;
+    border-radius: 14px;
+
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
 }
 
-.card:hover {
-    transform: translateY(-5px);
-}
-
-.card-img-top {
+.formation-preview {
     height: 220px;
+
+    overflow: hidden;
+
+    background: #F4F4F5;
+}
+
+.formation-preview img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
     object-fit: cover;
 }
 
-.btn-primary {
-    background-color: #4F46E5;
-    border-color: #4F46E5;
+.formation-purchase-body {
+    padding: 24px;
 }
 
-.btn-primary:hover {
-    background-color: #4338CA;
-    border-color: #4338CA;
+.formation-price {
+    color: #18181B;
+
+    font-size: 30px;
+    font-weight: 800;
+}
+
+.formation-price-info {
+    margin: 7px 0 20px;
+
+    color: #71717A;
+    font-size: 13px;
+}
+
+.formation-reservation-btn {
+    min-height: 50px;
+
+    background: #4F46E5;
+
+    border: none;
+    border-radius: 8px;
+
+    font-weight: 700;
+}
+
+.formation-purchase-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    margin-top: 22px;
+    padding-top: 20px;
+
+    border-top: 1px solid #E4E4E7;
+
+    color: #52525B;
+    font-size: 13px;
+}
+
+/* =========================================================
+   RESPONSIVE - TABLETTE
+   ========================================================= */
+
+@media (max-width: 991px) {
+
+    .formation-detail-title {
+        font-size: 38px;
+    }
+
+    .formation-purchase-card {
+        position: static;
+    }
+
+}
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+    .formation-hero {
+        padding: 40px 0 55px;
+    }
+
+    .formation-detail-title {
+        font-size: 32px;
+    }
+
+    .formation-detail-description {
+        font-size: 17px;
+        line-height: 1.7;
+    }
+
+    .formation-detail-meta {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .formation-preview {
+        height: 200px;
+    }
+
+    .formation-description-text {
+        font-size: 15px;
+        line-height: 1.7;
+    }
+
+    .formation-description-text ul,
+    .formation-description-text ol {
+        padding-left: 20px;
+    }
+
 }

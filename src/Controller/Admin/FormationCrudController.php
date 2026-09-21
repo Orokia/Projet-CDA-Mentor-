@@ -34,8 +34,8 @@ class FormationCrudController extends AbstractCrudController
                     'accept'=>'image/*'
                 ]
             ])
-            ->setBasePath("assets/images/products")
-            ->setUploadDir("public/assets/images/products")
+            ->setBasePath("assets/images/formations")
+            ->setUploadDir("public/assets/images/formations")
             ->setUploadedFileNamePattern('[randomhash].[extension]'),
             MoneyField::new('prix')->setCurrency("EUR"),
              IntegerField::new('duree', 'Durée')

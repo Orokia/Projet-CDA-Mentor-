@@ -1,0 +1,226 @@
+/* =========================================================
+   CHOIX DU FORMATEUR
+   ========================================================= */
+
+.formation-trainers-section {
+    margin-bottom: 60px;
+}
+
+.formation-section-header {
+    margin-bottom: 30px;
+}
+
+.formation-section-label {
+    display: inline-block;
+
+    margin-bottom: 8px;
+
+    color: #4F46E5;
+
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.formation-section-header h2 {
+    margin: 0 0 10px;
+
+    color: #1F2937;
+
+    font-size: 28px;
+    font-weight: 750;
+}
+
+.formation-section-header p {
+    margin: 0;
+
+    color: #6B7280;
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   CARTE FORMATEUR
+   ========================================================= */
+
+.formation-trainer-card {
+    display: block;
+
+    height: 100%;
+
+    padding: 22px;
+
+    background: #FFFFFF;
+
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.formation-trainer-card:hover {
+    border-color: #C7D2FE;
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 10px 30px rgba(31, 41, 55, 0.08);
+}
+
+
+/* Cache le vrai radio */
+
+.formation-trainer-card input {
+    position: absolute;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+/* Carte sélectionnée */
+
+.formation-trainer-card:has(input:checked) {
+    border-color: #4F46E5;
+
+    background: #F8F9FF;
+
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.12);
+}
+
+
+/* =========================================================
+   CONTENU
+   ========================================================= */
+
+.formation-trainer-content {
+    display: flex;
+
+    align-items: center;
+
+    gap: 16px;
+}
+
+.formation-trainer-avatar {
+    width: 65px;
+    height: 65px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #4F46E5;
+
+    color: #FFFFFF;
+
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.formation-trainer-info {
+    min-width: 0;
+}
+
+.formation-trainer-info h3 {
+    margin: 0 0 5px;
+
+    color: #1F2937;
+
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.formation-trainer-info p {
+    margin: 0 0 7px;
+
+    color: #6B7280;
+
+    font-size: 13px;
+}
+
+.formation-trainer-status {
+    color: #16A34A;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   SÉLECTION
+   ========================================================= */
+
+.formation-trainer-select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 20px;
+    padding-top: 15px;
+
+    border-top: 1px solid #F0F0F0;
+
+    color: #4F46E5;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.formation-radio {
+    width: 24px;
+    height: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px solid #D1D5DB;
+    border-radius: 50%;
+
+    color: transparent;
+
+    font-size: 12px;
+}
+
+.formation-trainer-card:has(input:checked) .formation-radio {
+    border-color: #4F46E5;
+
+    background: #4F46E5;
+
+    color: #FFFFFF;
+}
+
+
+/* =========================================================
+   BOUTON
+   ========================================================= */
+
+.formation-trainer-action {
+    margin-top: 25px;
+
+    text-align: right;
+}
+
+.formation-trainer-action .btn {
+    padding: 12px 25px;
+
+    background: #4F46E5;
+    border-color: #4F46E5;
+
+    font-weight: 600;
+}
+
+.formation-trainer-action .btn:hover {
+    background: #4338CA;
+    border-color: #4338CA;
+}

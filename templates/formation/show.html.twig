@@ -1,0 +1,387 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ formation.titre }} - Mentor
+{% endblock %}
+
+{% block body %}
+
+<div class="formation-detail">
+
+    {# =========================================================
+       HERO
+       ========================================================= #}
+
+    <section class="formation-hero">
+
+        <div class="container">
+
+            <div class="row g-5 align-items-start">
+
+                {# CONTENU GAUCHE #}
+                <div class="col-lg-8">
+
+                    <div class="formation-breadcrumb">
+
+                        <a href="{{ path('app_formation') }}">
+                            Formations
+                        </a>
+
+                        <span>›</span>
+
+                        {% if formation.specialite %}
+                            <span>
+                                {{ formation.specialite }}
+                            </span>
+                        {% endif %}
+
+                    </div>
+
+
+                    <h1 class="formation-detail-title">
+                        {{ formation.titre }}
+                    </h1>
+
+
+                   
+
+
+                  <div class="formation-detail-meta">
+
+    <span>
+        <i class="bi bi-clock me-2"></i>
+        {{ formation.duree }} heures
+    </span>
+
+    <span>
+        <i class="bi bi-laptop me-2"></i>
+        Formation en ligne
+    </span>
+
+    {% if formation.specialite %}
+        <span>
+            <i class="bi bi-mortarboard me-2"></i>
+            {{ formation.specialite }}
+        </span>
+    {% endif %}
+
+
+     <p class="formation-detail-description">
+    {{ formation.description|striptags}}
+
+    
+</p>
+</div>
+
+                </div>
+
+
+                {# =================================================
+                   CARD IMAGE / PRIX
+                   ================================================= #}
+
+                <div class="col-lg-4">
+
+                    <div class="formation-purchase-card">
+
+                        {# IMAGE #}
+                        <div class="formation-preview">
+
+                            <img
+                                src="{{ asset('assets/images/formations/' ~ formation.image) }}"
+                                alt="{{ formation.titre }}"
+                            >
+
+                        </div>
+
+
+                        {# PRIX + ACTION #}
+                        <div class="formation-purchase-body">
+
+                            <div class="formation-price">
+                                {{ formation.prix|number_format(2, ',', ' ') }} €
+                            </div>
+
+                            <p class="formation-price-info">
+                                Tarif de la formation
+                            </p>
+
+
+                            <a
+                                href="#formateurs"
+                                class="btn btn-primary btn-lg w-100 formation-reservation-btn"
+                            >
+                                Choisir un formateur
+                            </a>
+
+
+                            
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    {# =========================================================
+       CONTENU PRINCIPAL
+       ========================================================= #}
+
+    <section class="formation-content-section">
+
+        <div class="container">
+
+            <div class="row">
+
+                <div class="col-lg-8">
+
+
+                    {# =================================================
+                       À PROPOS
+                       ================================================= #}
+
+                    <section class="formation-description-block">
+
+                        <span class="formation-section-label">
+                            Présentation
+                        </span>
+
+                        <h2>
+                            À propos de cette formation
+                        </h2>
+
+                        <p>
+                            {{ formation.description|striptags }}
+                        </p>
+
+                    </section>
+
+
+                    {# =================================================
+                       INFORMATIONS PRATIQUES
+                       ================================================= #}
+
+                    <section class="formation-informations">
+
+                        <span class="formation-section-label">
+                            Informations
+                        </span>
+
+                        <h5>
+                            Informations pratiques
+                        </h5>
+
+
+                        <div class="row g-3">
+
+                            {# DURÉE #}
+                            <div class="col-md-4">
+
+                                <div class="formation-info-item">
+
+                                    <span class="formation-info-label">
+                                        Durée
+                                    </span>
+
+                                    <strong>
+                                        {{ formation.duree }} heures
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            {# FORMAT #}
+                            <div class="col-md-4">
+
+                                <div class="formation-info-item">
+
+                                    <span class="formation-info-label">
+                                        Format
+                                    </span>
+
+                                    <strong>
+                                        En ligne
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            {# SPÉCIALITÉ #}
+                            <div class="col-md-4">
+
+                                <div class="formation-info-item">
+
+                                    <span class="formation-info-label">
+                                        Spécialité
+                                    </span>
+
+                                    <strong>
+                                        {{ formation.specialite }}
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+
+                    {# =================================================
+                       ÉTAPE 1 - FORMATEURS
+                       ================================================= #}
+
+                    <section
+                        id="formateurs"
+                        class="formation-trainers-section"
+                    >
+
+                        <div class="formation-section-header">
+
+                            <span class="formation-section-label">
+                                Étape 1
+                            </span>
+
+                            <h2>
+                                Choisissez votre formateur
+                            </h2>
+
+                            <p>
+                                Sélectionnez le formateur avec lequel
+                                vous souhaitez suivre cette formation.
+                            </p>
+
+                        </div>
+
+
+                        <form
+                            method="post"
+                            action="{{ path('app_formateur_profil') }}"
+                            class="formation-trainers-form"
+                        >
+
+                            <div class="row g-4">
+
+                                {% for formateur in formation.formateurs %}
+
+                                    <div class="col-md-6">
+
+                                        <label class="formation-trainer-card">
+
+                                            <input
+                                                type="radio"
+                                                name="formateur"
+                                                value="{{ formateur.id }}"
+                                                required
+                                            >
+
+
+                                            <div class="formation-trainer-content">
+
+                                                <div class="formation-trainer-avatar">
+                                                    {{ formateur|first|upper }}
+                                                </div>
+
+
+                                                <div class="formation-trainer-info">
+
+                                                    <h3>
+                                                        {{ formateur }}
+                                                    </h3>
+
+                                                    <p>
+                                                        Formateur Mentor
+                                                    </p>
+
+                                                    <span class="formation-trainer-status">
+                                                        ✓ Formateur associé
+                                                    </span>
+
+                                                </div>
+
+                                            </div>
+
+
+                                            <div class="formation-trainer-select">
+
+                                                <span>
+                                                    Sélectionner ce formateur
+                                                </span>
+
+                                                <span class="formation-radio">
+                                                    ✓
+                                                </span>
+
+                                            </div>
+
+                                        </label>
+
+                                    </div>
+
+                                {% else %}
+
+                                    <div class="col-12">
+
+                                        <div class="formation-empty">
+
+                                            <h3>
+                                                Aucun formateur disponible
+                                            </h3>
+
+                                            <p>
+                                                Aucun formateur n'est actuellement
+                                                associé à cette formation.
+                                            </p>
+
+                                        </div>
+
+                                    </div>
+
+                                {% endfor %}
+
+                            </div>
+
+
+                            {% if formation.formateurs|length > 0 %}
+
+                                <div class="formation-trainer-action">
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary"
+                                    >
+                                        Continuer
+                                        <span>→</span>
+                                    </button>
+
+                                </div>
+
+                            {% endif %}
+
+                        </form>
+
+                    </section>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+{% endblock %}

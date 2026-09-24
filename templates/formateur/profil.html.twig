@@ -1,0 +1,411 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ formateur.prenom }} {{ formateur.nom }} - Mentor
+{% endblock %}
+
+{% block body %}
+
+<div class="formateur-profile">
+
+    <div class="container py-5">
+
+        {# =====================================================
+           VIDÉO DE PRÉSENTATION
+           ===================================================== #}
+
+        <section class="formateur-video-section">
+
+            {% if formateur.videoPresentation %}
+
+                <div class="formateur-video">
+
+                    <video
+                        controls
+                        poster="{{ formateur.image ? asset('assets/images/formateurs/' ~ formateur.image) : '' }}"
+                    >
+                        <source
+                            src="{{ asset('assets/videos/formateurs/' ~ formateur.videoPresentation) }}"
+                            type="video/mp4"
+                        >
+
+                        Votre navigateur ne supporte pas la lecture vidéo.
+
+                    </video>
+
+                </div>
+
+            {% else %}
+
+                <div class="formateur-video-empty">
+
+                    <i class="bi bi-camera-video"></i>
+
+                    <p>
+                        Aucune vidéo de présentation disponible.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        {# =====================================================
+           INFORMATIONS PRINCIPALES
+           ===================================================== #}
+
+        <section class="formateur-profile-header">
+
+            <div class="formateur-profile-photo">
+
+                {% if formateur.image %}
+
+                    <img
+                        src="{{ asset('assets/images/formateurs/' ~ formateur.image) }}"
+                        alt="{{ formateur.prenom }} {{ formateur.nom }}"
+                    >
+
+                {% else %}
+
+                    <div class="formateur-profile-avatar">
+                        {{ formateur.prenom|first|upper }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <h1>
+                {{ formateur.prenom }} {{ formateur.nom }}
+            </h1>
+
+            <p class="formateur-profile-role">
+                Formateur Mentor
+            </p>
+
+
+            <div class="formateur-profile-actions">
+
+                <a href="#reservation"
+                   class="btn btn-primary">
+                    Réserver une session
+                </a>
+
+                <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                >
+                    Contacter
+                </button>
+
+            </div>
+
+        </section>
+
+
+        {# =====================================================
+           INFORMATIONS
+           ===================================================== #}
+
+        <section class="formateur-profile-informations">
+
+            <div class="row g-4">
+
+                <div class="col-md-6">
+
+                    <div class="formateur-info-item">
+
+                        <i class="bi bi-briefcase"></i>
+
+                        <div>
+                            <span>Expérience</span>
+
+                            <strong>
+                                {{ formateur.experience }}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <div class="formateur-info-item">
+
+                        <i class="bi bi-translate"></i>
+
+                        <div>
+                            <span>Langue</span>
+
+                            <strong>
+                                {{ formateur.langue }}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <div class="formateur-info-item">
+
+                        <i class="bi bi-geo-alt"></i>
+
+                        <div>
+                            <span>Localisation</span>
+
+                            <strong>
+                                {{ formateur.localisation }}
+                            </strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-6">
+
+                    <div class="formateur-info-item">
+
+                        <i class="bi bi-book"></i>
+
+                        <div>
+
+                            <span>Spécialités</span>
+
+                            <strong>
+
+                                {% for specialite in formateur.specialites %}
+
+                                    {{ specialite }}{% if not loop.last %}, {% endif %}
+
+                                {% else %}
+
+                                    Non renseignées
+
+                                {% endfor %}
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        {# =====================================================
+           FORMATIONS
+           ===================================================== #}
+
+        <section class="formateur-formations-section">
+
+            <div class="mb-4">
+
+                <span class="formation-section-label">
+                    Formations
+                </span>
+
+                <h2>
+                    Formations animées
+                </h2>
+
+            </div>
+
+
+            <div class="row g-4">
+
+                {% for formation in formateur.formation %}
+
+                    <div class="col-12 col-md-6 col-lg-3">
+
+                        <div class="formateur-formation-card">
+
+                            {% if formation.image %}
+
+                                <img
+                                    src="{{ asset('assets/images/formations/' ~ formation.image) }}"
+                                    alt="{{ formation.titre }}"
+                                >
+
+                            {% endif %}
+
+                            <div class="p-3">
+
+                                <h3>
+                                    {{ formation.titre }}
+                                </h3>
+
+                                <a
+                                    href="{{ path('app_formation_show', {
+                                        id: formation.id
+                                    }) }}"
+                                    class="btn btn-outline-primary btn-sm"
+                                >
+                                    Voir la formation
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="col-12">
+
+                        <p class="text-muted">
+                            Aucune formation disponible.
+                        </p>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+
+        {# =====================================================
+           DISPONIBILITÉS
+           ===================================================== #}
+
+        <section
+            id="reservation"
+            class="formateur-disponibilites-section"
+        >
+
+            <div class="mb-4">
+
+                <span class="formation-section-label">
+                    Disponibilités
+                </span>
+
+                <h2>
+                    Prochaines disponibilités
+                </h2>
+
+            </div>
+
+
+            <div class="row g-3">
+
+              <section class="formateur-disponibilites-section">
+
+    <div class="formateur-section-header">
+        <span class="formation-section-label">
+            Disponibilités
+        </span>
+
+        <h2>Choisissez votre jour de formation</h2>
+
+        <p>
+            Sélectionnez le jour qui vous convient.
+            Les horaires sont définis par le formateur.
+        </p>
+    </div>
+
+    {% for disponibilite in formateur.disponibilites %}
+
+        <div class="disponibilite-block">
+
+            <div class="disponibilite-period">
+                <i class="bi bi-calendar3"></i>
+
+                <span>
+                    Du
+                    {{ disponibilite.dateDebut|date('d/m/Y') }}
+                    au
+                    {{ disponibilite.dateFin|date('d/m/Y') }}
+                </span>
+            </div>
+
+            <div class="disponibilite-horaire">
+                <i class="bi bi-clock"></i>
+
+                <span>
+                    {{ disponibilite.heureDebut|date('H:i') }}
+                    -
+                    {{ disponibilite.heureFin|date('H:i') }}
+                </span>
+            </div>
+
+            <div class="disponibilite-jours">
+
+                {% for jour in disponibilite.joursSemaine %}
+
+                    <button
+                        type="button"
+                        class="disponibilite-jour"
+                        data-jour="{{ jour }}"
+                    >
+                        <span class="disponibilite-jour-name">
+                            {{ jour|capitalize }}
+                        </span>
+
+                        <span class="disponibilite-jour-horaire">
+                            {{ disponibilite.heureDebut|date('H:i') }}
+                            -
+                            {{ disponibilite.heureFin|date('H:i') }}
+                        </span>
+
+                        <span class="disponibilite-jour-action">
+                            Choisir
+                        </span>
+                    </button>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    {% else %}
+
+        <div class="formateurs-empty text-center">
+            <i class="bi bi-calendar-x"></i>
+
+            <h3>Aucune disponibilité</h3>
+
+            <p>
+                Ce formateur n'a pas encore défini ses disponibilités.
+            </p>
+        </div>
+
+    {% endfor %}
+
+</section>
+
+                    <div class="col-12">
+
+                        <p class="text-muted">
+                            Aucune disponibilité renseignée.
+                        </p>
+
+                    </div>
+
+               
+
+            </div>
+
+        </section>
+
+    </div>
+
+</div>
+
+{% endblock %}

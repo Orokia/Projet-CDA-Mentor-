@@ -43,6 +43,10 @@ class Reservation
     #[ORM\OneToOne(inversedBy: 'reservation', cascade: ['persist', 'remove'])]
     private ?Paiement $paiement = null;
 
+    #[ORM\ManyToOne(inversedBy: 'reservations')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Disponibilite $disponibilite = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -143,6 +147,18 @@ class Reservation
 
         return $this;
     }
+
+    public function getDisponibilite(): ?Disponibilite
+{
+    return $this->disponibilite;
+}
+
+public function setDisponibilite(?Disponibilite $disponibilite): static
+{
+    $this->disponibilite = $disponibilite;
+
+    return $this;
+}
 
     public function getPaiement(): ?Paiement
     {

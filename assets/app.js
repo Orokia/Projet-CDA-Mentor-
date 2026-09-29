@@ -20,6 +20,7 @@ import './styles/dashboard.css';
 import './styles/auth.css';
 import './styles/app.css';
 import './profile-menu.js';
+import './reservation.js';
 
 
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');

@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Entity\Student;
 use App\Form\RegistrationFormType;
 use App\Repository\UserRepository;
 use App\Security\EmailVerifier;
@@ -38,8 +39,19 @@ class RegistrationController extends AbstractController
             // encode the plain password
             $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
 
-            $entityManager->persist($user);
-            $entityManager->flush();
+            $student = new Student();
+
+$student->setNom($user->getNomUtilisateur());
+$student->setPrenom($user->getPrenomUtilisateur());
+$student->setEmail($user->getEmail());
+
+$user->setStudent($student);
+$student->setUser($user);
+
+$entityManager->persist($user);
+$entityManager->persist($student);
+
+$entityManager->flush();
 
             // generate a signed url and email it to the user
             try{

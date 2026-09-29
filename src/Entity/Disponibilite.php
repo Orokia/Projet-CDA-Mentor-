@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Entity;
+use App\Entity\Reservation;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 use App\Repository\DisponibiliteRepository;
 use Doctrine\DBAL\Types\Types;
@@ -36,6 +39,18 @@ class Disponibilite
     #[ORM\ManyToOne(inversedBy: 'disponibilites')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Formation $formation = null;
+
+    #[ORM\OneToMany(
+    mappedBy: 'disponibilite',
+    targetEntity: Reservation::class
+)]
+private Collection $reservations;
+
+
+public function __construct()
+{
+    $this->reservations = new ArrayCollection();
+}
 
     public function getId(): ?int
     {
@@ -125,4 +140,33 @@ class Disponibilite
 
         return $this;
     }
+
+    /**
+ * @return Collection<int, Reservation>
+ */
+public function getReservations(): Collection
+{
+    return $this->reservations;
+}
+
+public function addReservation(Reservation $reservation): static
+{
+    if (!$this->reservations->contains($reservation)) {
+        $this->reservations->add($reservation);
+        $reservation->setDisponibilite($this);
+    }
+
+    return $this;
+}
+
+public function removeReservation(Reservation $reservation): static
+{
+    if ($this->reservations->removeElement($reservation)) {
+        if ($reservation->getDisponibilite() === $this) {
+            $reservation->setDisponibilite(null);
+        }
+    }
+
+    return $this;
+}
 }

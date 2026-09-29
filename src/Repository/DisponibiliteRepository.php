@@ -16,28 +16,22 @@ class DisponibiliteRepository extends ServiceEntityRepository
         parent::__construct($registry, Disponibilite::class);
     }
 
-//    /**
-//     * @return Disponibilite[] Returns an array of Disponibilite objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('d')
-//            ->andWhere('d.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('d.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
-
-//    public function findOneBySomeField($value): ?Disponibilite
-//    {
-//        return $this->createQueryBuilder('d')
-//            ->andWhere('d.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+    /**
+     * Récupère les disponibilités d'un formateur
+     * pour une formation donnée.
+     */
+    public function findByFormationAndFormateur(
+        int $formationId,
+        int $formateurId
+    ): array {
+        return $this->createQueryBuilder('d')
+            ->andWhere('IDENTITY(d.formation) = :formationId')
+            ->andWhere('IDENTITY(d.formateur) = :formateurId')
+            ->setParameter('formationId', $formationId)
+            ->setParameter('formateurId', $formateurId)
+            ->orderBy('d.dateDebut', 'ASC')
+            ->addOrderBy('d.heureDebut', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

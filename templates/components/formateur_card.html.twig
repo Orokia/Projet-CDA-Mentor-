@@ -1,0 +1,115 @@
+<div class="formateur-card h-100">
+
+    {# IMAGE #}
+
+    <div class="formateur-card-image">
+
+        {% if formateur.image %}
+
+            <img
+                src="{{ asset('assets/images/utilisateurs/' ~ formateur.image) }}"
+                alt="{{ formateur.prenom }} {{ formateur.nom }}"
+            >
+
+        {% else %}
+
+            <div class="formateur-card-avatar">
+
+                {{ formateur.prenom|first|upper }}
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    {# CONTENU #}
+
+    <div class="formateur-card-content p-4">
+
+        <h3 class="formateur-card-name">
+            {{ formateur.prenom }} {{ formateur.nom }}
+        </h3>
+
+
+        {# SPÉCIALITÉS #}
+
+        <div class="formateur-card-specialites mb-3">
+
+            {% for specialite in formateur.specialites %}
+
+                <span class="formateur-specialite">
+                    {{ specialite }}
+                </span>
+
+            {% else %}
+
+                <span class="formateur-specialite">
+                    Formateur Mentor
+                </span>
+
+            {% endfor %}
+
+        </div>
+
+
+        {# INFORMATIONS #}
+
+        <div class="formateur-card-infos mb-4">
+
+            {% if formateur.experience %}
+
+                <div>
+                    <i class="bi bi-briefcase"></i>
+
+                    <span>
+                        {{ formateur.experience }}
+                    </span>
+                </div>
+
+            {% endif %}
+
+
+            {% if formateur.localisation %}
+
+                <div>
+                    <i class="bi bi-geo-alt"></i>
+
+                    <span>
+                        {{ formateur.localisation }}
+                    </span>
+                </div>
+
+            {% endif %}
+
+
+            {% if formateur.langue %}
+
+                <div>
+                    <i class="bi bi-translate"></i>
+
+                    <span>
+                        {{ formateur.langue }}
+                    </span>
+                </div>
+
+            {% endif %}
+
+        </div>
+
+
+        {# BOUTON #}
+
+        <a
+            href="{{ path('app_formateur_profil', { id: formateur.id }) }}"
+            class="btn btn-primary formateur-card-button"
+        >
+            Voir le profil
+
+            <span>→</span>
+        </a>
+
+    </div>
+
+</div>

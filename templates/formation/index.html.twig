@@ -6,82 +6,82 @@
 
 <section class="formations-page">
 
-    <div class="container-mentor">
+  <div class="container py-5">
 
-        <div class="formations-header">
+    <div class="text-center mb-5">
+        <span class="badge bg-primary mb-3">
+            Mentor
+        </span>
 
-            <span class="section-label">
-                Mentor
-            </span>
+        <h1 class="display-5 fw-bold">
+            Découvrez nos formations
+        </h1>
 
-            <h1>
-                Découvrez nos formations
-            </h1>
+        <p class="lead text-muted">
+            Développez vos compétences avec nos formations.
+        </p>
+    </div>
 
-            <p>
-                Développez vos compétences avec des formateurs
-                qualifiés et des sessions adaptées à vos besoins.
-            </p>
+    <div class="row g-4">
 
-        </div>
+        {% for formation in formations %}
 
+            <div class="col-lg-4 col-md-6">
 
-        {# RECHERCHE #}
+                <div class="card h-100 shadow-sm">
 
-        <div class="formation-search">
+                    <img
+                        src="{{ asset('images/' ~ formation.image) }}"
+                        class="card-img-top"
+                        alt="{{ formation.titre }}"
+                    >
 
-            <div class="search-input">
+                    <div class="card-body">
 
-                <span>⌕</span>
+                        {% if formation.specialite %}
+                            <span class="badge bg-primary">
+                                {{ formation.specialite }}
+                            </span>
+                        {% endif %}
 
-                <input
-                    type="search"
-                    placeholder="Rechercher une formation..."
-                >
+                        <h5 class="card-title mt-3">
+                            {{ formation.titre }}
+                        </h5>
 
-            </div>
+                        <p class="card-text text-muted">
+                            {{ formation.description|slice(0, 120) }}...
+                        </p>
 
+                    </div>
 
-            <select>
+                    <div class="card-footer bg-white border-0">
 
-                <option value="">
-                    Toutes les spécialités
-                </option>
+                        <div class="d-flex justify-content-between align-items-center">
 
-            </select>
+                            <strong>
+                                {{ formation.prix|number_format(2, ',', ' ') }} €
+                            </strong>
 
-        </div>
+                            <a
+                                href="{{ path('app_formation_show', {id: formation.id}) }}"
+                                class="btn btn-primary"
+                            >
+                                Découvrir
+                            </a>
 
+                        </div>
 
-        {# LISTE DES FORMATIONS #}
-
-        <div class="formations-grid">
-
-            {% for formation in formations %}
-
-                {% include 'components/formation_card.html.twig' with {
-                    formation: formation
-                } %}
-
-            {% else %}
-
-                <div class="formation-empty">
-
-                    <h2>
-                        Aucune formation disponible
-                    </h2>
-
-                    <p>
-                        Les formations seront bientôt disponibles.
-                    </p>
+                    </div>
 
                 </div>
 
-            {% endfor %}
+            </div>
 
-        </div>
+        {% endfor %}
 
     </div>
+
+</div>
 
 </section>
 

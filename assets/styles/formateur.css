@@ -1,0 +1,986 @@
+/* =========================================================
+   CHOIX DU FORMATEUR
+   ========================================================= */
+
+.formation-trainers-section {
+    margin-bottom: 60px;
+}
+
+.formation-section-header {
+    margin-bottom: 30px;
+}
+
+.formation-section-label {
+    display: inline-block;
+
+    margin-bottom: 8px;
+
+    color: #4F46E5;
+
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.formation-section-header h2 {
+    margin: 0 0 10px;
+
+    color: #1F2937;
+
+    font-size: 28px;
+    font-weight: 750;
+}
+
+.formation-section-header p {
+    margin: 0;
+
+    color: #6B7280;
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   CARTE FORMATEUR
+   ========================================================= */
+
+.formation-trainer-card {
+    display: block;
+
+    height: 100%;
+
+    padding: 22px;
+
+    background: #FFFFFF;
+
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.formation-trainer-card:hover {
+    border-color: #C7D2FE;
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 10px 30px rgba(31, 41, 55, 0.08);
+}
+
+
+/* Cache le vrai radio */
+
+.formation-trainer-card input {
+    position: absolute;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+
+/* Carte sélectionnée */
+
+.formation-trainer-card:has(input:checked) {
+    border-color: #4F46E5;
+
+    background: #F8F9FF;
+
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.12);
+}
+
+
+/* =========================================================
+   CONTENU
+   ========================================================= */
+
+.formation-trainer-content {
+    display: flex;
+
+    align-items: center;
+
+    gap: 16px;
+}
+
+.formation-trainer-avatar {
+    width: 65px;
+    height: 65px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #4F46E5;
+
+    color: #FFFFFF;
+
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.formation-trainer-info {
+    min-width: 0;
+}
+
+.formation-trainer-info h3 {
+    margin: 0 0 5px;
+
+    color: #1F2937;
+
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.formation-trainer-info p {
+    margin: 0 0 7px;
+
+    color: #6B7280;
+
+    font-size: 13px;
+}
+
+.formation-trainer-status {
+    color: #16A34A;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   SÉLECTION
+   ========================================================= */
+
+.formation-trainer-select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 20px;
+    padding-top: 15px;
+
+    border-top: 1px solid #F0F0F0;
+
+    color: #4F46E5;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.formation-radio {
+    width: 24px;
+    height: 24px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 2px solid #D1D5DB;
+    border-radius: 50%;
+
+    color: transparent;
+
+    font-size: 12px;
+}
+
+.formation-trainer-card:has(input:checked) .formation-radio {
+    border-color: #4F46E5;
+
+    background: #4F46E5;
+
+    color: #FFFFFF;
+}
+
+
+/* =========================================================
+   BOUTON
+   ========================================================= */
+
+.formation-trainer-action {
+    margin-top: 25px;
+
+    text-align: right;
+}
+
+.formation-trainer-action .btn {
+    padding: 12px 25px;
+
+    background: #4F46E5;
+    border-color: #4F46E5;
+
+    font-weight: 600;
+}
+
+.formation-trainer-action .btn:hover {
+    background: #4338CA;
+    border-color: #4338CA;
+}
+
+
+
+/* =========================================================
+   PAGE FORMATEURS
+   ========================================================= */
+
+.formateurs-page {
+    background: #FFFFFF;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.formateurs-page-header {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.formateurs-page-header h1 {
+    margin: 0 0 12px;
+
+    color: #1F2937;
+
+    font-size: 36px;
+    font-weight: 700;
+}
+
+.formateurs-page-header p {
+    max-width: 650px;
+
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   LABEL
+   ========================================================= */
+
+.formation-section-label {
+    display: inline-block;
+
+    margin-bottom: 8px;
+
+    color: #4F46E5;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+
+/* =========================================================
+   CARD FORMATEUR
+   ========================================================= */
+
+.formateur-card {
+    height: 100%;
+
+    overflow: hidden;
+
+    background: #FFFFFF;
+
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.formateur-card:hover {
+    border-color: #D1D5DB;
+
+    transform: translateY(-5px);
+
+    box-shadow: 0 12px 30px rgba(31, 41, 55, 0.09);
+}
+
+
+/* =========================================================
+   IMAGE
+   ========================================================= */
+
+.formateur-card-image {
+    width: 100%;
+    height: 230px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    background: #F8F9FC;
+}
+
+.formateur-card-image img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    transition: transform 0.3s ease;
+}
+
+.formateur-card:hover .formateur-card-image img {
+    transform: scale(1.03);
+}
+
+
+/* =========================================================
+   AVATAR
+   ========================================================= */
+
+.formateur-card-avatar {
+    width: 95px;
+    height: 95px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #4F46E5;
+
+    color: #FFFFFF;
+
+    font-size: 32px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   CONTENU
+   ========================================================= */
+
+.formateur-card-content {
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* =========================================================
+   NOM
+   ========================================================= */
+
+.formateur-card-name {
+    margin: 0 0 10px;
+
+    color: #1F2937;
+
+    font-size: 20px;
+    font-weight: 700;
+
+    line-height: 1.3;
+}
+
+
+/* =========================================================
+   SPÉCIALITÉS
+   ========================================================= */
+
+.formateur-card-specialites {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 6px;
+}
+
+.formateur-specialite {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 5px 10px;
+
+    background: #EEF2FF;
+
+    border-radius: 20px;
+
+    color: #4F46E5;
+
+    font-size: 12px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   INFORMATIONS
+   ========================================================= */
+
+.formateur-card-infos {
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+
+    color: #6B7280;
+
+    font-size: 14px;
+}
+
+.formateur-card-infos div {
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+}
+
+.formateur-card-infos i {
+    width: 18px;
+
+    flex-shrink: 0;
+
+    color: #4F46E5;
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   BOUTON
+   ========================================================= */
+
+.formateur-card-button {
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 8px;
+
+    border-radius: 10px;
+
+    font-weight: 600;
+}
+
+.formateur-card-button span {
+    transition: transform 0.2s ease;
+}
+
+.formateur-card-button:hover span {
+    transform: translateX(4px);
+}
+
+
+/* =========================================================
+   AUCUN FORMATEUR
+   ========================================================= */
+
+.formateurs-empty {
+    background: #F8F9FC;
+
+    border: 1px solid #E5E7EB;
+
+    border-radius: 16px;
+}
+
+.formateurs-empty h3 {
+    margin-bottom: 8px;
+
+    color: #1F2937;
+
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.formateurs-empty p {
+    margin: 0;
+
+    color: #6B7280;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+    .formateurs-page-header h1 {
+        font-size: 28px;
+    }
+
+    .formateurs-page-header p {
+        font-size: 14px;
+    }
+
+    .formateur-card-image {
+        height: 210px;
+    }
+
+    .formateur-card-name {
+        font-size: 19px;
+    }
+
+}
+
+
+
+/* =========================================================
+   PROFIL FORMATEUR
+   ========================================================= */
+
+.formateur-profile {
+    background: #FFFFFF;
+}
+
+
+/* =========================================================
+   VIDÉO
+   ========================================================= */
+
+.formateur-video-section {
+    max-width: 1000px;
+
+    margin: 0 auto 30px;
+}
+
+.formateur-video {
+    width: 100%;
+
+    overflow: hidden;
+
+    background: #111827;
+
+    border-radius: 14px;
+}
+
+.formateur-video video {
+    width: 100%;
+
+    display: block;
+
+    max-height: 500px;
+}
+
+
+/* =========================================================
+   VIDÉO VIDE
+   ========================================================= */
+
+.formateur-video-empty {
+    min-height: 300px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #F8F9FC;
+
+    border-radius: 14px;
+
+    color: #6B7280;
+}
+
+.formateur-video-empty i {
+    margin-bottom: 10px;
+
+    font-size: 40px;
+
+    color: #4F46E5;
+}
+
+
+/* =========================================================
+   HEADER PROFIL
+   ========================================================= */
+
+.formateur-profile-header {
+    position: relative;
+
+    text-align: center;
+
+    margin-bottom: 50px;
+}
+
+.formateur-profile-photo {
+    width: 120px;
+    height: 120px;
+
+    margin: -60px auto 15px;
+
+    position: relative;
+    z-index: 2;
+
+    overflow: hidden;
+
+    border: 5px solid #FFFFFF;
+    border-radius: 50%;
+
+    background: #EEF2FF;
+
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.10);
+}
+
+.formateur-profile-photo img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.formateur-profile-avatar {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #4F46E5;
+
+    color: #FFFFFF;
+
+    font-size: 40px;
+    font-weight: 700;
+}
+
+.formateur-profile-header h1 {
+    margin: 0 0 6px;
+
+    color: #1F2937;
+
+    font-size: 30px;
+    font-weight: 700;
+}
+
+.formateur-profile-role {
+    margin-bottom: 20px;
+
+    color: #6B7280;
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.formateur-profile-actions {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 12px;
+}
+
+
+/* =========================================================
+   INFORMATIONS
+   ========================================================= */
+
+.formateur-profile-informations {
+    margin-bottom: 60px;
+
+    padding: 30px;
+
+    background: #FFFFFF;
+
+    border: 1px solid #E5E7EB;
+    border-radius: 16px;
+}
+
+.formateur-info-item {
+    height: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 18px;
+
+    background: #F8F9FC;
+
+    border-radius: 12px;
+}
+
+.formateur-info-item > i {
+    color: #4F46E5;
+
+    font-size: 22px;
+}
+
+.formateur-info-item div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.formateur-info-item span {
+    color: #6B7280;
+
+    font-size: 13px;
+}
+
+.formateur-info-item strong {
+    color: #1F2937;
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   FORMATIONS
+   ========================================================= */
+
+.formateur-formations-section {
+    margin-bottom: 60px;
+}
+
+.formateur-formations-section h2,
+.formateur-disponibilites-section h2 {
+    margin: 0;
+
+    color: #1F2937;
+
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.formateur-formation-card {
+    height: 100%;
+
+    overflow: hidden;
+
+    background: #FFFFFF;
+
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formateur-formation-card:hover {
+    transform: translateY(-4px);
+
+    box-shadow: 0 8px 20px rgba(31, 41, 55, 0.08);
+}
+
+.formateur-formation-card img {
+    width: 100%;
+    height: 150px;
+
+    object-fit: cover;
+}
+
+.formateur-formation-card h3 {
+    margin-bottom: 15px;
+
+    color: #1F2937;
+
+    font-size: 16px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   DISPONIBILITÉS
+   ========================================================= */
+
+.formateur-disponibilites-section {
+    margin-bottom: 50px;
+}
+
+.formateur-disponibilite {
+    padding: 15px;
+
+    text-align: center;
+
+    background: #F8F9FC;
+
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+
+    color: #1F2937;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+    .formateur-profile-header h1 {
+        font-size: 25px;
+    }
+
+    .formateur-profile-actions {
+        flex-direction: column;
+    }
+
+    .formateur-profile-actions .btn {
+        width: 100%;
+    }
+
+    .formateur-profile-informations {
+        padding: 20px;
+    }
+
+    .formateur-formations-section h2,
+    .formateur-disponibilites-section h2 {
+        font-size: 24px;
+    }
+
+}
+
+
+/* =========================================================
+   DISPONIBILITÉS FORMATEUR
+   ========================================================= */
+
+.formateur-disponibilites-section {
+    margin-top: 60px;
+    margin-bottom: 60px;
+}
+
+.formateur-section-header {
+    margin-bottom: 30px;
+}
+
+.formateur-section-header h2 {
+    margin-top: 8px;
+    margin-bottom: 10px;
+    color: #1F2937;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.formateur-section-header p {
+    margin: 0;
+    color: #6B7280;
+    font-size: 15px;
+}
+
+/* Période */
+
+.disponibilite-block {
+    margin-bottom: 30px;
+}
+
+.disponibilite-period,
+.disponibilite-horaire {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: #4B5563;
+    font-size: 14px;
+}
+
+.disponibilite-period i,
+.disponibilite-horaire i {
+    color: #4F46E5;
+    font-size: 17px;
+}
+
+.disponibilite-horaire {
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* Jours */
+
+.disponibilite-jours {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 15px;
+}
+
+.disponibilite-jour {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+
+    width: 100%;
+    padding: 18px;
+
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 14px;
+
+    cursor: pointer;
+    text-align: left;
+
+    transition: all 0.2s ease;
+}
+
+.disponibilite-jour:hover {
+    border-color: #4F46E5;
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.10);
+    transform: translateY(-2px);
+}
+
+.disponibilite-jour-name {
+    color: #1F2937;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.disponibilite-jour-horaire {
+    color: #6B7280;
+    font-size: 13px;
+}
+
+.disponibilite-jour-action {
+    margin-top: 5px;
+
+    color: #4F46E5;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* Responsive */
+
+@media (max-width: 991px) {
+    .disponibilite-jours {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    .disponibilite-jours {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .disponibilite-jours {
+        grid-template-columns: 1fr;
+    }
+}

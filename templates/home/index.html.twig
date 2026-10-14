@@ -9,6 +9,7 @@
     ========================== #}
 
     <section class="hero">
+
         <div class="container-mentor">
 
             <div class="hero-content">
@@ -30,11 +31,17 @@
 
                     <div class="hero-actions">
 
-                        <a href="#" class="btn-mentor btn-mentor-primary">
+                        <a
+                            href="{{ path('app_formation') }}"
+                            class="btn-mentor btn-mentor-primary"
+                        >
                             Découvrir les formations
                         </a>
 
-                        <a href="#" class="btn-mentor btn-mentor-outline">
+                        <a
+                            href="{{ path('app_formateurs') }}"
+                            class="btn-mentor btn-mentor-outline"
+                        >
                             Trouver un formateur
                         </a>
 
@@ -54,6 +61,7 @@
             </div>
 
         </div>
+
     </section>
 
 
@@ -82,56 +90,39 @@
 
             </div>
 
+           {% if formations|length > 0 %}
 
-            <div class="formations-grid">
+            <div class="row g-4">
 
-                {% for i in 1..6 %}
+                {% for formation in formations %}
 
-                    <article class="formation-card">
+                    <div class="col-6 col-md-4 col-lg-3">
 
-                        <div class="formation-image">
+                        {% include 'components/formation_card.html.twig' with {
+                            formation: formation
+                        } %}
 
-                            <img
-                                src="{{ asset('images/formation1.jpg') }}"
-                                alt="Formation Développement Web"
-                            >
-
-                        </div>
-
-                        <div class="formation-content">
-
-                            <span class="formation-category">
-                                Développement Web
-                            </span>
-
-                            <h3>
-                                Symfony 7
-                            </h3>
-
-                            <p>
-                                Apprenez à créer des applications
-                                professionnelles avec Symfony.
-                            </p>
-
-                            <div class="formation-footer">
-
-                                <strong>
-                                    250 €
-                                </strong>
-
-                                <a href="#" class="btn-mentor btn-mentor-primary">
-                                    Voir
-                                </a>
-
-                            </div>
-
-                        </div>
-
-                    </article>
+                    </div>
 
                 {% endfor %}
 
             </div>
+
+        {% else %}
+
+                <div class="formation-empty">
+
+                    <h3>
+                        Aucune formation disponible
+                    </h3>
+
+                    <p>
+                        Aucune formation n'est actuellement disponible.
+                    </p>
+
+                </div>
+
+            {% endif %}
 
         </div>
 
@@ -148,14 +139,16 @@
 
             <div class="formateurs-content">
 
+                {#
                 <div class="formateurs-image">
 
                     <img
-                        src="{{ asset('images/instructor.jpg') }}"
+                        src="{{ asset('assets/images/utilisateurs/' ~ formateurs.image) }}"
                         alt="Formateur Mentor"
                     >
 
                 </div>
+                #}
 
                 <div class="formateurs-text">
 
@@ -176,28 +169,27 @@
                     <ul>
 
                         <li>
-                            <span>✓</span>
                             Plus de 50 formateurs
                         </li>
 
                         <li>
-                            <span>✓</span>
                             Sessions en ligne
                         </li>
 
                         <li>
-                            <span>✓</span>
                             Planning flexible
                         </li>
 
                         <li>
-                            <span>✓</span>
                             Avis vérifiés
                         </li>
 
                     </ul>
 
-                    <a href="#" class="btn-mentor btn-mentor-primary">
+                    <a
+                        href="{{ path('app_formateurs') }}"
+                        class="btn-mentor btn-mentor-primary"
+                    >
                         Voir tous les formateurs
                     </a>
 

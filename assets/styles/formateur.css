@@ -236,6 +236,76 @@
 }
 
 
+.formateurs-search {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 650px;
+    margin: 0 auto 10px;
+    padding: 14px 18px;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(31, 41, 55, 0.04);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formateurs-search:focus-within {
+    border-color: #8B5CF6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12);
+}
+
+.formateurs-search > i {
+    color: #8B5CF6;
+    font-size: 19px;
+}
+
+.formateurs-search input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: #1F2937;
+    font: inherit;
+    font-size: 14px;
+}
+
+.formateurs-search input::placeholder {
+    color: #9CA3AF;
+}
+
+.formateurs-search button {
+    border: 0;
+    background: transparent;
+    color: #9CA3AF;
+    cursor: pointer;
+}
+
+.formateurs-search button:hover {
+    color: #8B5CF6;
+}
+
+.formateurs-search-count {
+    min-height: 20px;
+    margin: 0 auto 24px;
+    color: #6B7280;
+    font-size: 13px;
+    text-align: center;
+}
+
+@media (max-width: 576px) {
+    .formateurs-search {
+        padding: 12px;
+    }
+
+    .formateurs-search input {
+        font-size: 13px;
+    }
+}
+
+
+
 /* =========================================================
    HEADER
    ========================================================= */
@@ -286,55 +356,51 @@
    CARD FORMATEUR
    ========================================================= */
 
+
 .formateur-card {
+    display: flex;
+    flex-direction: column;
     height: 100%;
-
     overflow: hidden;
-
     background: #FFFFFF;
-
     border: 1px solid #E5E7EB;
-    border-radius: 16px;
-
-    transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease,
-        border-color 0.2s ease;
+    border-radius: 14px;
+    transition: transform 0.2s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
 }
+
+
 
 .formateur-card:hover {
-    border-color: #D1D5DB;
-
-    transform: translateY(-5px);
-
-    box-shadow: 0 12px 30px rgba(31, 41, 55, 0.09);
+    border-color: #C7D2FE;
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(31, 41, 55, 0.08);
 }
+
 
 
 /* =========================================================
    IMAGE
    ========================================================= */
 
+
 .formateur-card-image {
     width: 100%;
-    height: 230px;
-
+    height: 190px;
     display: flex;
     align-items: center;
     justify-content: center;
-
     overflow: hidden;
-
-    background: #F8F9FC;
+    background: #F3F4F6;
 }
 
 .formateur-card-image img {
+    display: block;
     width: 100%;
     height: 100%;
-
     object-fit: cover;
-
-    transition: transform 0.3s ease;
+    object-position: center;
 }
 
 .formateur-card:hover .formateur-card-image img {
@@ -356,7 +422,8 @@
 
     border-radius: 50%;
 
-    background: #4F46E5;
+    background: linear-gradient(135deg, #EEF2FF, #C7D2FE);
+    color: #4338CA;
 
     color: #FFFFFF;
 
@@ -369,10 +436,15 @@
    CONTENU
    ========================================================= */
 
+
 .formateur-card-content {
     display: flex;
+    flex: 1;
     flex-direction: column;
+    min-width: 0;
+    padding: 20px !important;
 }
+
 
 
 /* =========================================================
@@ -418,6 +490,8 @@
 
     font-size: 12px;
     font-weight: 600;
+    border: 1px solid #E0E7FF;
+    overflow-wrap: anywhere;
 }
 
 
@@ -472,6 +546,12 @@
     border-radius: 10px;
 
     font-weight: 600;
+
+    margin-top: auto;
+    padding: 11px 13px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .formateur-card-button span {
@@ -480,6 +560,9 @@
 
 .formateur-card-button:hover span {
     transform: translateX(4px);
+     background: #4338CA;
+    border-color: #4338CA;
+    color: #FFFFFF;
 }
 
 

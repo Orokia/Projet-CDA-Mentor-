@@ -1,20 +1,210 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello ReservationController!{% endblock %}
+{% block title %}
+    Mes réservations - Mentor
+{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+<div class="container py-5">
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/COULIBALI ROKIA/Desktop/Mentor/src/Controller/ReservationController.php</code></li>
-        <li>Your template at <code>C:/Users/COULIBALI ROKIA/Desktop/Mentor/templates/reservation/index.html.twig</code></li>
-    </ul>
+    <div class="mb-5">
+        <span class="text-primary fw-semibold">
+            MON ESPACE
+        </span>
+
+        <h1 class="mt-2">
+            Mes réservations
+        </h1>
+
+        <p class="text-muted">
+            Retrouvez ici toutes vos séances de formation réservées.
+        </p>
+    </div>
+
+
+    {% if reservations|length > 0 %}
+
+        <div class="row g-4">
+
+            {% for reservation in reservations %}
+
+                <div class="col-12">
+
+                    <div class="card border-0 shadow-sm">
+
+                        <div class="card-body p-4">
+
+                            <div class="row align-items-center">
+
+                               
+                                {# FORMATION #}
+                               
+
+                                <div class="col-lg-4">
+
+                                    <div class="d-flex align-items-start gap-3">
+
+                                        <div
+                                            class="bg-primary bg-opacity-10 rounded p-3"
+                                        >
+                                            <i class="bi bi-mortarboard fs-4 text-primary"></i>
+                                        </div>
+
+                                        <div>
+
+                                            <small class="text-muted">
+                                                Formation
+                                            </small>
+
+                                            <h5 class="mb-1">
+                                                {{ reservation.formation.titre }}
+                                            </h5>
+
+                                            <span class="text-muted">
+                                                Formateur :
+                                                {{ reservation.formateur.nom }}
+                                                {{ reservation.formateur.prenom }}
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                               
+                                {# DATE / HEURE #}
+                               
+
+                                <div class="col-lg-3 mt-4 mt-lg-0">
+
+                                    <small class="text-muted d-block mb-1">
+                                        Séance
+                                    </small>
+
+                                    <div class="fw-semibold">
+
+                                        <i class="bi bi-calendar3 me-1"></i>
+
+                                        {{ reservation.dateHeureDebut|date('d/m/Y') }}
+
+                                    </div>
+
+                                    <div class="text-muted">
+
+                                        <i class="bi bi-clock me-1"></i>
+
+                                        {{ reservation.dateHeureDebut|date('H:i') }}
+                                        -
+                                        {{ reservation.dateHeureFin|date('H:i') }}
+
+                                    </div>
+
+                                </div>
+
+
+                               
+                                {# STATUT #}
+                               
+
+                                <div class="col-lg-2 mt-4 mt-lg-0">
+
+                                    <small class="text-muted d-block mb-1">
+                                        Statut
+                                    </small>
+
+                                    {% if reservation.statut == 'confirmée' %}
+
+                                        <span class="badge bg-success">
+                                            Confirmée
+                                        </span>
+
+                                    {% elseif reservation.statut == 'annulée' %}
+
+                                        <span class="badge bg-danger">
+                                            Annulée
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="badge bg-secondary">
+                                            {{ reservation.statut }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+
+                               
+                                {# VISIO #}
+                               
+
+                                <div class="col-lg-3 mt-4 mt-lg-0 text-lg-end">
+
+                                    {% if reservation.lienVisio %}
+
+                                        <a
+                                            {# href="{{ path('app_reservation_visio', {
+                                                id: reservation.id
+                                            }) }}" #}
+                                            class="btn btn-primary"
+                                        >
+                                            <i class="bi bi-camera-video me-2"></i>
+                                            Rejoindre
+                                        </a>
+
+                                    {% else %}
+
+                                        <span class="text-muted">
+                                            Visioconférence indisponible
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="text-center py-5">
+
+            <div class="mb-3">
+                <i class="bi bi-calendar-x display-4 text-muted"></i>
+            </div>
+
+            <h3>
+                Aucune réservation
+            </h3>
+
+            <p class="text-muted">
+                Vous n'avez pas encore réservé de formation.
+            </p>
+
+            <a
+                href="{{ path('app_formation') }}"
+                class="btn btn-primary"
+            >
+                Découvrir les formations
+            </a>
+
+        </div>
+
+    {% endif %}
+
 </div>
+
 {% endblock %}

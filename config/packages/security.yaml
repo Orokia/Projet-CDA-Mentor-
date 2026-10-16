@@ -47,7 +47,7 @@ security:
     # Note: Only the *first* matching rule is applied
     access_control:
          - { path: ^/admin, roles: ROLE_ADMIN }
-         - { path: ^/formateur, roles: ROLE_FORMATEUR }
+         - { path: ^/formateur, roles: PUBLIC_ACCESS }
          - { path: ^/reservation, roles: ROLE_USER }
          - { path: ^/login, roles: PUBLIC_ACCESS }
          - { path: ^/register, roles: PUBLIC_ACCESS }

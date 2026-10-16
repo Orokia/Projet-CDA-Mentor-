@@ -1,0 +1,88 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mentor - Nos formations{% endblock %}
+
+{% block body %}
+
+<section class="formations-page">
+
+  <div class="container py-5">
+
+    <div class="text-center mb-5">
+        <span class="badge bg-primary mb-3">
+            Mentor
+        </span>
+
+        <h1 class="display-5 fw-bold">
+            Découvrez nos formations
+        </h1>
+
+        <p class="lead text-muted">
+            Développez vos compétences avec nos formations.
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        {% for formation in formations %}
+
+            <div class="col-lg-4 col-md-6">
+
+                <div class="card h-100 shadow-sm">
+
+                    <img
+                        src="{{ asset('images/' ~ formation.image) }}"
+                        class="card-img-top"
+                        alt="{{ formation.titre }}"
+                    >
+
+                    <div class="card-body">
+
+                        {% if formation.specialite %}
+                            <span class="badge bg-primary">
+                                {{ formation.specialite }}
+                            </span>
+                        {% endif %}
+
+                        <h5 class="card-title mt-3">
+                            {{ formation.titre }}
+                        </h5>
+
+                        <p class="card-text text-muted">
+                            {{ formation.description|slice(0, 120) }}...
+                        </p>
+
+                    </div>
+
+                    <div class="card-footer bg-white border-0">
+
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <strong>
+                                {{ formation.prix|number_format(2, ',', ' ') }} €
+                            </strong>
+
+                            <a
+                                href="{{ path('app_formation_show', {id: formation.id}) }}"
+                                class="btn btn-primary"
+                            >
+                                Découvrir
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+</section>
+
+{% endblock %}

@@ -1,52 +1,94 @@
-<!-- ===== NAVBAR ===== -->
-			
-			<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-				<div class="container">
+<header class="mentor-header">
 
-					<a class="navbar-brand fw-bold" href="{{ path('app_home') }}">
-						MENTOR
-					</a>
+    <div class="container-mentor mentor-header-container">
 
-					<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
-						<span class="navbar-toggler-icon"></span>
-					</button>
+        {# LOGO #}
 
-					<div class="collapse navbar-collapse" id="menu">
+        <a href="{{ path('app_home') }}"
+           class="mentor-logo">
 
-						<ul class="navbar-nav mx-auto">
+            <div class="mentor-logo-icon">
+                
+            </div>
 
-							<li class="nav-item">
-								<a class="nav-link" href="#">Formations</a>
-							</li>
+            <div class="mentor-logo-text">
 
-							<li class="nav-item">
-								<a class="nav-link" href="#">Formateurs</a>
-							</li>
+                <strong>
+                    Mentor
+                </strong>
 
-							<li class="nav-item">
-								<a class="nav-link" href="#">À propos</a>
-							</li>
+                <span>
+                    Apprendre. Progresser. Réussir.
+                </span>
 
-						</ul>
+            </div>
 
-						
-                         {% if app.user %}
-						
-                          <a href="/logout" class="btn btn-outline-dark me-2">
-							se deconnecter
-						</a>
-						{% else %}
-						 <a href="/login" class="btn btn-outline-dark me-2">
-							Connexion
-						</a>
-						 
-						   <a href="/register" class="btn btn-dark">
-							S'inscrire
-						</a>
-						 {% endif %}
-						
+        </a>
 
-					</div>
 
-				</div>
-			</nav>
+        {# NAVIGATION #}
+
+        <nav class="mentor-navigation">
+
+            <a href="{{ path('app_home') }}">
+                Accueil
+            </a>
+
+            <a href="#">
+                Formations
+            </a>
+
+            <a href="#">
+                Formateurs
+            </a>
+
+            <a href="#">
+                À propos
+            </a>
+
+        </nav>
+
+
+        {# ACTIONS #}
+
+        <div class="mentor-header-actions">
+
+            {% if app.user %}
+
+                <span class="mentor-user">
+
+                    
+
+                    {{ app.user.email }}
+
+                </span>
+
+                <a href="{{ path('app_logout') }}"
+                   class="btn-mentor btn-mentor-outline">
+
+                    Déconnexion
+
+                </a>
+
+            {% else %}
+
+                <a href="{{ path('app_login') }}">
+
+                    Se connecter
+
+                </a>
+
+                <a href="{{ path('app_register') }}"
+                   class="btn-mentor btn-mentor-primary">
+
+                    S'inscrire
+
+                </a>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</header>

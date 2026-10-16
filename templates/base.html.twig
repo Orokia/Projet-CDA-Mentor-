@@ -1,34 +1,53 @@
 <!DOCTYPE html>
 <html lang="fr">
-	<head>
-		<meta charset="UTF-8">
 
-		<title>
-			{% block title %}MENTOR
-			{% endblock %}
-		</title>
+<head>
+	
 
-		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-		<link rel="stylesheet" href="{{ asset('css/style.css') }}"> {% block stylesheets %}{% endblock %}
-		</head>
+    <meta charset="UTF-8">
 
-		<body>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1">
 
-			{% include ("Header/index.html.twig")%}
 
-			<!-- ===== CONTENU DES PAGES ===== -->
-			<main>
-				{% block body %}{% endblock %}
-			</main>
+	<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css"
+>
 
-			<!-- ===== FOOTER ===== -->
-		   {% include ("Footer/index.html.twig") %}
+    <title>
+        {% block title %}
+            Mentor
+        {% endblock %}
+    </title>
 
-			<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+    <meta name="description"
+          content="Mentor - Plateforme de réservation de formations">
 
-			{% block javascripts %}
-				{{ importmap('app') }}
-			{% endblock %}
+    {% block stylesheets %}
+    {% endblock %}
 
-		</body>
-	</html>
+    {% block javascripts %}
+        {{ importmap('app') }}
+    {% endblock %}
+
+</head>
+
+
+<body>
+
+
+    {% include 'components/navbar.html.twig' %}
+
+    <main>
+
+        {% block body %}
+        {% endblock %}
+
+    </main>
+
+   {% include 'components/footer.html.twig' %}
+
+</body>
+
+</html>

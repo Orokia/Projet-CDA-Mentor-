@@ -2,242 +2,271 @@
 
 namespace App\Controller;
 
-use App\Entity\Disponibilite;
-use App\Entity\Paiement;
 use App\Entity\Reservation;
-use App\Entity\Student;
+use App\Repository\DisponibiliteRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Stripe\Checkout\Session;
-use Stripe\Stripe;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class ReservationController extends AbstractController
+final class ReservationController extends AbstractController
 {
     #[Route(
-        '/reservation/{id}/{date}',
-        name: 'app_reservation',
-        methods: ['GET', 'POST']
+        '/reservation/create',
+        name: 'app_reservation_create',
+        methods: ['POST']
     )]
-    public function reservation(
-        Disponibilite $disponibilite,
-        string $date,
+    public function create(
         Request $request,
+        DisponibiliteRepository $disponibiliteRepository,
         EntityManagerInterface $entityManager
     ): Response {
 
         /*
-         * 1. Vérifier que l'utilisateur est connecté
+         
+         * 1. Vérification de la connexion
+         
          */
-
-        $this->denyAccessUnlessGranted('ROLE_USER');
 
         $user = $this->getUser();
 
         if (!$user) {
-            throw $this->createAccessDeniedException();
+            $this->addFlash(
+                'error',
+                'Vous devez être connecté pour réserver une session.'
+            );
+
+            return $this->redirectToRoute('app_login');
         }
 
 
         /*
-         * 2. Récupérer le profil étudiant
+         
+         * 2. Récupération de l'étudiant
+         
          */
 
         $student = $user->getStudent();
 
         if (!$student) {
-            throw $this->createAccessDeniedException(
-                'Vous devez avoir un profil étudiant pour effectuer une réservation.'
+            throw $this->createNotFoundException(
+                'Aucun profil étudiant associé à votre compte.'
             );
         }
 
 
         /*
-         * 3. Récupérer la formation et le formateur
-         * depuis la disponibilité sélectionnée.
+         
+         * 3. Récupération des données envoyées
+         
+         */
+
+        $disponibiliteId = $request->request->get('disponibilite');
+        $jourChoisi = $request->request->get('jour');
+
+        if (!$disponibiliteId) {
+            throw $this->createNotFoundException(
+                'Aucune disponibilité sélectionnée.'
+            );
+        }
+
+        if (!$jourChoisi) {
+            throw $this->createNotFoundException(
+                'Aucun jour sélectionné.'
+            );
+        }
+
+
+        /*
+         
+         * 4. Récupération de la disponibilité
+         
+         */
+
+        $disponibilite = $disponibiliteRepository->find(
+            $disponibiliteId
+        );
+
+        if (!$disponibilite) {
+            throw $this->createNotFoundException(
+                'Disponibilité introuvable.'
+            );
+        }
+
+
+        /*
+         
+         * 5. Récupération de la formation et du formateur
+         
          */
 
         $formation = $disponibilite->getFormation();
-
         $formateur = $disponibilite->getFormateur();
 
         if (!$formation || !$formateur) {
             throw $this->createNotFoundException(
-                'La disponibilité ne possède pas de formation ou de formateur.'
+                'La disponibilité est mal configurée.'
             );
         }
 
 
         /*
-         * 4. Transformer la date reçue dans l'URL
-         * en objet DateTime.
-         *
-         * Exemple :
-         * 2026-09-15
+         
+         * 6. Vérification du jour choisi
+         
          */
 
-        $dateSession = \DateTime::createFromFormat(
-            'Y-m-d',
-            $date
+        $joursDisponibles = $disponibilite->getJoursSemaine();
+
+        $jourChoisiNormalise = mb_strtolower(
+            trim($jourChoisi)
         );
 
-        if (!$dateSession) {
+        $joursDisponiblesNormalises = array_map(
+            fn ($jour) => mb_strtolower(trim($jour)),
+            $joursDisponibles
+        );
+
+        if (!in_array(
+            $jourChoisiNormalise,
+            $joursDisponiblesNormalises,
+            true
+        )) {
             throw $this->createNotFoundException(
-                'La date sélectionnée est invalide.'
+                'Le jour sélectionné n\'est pas disponible pour cette formation.'
             );
         }
 
 
         /*
-         * 5. Vérifier que la date est comprise
-         * entre dateDebut et dateFin.
-         */
-
-        $dateDebut = $disponibilite->getDateDebut();
-        $dateFin = $disponibilite->getDateFin();
-
-        if (
-            !$dateDebut ||
-            !$dateFin ||
-            $dateSession < $dateDebut ||
-            $dateSession > $dateFin
-        ) {
-            throw $this->createAccessDeniedException(
-                'Cette date ne fait pas partie de la période de disponibilité.'
-            );
-        }
-
-
-        /*
-         * 6. Vérifier le jour de la semaine.
+         
+         * 7. Correspondance jour français → numéro ISO
          *
-         * PHP :
          * 1 = lundi
          * 2 = mardi
-         * ...
+         * 3 = mercredi
+         * 4 = jeudi
+         * 5 = vendredi
+         * 6 = samedi
          * 7 = dimanche
+         
          */
 
-        $jours = [
-            1 => 'lundi',
-            2 => 'mardi',
-            3 => 'mercredi',
-            4 => 'jeudi',
-            5 => 'vendredi',
-            6 => 'samedi',
-            7 => 'dimanche',
+        $joursSemaine = [
+            'lundi' => 1,
+            'mardi' => 2,
+            'mercredi' => 3,
+            'jeudi' => 4,
+            'vendredi' => 5,
+            'samedi' => 6,
+            'dimanche' => 7,
         ];
 
-        $numeroJour = (int) $dateSession->format('N');
-
-        $jourSelectionne = $jours[$numeroJour];
-
-        if (
-            !in_array(
-                $jourSelectionne,
-                $disponibilite->getJoursSemaine(),
-                true
-            )
-        ) {
-            throw $this->createAccessDeniedException(
-                'Le formateur n\'est pas disponible ce jour-là.'
+        if (!isset($joursSemaine[$jourChoisiNormalise])) {
+            throw $this->createNotFoundException(
+                'Jour sélectionné invalide.'
             );
         }
 
+        $numeroJour = $joursSemaine[$jourChoisiNormalise];
+
 
         /*
-         * 7. Construire la date et heure de début.
+         
+         * 8. Récupération de la période
+         
          */
 
-        $heureDebut = $disponibilite->getHeureDebut();
+        $dateDebut = clone $disponibilite->getDateDebut();
+        $dateFin = clone $disponibilite->getDateFin();
 
-        if (!$heureDebut) {
-            throw new \LogicException(
-                'L\'heure de début de la disponibilité est obligatoire.'
-            );
-        }
 
-        $dateHeureDebut = new \DateTime(
-            $dateSession->format('Y-m-d')
-            . ' '
-            . $heureDebut->format('H:i:s')
+        /*
+         
+         * 9. Recherche des dates correspondant au jour choisi
+         
+         */
+
+        $datesSeances = [];
+
+        $dateCourante = new \DateTime(
+            $dateDebut->format('Y-m-d')
         );
 
+        while ($dateCourante <= $dateFin) {
 
-        /*
-         * 8. Calculer automatiquement l'heure de fin
-         * à partir de la durée de la formation.
-         */
-
-        $dateHeureFin = clone $dateHeureDebut;
-
-        $dateHeureFin->modify(
-            '+' . $formation->getDuree() . ' minutes'
-        );
-
-
-        /*
-         * 9. Vérifier que la session ne dépasse pas
-         * la fin de la disponibilité.
-         */
-
-        $heureFinDisponibilite = $disponibilite->getHeureFin();
-
-        if ($heureFinDisponibilite) {
-
-            $dateHeureFinDisponibilite = new \DateTime(
-                $dateSession->format('Y-m-d')
-                . ' '
-                . $heureFinDisponibilite->format('H:i:s')
-            );
-
-            if ($dateHeureFin > $dateHeureFinDisponibilite) {
-                throw $this->createAccessDeniedException(
-                    'La durée de la formation dépasse la disponibilité du formateur.'
-                );
+            if (
+                (int) $dateCourante->format('N')
+                === $numeroJour
+            ) {
+                $datesSeances[] = clone $dateCourante;
             }
+
+            $dateCourante->modify('+1 day');
         }
 
 
         /*
-         * 10. Vérifier qu'il n'existe pas déjà
-         * une réservation sur ce créneau.
+         
+         * 10. Vérification qu'au moins une séance existe
+         
          */
 
-        $reservationExistante = $entityManager
-            ->getRepository(Reservation::class)
-            ->findOneBy([
-                'formateur' => $formateur,
-                'dateHeureDebut' => $dateHeureDebut,
-                'statut' => 'CONFIRMEE',
-            ]);
-
-        if ($reservationExistante) {
-            throw $this->createAccessDeniedException(
-                'Ce créneau est déjà réservé.'
+        if (count($datesSeances) === 0) {
+            throw $this->createNotFoundException(
+                'Aucune séance ne correspond au jour sélectionné dans cette période.'
             );
         }
 
 
         /*
-         * 11. Si le formulaire est envoyé,
-         * créer la réservation.
+         
+         * 11. Création des réservations
+         
          */
 
-        if ($request->isMethod('POST')) {
+        $reservations = [];
+
+        foreach ($datesSeances as $dateSeance) {
 
             /*
+             * -----------------------------------------------------
+             * Date + heure de début
+             * -----------------------------------------------------
+             */
+
+            $dateHeureDebut = new \DateTime(
+                $dateSeance->format('Y-m-d')
+                . ' '
+                . $disponibilite
+                    ->getHeureDebut()
+                    ->format('H:i:s')
+            );
+
+
+            /*
+             * -----------------------------------------------------
+             * Date + heure de fin
+             * -----------------------------------------------------
+             */
+
+            $dateHeureFin = new \DateTime(
+                $dateSeance->format('Y-m-d')
+                . ' '
+                . $disponibilite
+                    ->getHeureFin()
+                    ->format('H:i:s')
+            );
+
+
+            /*
+             * -----------------------------------------------------
              * Création de la réservation
+             * -----------------------------------------------------
              */
 
             $reservation = new Reservation();
-
-            $reservation->setStudent($student);
-            $reservation->setFormateur($formateur);
-            $reservation->setFormation($formation);
 
             $reservation->setDateReservation(
                 new \DateTime()
@@ -252,241 +281,153 @@ class ReservationController extends AbstractController
             );
 
             $reservation->setStatut(
-                'EN_ATTENTE'
+                'confirmée'
             );
 
-
-            /*
-             * Création du paiement
-             */
-
-            $paiement = new Paiement();
-
-            $paiement->setMontant(
-                (string) $formation->getPrix()
+            $reservation->setStudent(
+                $student
             );
 
-            $paiement->setMode('stripe');
+            $reservation->setFormation(
+                $formation
+            );
 
-            $paiement->setStatut('EN_ATTENTE');
+            $reservation->setFormateur(
+                $formateur
+            );
 
-
-            /*
-             * Association Reservation / Paiement
-             */
-
-            $reservation->setPaiement($paiement);
-
-            $paiement->setReservation($reservation);
-
+            $reservation->setDisponibilite(
+                $disponibilite
+            );
 
             /*
-             * Sauvegarde en base
+             * Le lien Jitsi sera généré après le premier flush(),
+             * car nous avons besoin de l'ID de la réservation.
              */
 
-            $entityManager->persist($paiement);
+            $reservation->setLienVisio(null);
+
+            /*
+             * Préparation de la réservation
+             */
+
             $entityManager->persist($reservation);
 
-            $entityManager->flush();
+            $reservations[] = $reservation;
+        }
 
+
+        /*
+         
+         * 12. Premier flush
+         *
+         * Permet d'obtenir les IDs des réservations.
+         
+         */
+
+        $entityManager->flush();
+
+
+        /*
+         
+         * 13. Génération des liens Jitsi
+         
+         */
+
+        foreach ($reservations as $reservation) {
 
             /*
-             * Configuration de Stripe
-             */
-
-            Stripe::setApiKey(
-                $this->getParameter('stripe_secret_key')
-            );
-
-
-            /*
-             * Stripe utilise les centimes.
-             *
              * Exemple :
-             * 80 € = 8000
+             *
+             * Reservation ID = 25
+             *
+             * Room :
+             * Mentor-Reservation-25
              */
 
-            $montant = (int) round(
-                ((float) $formation->getPrix()) * 100
-            );
+            $roomName = 'Mentor-Reservation-'
+                . $reservation->getId();
 
+            $lienVisio = 'https://meet.jit.si/'
+                . $roomName;
 
-            /*
-             * Création de la session Stripe Checkout
-             */
-
-            $checkoutSession = Session::create([
-
-                'mode' => 'payment',
-
-                'line_items' => [[
-
-                    'price_data' => [
-
-                        'currency' => 'eur',
-
-                        'product_data' => [
-
-                            'name' => $formation->getTitre(),
-
-                            'description' =>
-                                'Session avec '
-                                . $formateur->getPrenom()
-                                . ' '
-                                . $formateur->getNom(),
-
-                        ],
-
-                        'unit_amount' => $montant,
-
-                    ],
-
-                    'quantity' => 1,
-
-                ]],
-
-
-                /*
-                 * URL après paiement
-                 */
-
-                'success_url' => $this->generateUrl(
-                    'app_reservation_success',
-                    [
-                        'id' => $reservation->getId(),
-                    ],
-                    UrlGeneratorInterface::ABSOLUTE_URL
-                ) . '?session_id={CHECKOUT_SESSION_ID}',
-
-
-                /*
-                 * URL si l'utilisateur annule
-                 */
-
-                'cancel_url' => $this->generateUrl(
-                    'app_reservation_cancel',
-                    [
-                        'id' => $reservation->getId(),
-                    ],
-                    UrlGeneratorInterface::ABSOLUTE_URL
-                ),
-
-
-                /*
-                 * Informations que Stripe conserve
-                 * avec la transaction.
-                 */
-
-                'metadata' => [
-
-                    'reservation_id' =>
-                        (string) $reservation->getId(),
-
-                    'formation_id' =>
-                        (string) $formation->getId(),
-
-                    'formateur_id' =>
-                        (string) $formateur->getId(),
-
-                    'student_id' =>
-                        (string) $student->getId(),
-
-                ],
-            ]);
-
-
-            /*
-             * Enregistrer l'ID de la session Stripe.
-             */
-
-            $paiement->setStripeSessionId(
-                $checkoutSession->id
-            );
-
-            $entityManager->flush();
-
-
-            /*
-             * Redirection vers Stripe
-             */
-
-            return $this->redirect(
-                $checkoutSession->url
+            $reservation->setLienVisio(
+                $lienVisio
             );
         }
 
 
         /*
-         * 12. Afficher la page de réservation.
+         
+         * 14. Deuxième flush
+         *
+         * Enregistre les liens Jitsi.
+         
          */
 
-        return $this->render(
-            'reservation/reservation.html.twig',
+        $entityManager->flush();
+
+
+        /*
+       
+         * 15. Message de confirmation
+         
+         */
+
+        $nombreSeances = count($datesSeances);
+
+        $this->addFlash(
+            'success',
+            sprintf(
+                'Votre réservation a été créée. Vous êtes inscrit à %d séance(s) chaque %s.',
+                $nombreSeances,
+                ucfirst($jourChoisiNormalise)
+            )
+        );
+
+
+        /*
+         16. Retour vers le profil du formateur
+         */
+
+        return $this->redirectToRoute(
+            'app_formateur_profil',
             [
-
-                'disponibilite' => $disponibilite,
-
-                'formation' => $formation,
-
-                'formateur' => $formateur,
-
-                'student' => $student,
-
-                'dateSession' => $dateSession,
-
-                'dateHeureDebut' => $dateHeureDebut,
-
-                'dateHeureFin' => $dateHeureFin,
-
+                'id' => $formateur->getId(),
             ]
         );
     }
 
 
-    /*
-     * ============================
-     * PAIEMENT RÉUSSI
-     * ============================
-     */
 
     #[Route(
-        '/reservation/{id}/success',
-        name: 'app_reservation_success',
-        methods: ['GET']
-    )]
-    public function success(
-        Reservation $reservation
-    ): Response {
+    '/mes-reservations',
+    name: 'app_mes_reservations',
+    methods: ['GET']
+)]
+public function mesReservations(): Response
+{
+    $user = $this->getUser();
 
-        return $this->render(
-            'reservation/success.html.twig',
-            [
-                'reservation' => $reservation,
-            ]
+    if (!$user) {
+        return $this->redirectToRoute('app_login');
+    }
+
+    $student = $user->getStudent();
+
+    if (!$student) {
+        throw $this->createNotFoundException(
+            'Aucun profil étudiant associé à votre compte.'
         );
     }
 
+    $reservations = $student->getReservations();
 
-    /*
-     * ============================
-     * PAIEMENT ANNULÉ
-     * ============================
-     */
-
-    #[Route(
-        '/reservation/{id}/cancel',
-        name: 'app_reservation_cancel',
-        methods: ['GET']
-    )]
-    public function cancel(
-        Reservation $reservation
-    ): Response {
-
-        return $this->render(
-            'reservation/cancel.html.twig',
-            [
-                'reservation' => $reservation,
-            ]
-        );
-    }
+    return $this->render(
+        'reservation/index.html.twig',
+        [
+            'reservations' => $reservations,
+        ]
+    );
+}
 }

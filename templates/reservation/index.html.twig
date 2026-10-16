@@ -1,3 +1,4 @@
+
 {% extends 'base.html.twig' %}
 
 {% block title %}
@@ -8,6 +9,7 @@
 
 <div class="container py-5">
 
+    {# EN-TÊTE DE LA PAGE #}
     <div class="mb-5">
         <span class="text-primary fw-semibold">
             MON ESPACE
@@ -18,100 +20,96 @@
         </h1>
 
         <p class="text-muted">
-            Retrouvez ici toutes vos séances de formation réservées.
+            Retrouvez toutes vos séances, regroupées par formation.
         </p>
     </div>
 
+    {# VÉRIFICATION DES RÉSERVATIONS #}
+    {% if reservationsParFormation|length > 0 %}
 
-    {% if reservations|length > 0 %}
+        <div class="reservations-groups">
 
-        <div class="row g-4">
+            {# UNE CARTE PAR FORMATION #}
+            {% for groupe in reservationsParFormation %}
 
-            {% for reservation in reservations %}
+                <section class="reservation-group mb-4">
 
-                <div class="col-12">
+                    {# EN-TÊTE DE LA FORMATION #}
+                    <div class="reservation-group-header">
 
-                    <div class="card border-0 shadow-sm">
+                        <div class="reservation-group-icon">
+                            <i class="bi bi-mortarboard"></i>
+                        </div>
 
-                        <div class="card-body p-4">
+                        <div class="reservation-group-title">
+                            <small>FORMATION</small>
 
-                            <div class="row align-items-center">
+                            <h2>
+                                {{ groupe.formation.titre }}
+                            </h2>
 
-                               
-                                {# FORMATION #}
-                               
+                            <p>
+                                {{ groupe.reservations|length }}
+                                séance(s) réservée(s)
+                            </p>
+                        </div>
 
-                                <div class="col-lg-4">
+                    </div>
 
-                                    <div class="d-flex align-items-start gap-3">
+                    {# LISTE DES SÉANCES DE CETTE FORMATION #}
+                    <div class="reservation-sessions">
 
-                                        <div
-                                            class="bg-primary bg-opacity-10 rounded p-3"
-                                        >
-                                            <i class="bi bi-mortarboard fs-4 text-primary"></i>
-                                        </div>
+                        {% for reservation in groupe.reservations %}
 
-                                        <div>
+                            <article class="reservation-session">
 
-                                            <small class="text-muted">
-                                                Formation
-                                            </small>
+                                {# DATE ET HORAIRES #}
+                                <div class="reservation-session-date">
 
-                                            <h5 class="mb-1">
-                                                {{ reservation.formation.titre }}
-                                            </h5>
+                                    <div class="reservation-date-icon">
+                                        <i class="bi bi-calendar3"></i>
+                                    </div>
 
-                                            <span class="text-muted">
-                                                Formateur :
-                                                {{ reservation.formateur.nom }}
-                                                {{ reservation.formateur.prenom }}
-                                            </span>
+                                    <div>
+                                        <small class="text-muted">
+                                            Date et heure
+                                        </small>
 
-                                        </div>
+                                        <strong>
+                                            {{ reservation.dateHeureDebut|date('d/m/Y') }}
+                                        </strong>
 
+                                        <span>
+                                            {{ reservation.dateHeureDebut|date('H:i') }}
+                                            -
+                                            {{ reservation.dateHeureFin|date('H:i') }}
+                                        </span>
                                     </div>
 
                                 </div>
 
+                                {# FORMATEUR #}
+                                <div class="reservation-session-trainer">
 
-                               
-                                {# DATE / HEURE #}
-                               
+                                    <i class="bi bi-person"></i>
 
-                                <div class="col-lg-3 mt-4 mt-lg-0">
+                                    <div>
+                                        <small class="text-muted">
+                                            Formateur
+                                        </small>
 
-                                    <small class="text-muted d-block mb-1">
-                                        Séance
-                                    </small>
-
-                                    <div class="fw-semibold">
-
-                                        <i class="bi bi-calendar3 me-1"></i>
-
-                                        {{ reservation.dateHeureDebut|date('d/m/Y') }}
-
-                                    </div>
-
-                                    <div class="text-muted">
-
-                                        <i class="bi bi-clock me-1"></i>
-
-                                        {{ reservation.dateHeureDebut|date('H:i') }}
-                                        -
-                                        {{ reservation.dateHeureFin|date('H:i') }}
-
+                                        <span>
+                                            {{ reservation.formateur.prenom }}
+                                            {{ reservation.formateur.nom }}
+                                        </span>
                                     </div>
 
                                 </div>
 
-
-                               
                                 {# STATUT #}
-                               
+                                <div class="reservation-session-status">
 
-                                <div class="col-lg-2 mt-4 mt-lg-0">
-
-                                    <small class="text-muted d-block mb-1">
+                                    <small class="text-muted d-block mb-2">
                                         Statut
                                     </small>
 
@@ -137,20 +135,17 @@
 
                                 </div>
 
+                                {# VISIOCONFÉRENCE #}
+                                <div class="reservation-session-action">
 
-                               
-                                {# VISIO #}
-                               
-
-                                <div class="col-lg-3 mt-4 mt-lg-0 text-lg-end">
-
-                                    {% if reservation.lienVisio %}
+                                    {% if reservation.lienVisio
+                                        and reservation.statut == 'confirmée' %}
 
                                         <a
-                                            {# href="{{ path('app_reservation_visio', {
-                                                id: reservation.id
-                                            }) }}" #}
+                                            href="{{ reservation.lienVisio }}"
                                             class="btn btn-primary"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
                                         >
                                             <i class="bi bi-camera-video me-2"></i>
                                             Rejoindre
@@ -158,7 +153,7 @@
 
                                     {% else %}
 
-                                        <span class="text-muted">
+                                        <span class="text-muted small">
                                             Visioconférence indisponible
                                         </span>
 
@@ -166,13 +161,13 @@
 
                                 </div>
 
-                            </div>
+                            </article>
 
-                        </div>
+                        {% endfor %}
 
                     </div>
 
-                </div>
+                </section>
 
             {% endfor %}
 
@@ -180,6 +175,7 @@
 
     {% else %}
 
+        {# AUCUNE RÉSERVATION #}
         <div class="text-center py-5">
 
             <div class="mb-3">

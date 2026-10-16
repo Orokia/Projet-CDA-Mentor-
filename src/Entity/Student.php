@@ -67,6 +67,11 @@ class Student
         $this->formations = new ArrayCollection();
     }
 
+     public function __toString(): string
+{
+    return trim(($this->prenom ?? '') . ' ' . ($this->nom ?? ''));
+}
+
     // =========================================================
     // ID
     // =========================================================

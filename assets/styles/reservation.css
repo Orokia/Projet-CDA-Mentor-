@@ -1,0 +1,137 @@
+
+/* Groupe d'une formation */
+
+.reservation-group {
+    overflow: hidden;
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 14px;
+    box-shadow: 0 4px 14px rgba(31, 41, 55, 0.04);
+}
+
+.reservation-group-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 24px;
+    background: #F9F7FF;
+    border-bottom: 1px solid #EDE9FE;
+}
+
+.reservation-group-icon,
+.reservation-date-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #EDE9FE;
+    color: #6D28D9;
+    font-size: 20px;
+}
+
+.reservation-group-title small {
+    color: #7C3AED;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.reservation-group-title h2 {
+    margin: 4px 0;
+    color: #1F2937;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.reservation-group-title p {
+    margin: 0;
+    color: #6B7280;
+    font-size: 13px;
+}
+
+/* Chaque séance */
+
+.reservation-session {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 0.7fr auto;
+    align-items: center;
+    gap: 20px;
+    padding: 22px 24px;
+    border-bottom: 1px solid #F1F2F5;
+}
+
+.reservation-session:last-child {
+    border-bottom: none;
+}
+
+.reservation-session-date {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.reservation-date-icon {
+    width: 40px;
+    height: 40px;
+    background: #F5F3FF;
+    font-size: 17px;
+}
+
+.reservation-session-date strong,
+.reservation-session-date span,
+.reservation-session-trainer span {
+    display: block;
+    color: #1F2937;
+    font-size: 13px;
+}
+
+.reservation-session-date span {
+    margin-top: 4px;
+    color: #6B7280;
+}
+
+.reservation-session-trainer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.reservation-session-trainer > i {
+    color: #6D28D9;
+    font-size: 20px;
+}
+
+.reservation-session-action .btn {
+    white-space: nowrap;
+}
+
+/* Adaptation aux écrans plus petits */
+
+@media (max-width: 900px) {
+    .reservation-session {
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+    }
+}
+
+@media (max-width: 576px) {
+    .reservation-group-header {
+        padding: 18px;
+    }
+
+    .reservation-group-title h2 {
+        font-size: 18px;
+    }
+
+    .reservation-session {
+        grid-template-columns: 1fr;
+        padding: 18px;
+    }
+
+    .reservation-session-action .btn {
+        width: 100%;
+    }
+}

@@ -400,19 +400,23 @@ final class ReservationController extends AbstractController
 
 
 
-    #[Route(
+   
+#[Route(
     '/mes-reservations',
     name: 'app_mes_reservations',
     methods: ['GET']
 )]
 public function mesReservations(): Response
 {
+    // Récupération de l'utilisateur connecté
     $user = $this->getUser();
 
+    // Vérification de la connexion
     if (!$user) {
         return $this->redirectToRoute('app_login');
     }
 
+    // Récupération du profil étudiant
     $student = $user->getStudent();
 
     if (!$student) {
@@ -421,12 +425,38 @@ public function mesReservations(): Response
         );
     }
 
+    // Récupération de toutes les réservations de l'étudiant
     $reservations = $student->getReservations();
 
+    // Tableau qui contiendra les réservations regroupées par formation
+    $reservationsParFormation = [];
+
+    // Parcours de toutes les réservations
+    foreach ($reservations as $reservation) {
+
+        // Récupération de la formation associée à la réservation
+        $formation = $reservation->getFormation();
+
+        // Récupération de son identifiant
+        $formationId = $formation->getId();
+
+        // Création du groupe si cette formation n'existe pas encore
+        if (!isset($reservationsParFormation[$formationId])) {
+            $reservationsParFormation[$formationId] = [
+                'formation' => $formation,
+                'reservations' => [],
+            ];
+        }
+
+        // Ajout de la réservation au groupe de sa formation
+        $reservationsParFormation[$formationId]['reservations'][] = $reservation;
+    }
+
+    // Transmission des groupes au template Twig
     return $this->render(
         'reservation/index.html.twig',
         [
-            'reservations' => $reservations,
+            'reservationsParFormation' => $reservationsParFormation,
         ]
     );
 }

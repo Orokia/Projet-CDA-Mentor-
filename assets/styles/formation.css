@@ -254,3 +254,188 @@
     }
 
 }
+
+/* =========================================================
+   CARTES DE FORMATION - ACCUEIL
+   ========================================================= */
+
+.formations-section {
+    width: 100%;
+    padding: 70px 0;
+    background: #F8F9FC;
+}
+
+.formations-section .container-mentor {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 30px;
+}
+
+.formations-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 22px;
+    width: 100%;
+    margin-top: 32px;
+}
+
+.formation-item {
+    display: flex;
+    min-width: 0;
+}
+
+/* Carte */
+
+.formation-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+}
+
+.formation-card .formation-image {
+    height: 145px;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: #F3F4F6;
+}
+
+.formation-card .formation-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Contenu */
+
+.formation-card .formation-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    padding: 14px;
+    box-sizing: border-box;
+}
+
+.formation-card .formation-category {
+    align-self: flex-start;
+    margin-bottom: 8px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    background: #EEF2FF;
+    color: #4F46E5;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* Titre : 2 lignes maximum */
+
+.formation-card .formation-title {
+    display: -webkit-box;
+    height: 42px;
+    margin: 0 0 8px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    color: #1F2937;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 21px;
+    overflow-wrap: anywhere;
+}
+
+/* Description : 3 lignes maximum */
+
+.formation-card .formation-description {
+    display: -webkit-box;
+    height: 54px;
+    margin: 0 0 12px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    color: #6B7280;
+    font-size: 13px;
+    line-height: 18px;
+    overflow-wrap: anywhere;
+}
+
+/* Durée */
+
+.formation-card .formation-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    margin-bottom: 12px;
+    color: #6B7280;
+    font-size: 12px;
+}
+
+/* Prix et bouton */
+
+.formation-card .formation-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding-top: 12px;
+    border-top: 1px solid #F0F0F0;
+}
+
+.formation-card .formation-footer strong {
+    min-width: 0;
+    color: #1F2937;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.formation-card .formation-footer .btn-mentor,
+.formation-card .formation-discover {
+    flex-shrink: 0;
+    padding: 7px 9px;
+    border-radius: 6px;
+    background: #4F46E5;
+    color: #fff;
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* Tablette */
+
+@media (max-width: 1100px) {
+    .formations-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+}
+
+/* Mobile */
+
+@media (max-width: 575px) {
+    .formations-section .container-mentor {
+        padding: 0 16px;
+    }
+
+    .formations-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .formation-card .formation-image {
+        height: 180px;
+    }
+}

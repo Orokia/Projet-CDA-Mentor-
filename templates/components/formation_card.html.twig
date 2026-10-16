@@ -1,65 +1,50 @@
+
 <article class="formation-card">
 
     <div class="formation-image">
-
-        <img
-            src="{{ asset('assets/images/formations/' ~ formation.image) }}"
-            alt="{{ formation.titre }}"
-        >
-
+        {% if formation.image %}
+            <img
+                src="{{ asset('assets/images/formations/' ~ formation.image) }}"
+                alt="{{ formation.titre }}"
+                loading="lazy"
+            >
+        {% else %}
+            <div class="formation-image-placeholder">
+                Image indisponible
+            </div>
+        {% endif %}
     </div>
-
 
     <div class="formation-content">
 
         {% if formation.specialite %}
-
             <span class="formation-category">
                 {{ formation.specialite }}
             </span>
-
         {% endif %}
 
-
-        <h2>
+        <h2 class="formation-title">
             {{ formation.titre }}
         </h2>
 
-
-        <p>
-            {{ formation.description|slice(0, 120) }}
-
-            {% if formation.description|length > 120 %}
-                ...
-            {% endif %}
-        </p>
-
+        {# <p class="formation-description">
+            {{ formation.description|striptags|trim|slice(0, 100) }}{% if formation.description|striptags|trim|length > 100 %}…{% endif %}
+        </p> #}
 
         <div class="formation-meta">
-
-            <span>
-                🎓 En ligne
-            </span>
-
-            <span>
-                ⏱ {{ formation.duree }} h
-            </span>
-
+            <span>En ligne</span>
+            <span>{{ formation.duree }} h</span>
         </div>
-
 
         <div class="formation-footer">
 
-            <strong>
+            <strong class="formation-price">
                 {{ formation.prix|number_format(2, ',', ' ') }} €
             </strong>
 
-
             <a
-                href="{{ path('app_formation_show', {
-                    id: formation.id
-                }) }}"
-                class="btn-mentor btn-mentor-primary"
+                href="{{ path('app_formation_show', {id: formation.id}) }}"
+                class="formation-discover"
             >
                 Découvrir
             </a>

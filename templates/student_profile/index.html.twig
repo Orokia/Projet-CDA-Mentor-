@@ -1,0 +1,126 @@
+
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil étudiant{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/student-profile.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="student-profile-page">
+    <div class="container-fluid profile-container">
+        <div class="row g-4">
+
+            {# Carte photo de profil #}
+            <div class="col-lg-4">
+                <div class="profile-card photo-card">
+                    <h2>Photo de profil</h2>
+                    <p class="card-description">
+                        Cette image représente votre profil étudiant.
+                    </p>
+
+                    <div class="profile-avatar-wrapper">
+                        {% if student.photo %}
+                            <img
+                                src="{{ asset('uploads/students/' ~ student.photo) }}"
+                                alt="Photo de profil"
+                                class="profile-avatar"
+                            >
+                        {% else %}
+                            <div class="profile-avatar profile-avatar-placeholder">
+                                <span>
+                                    {{ student.prenom|first|upper }}{{ student.nom|first|upper }}
+                                </span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <p class="photo-hint">
+                        JPG, PNG ou WEBP — 2 Mo maximum
+                    </p>
+
+                    {{ form_widget(form.photoFile, {
+                        attr: {
+                            class: 'form-control profile-file-input',
+                            accept: 'image/jpeg,image/png,image/webp'
+                        }
+                    }) }}
+                    {{ form_errors(form.photoFile) }}
+                </div>
+            </div>
+
+            {# Carte informations du compte #}
+            <div class="col-lg-8">
+                <div class="profile-card account-card">
+                    <div class="account-heading">
+                        <h2>Informations du compte</h2>
+                        <p class="card-description">
+                            Consultez et modifiez vos informations personnelles.
+                        </p>
+                    </div>
+
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('danger') %}
+                        <div class="alert alert-danger">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    {{ form_start(form, {
+                        attr: { class: 'student-profile-form' }
+                    }) }}
+
+                    <div class="form-floating profile-field">
+                        {{ form_widget(form.prenom, {
+                            attr: {
+                                class: 'form-control',
+                                placeholder: 'Prénom'
+                            }
+                        }) }}
+                        {{ form_label(form.prenom, 'Prénom') }}
+                        {{ form_errors(form.prenom) }}
+                    </div>
+
+                    <div class="form-floating profile-field">
+                        {{ form_widget(form.nom, {
+                            attr: {
+                                class: 'form-control',
+                                placeholder: 'Nom'
+                            }
+                        }) }}
+                        {{ form_label(form.nom, 'Nom') }}
+                        {{ form_errors(form.nom) }}
+                    </div>
+
+                    <div class="form-floating profile-field">
+                        {{ form_widget(form.email, {
+                            attr: {
+                                class: 'form-control',
+                                placeholder: 'Adresse e-mail'
+                            }
+                        }) }}
+                        {{ form_label(form.email, 'Adresse e-mail') }}
+                        {{ form_errors(form.email) }}
+                    </div>
+
+                    <div class="profile-actions">
+                        <button type="submit" class="btn-save-profile">
+                            Enregistrer les modifications
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

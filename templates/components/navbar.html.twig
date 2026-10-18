@@ -59,42 +59,54 @@
 
                     
 
-                        <button
-                            type="button"
-                            class="profile-avatar"
-                            id="profileMenuButton"
-                        >
-                            CO
-                        </button>
+                       <button
+    type="button"
+    class="profile-avatar"
+    id="profileMenuButton"
+>
+    {% if app.user.photoUtilisateur %}
+        <img
+            src="{{ asset('uploads/students/' ~ app.user.photoUtilisateur) }}"
+            alt="Photo de profil"
+        >
+    {% else %}
+        {{ app.user.prenomUtilisateur|first|upper }}{{ app.user.nomUtilisateur|first|upper }}
+    {% endif %}
+</button>
 
                         <div class="profile-dropdown">
 
-                            <div class="profile-dropdown-header">
+                           <div class="profile-dropdown-header">
 
-                                <div class="profile-avatar-large">
-                                    CO
-                                </div>
+    <div class="profile-avatar-large">
+        {% if app.user.photoUtilisateur %}
+            <img
+                src="{{ asset('uploads/students/' ~ app.user.photoUtilisateur) }}"
+                alt="Photo de profil"
+            >
+        {% else %}
+            {{ app.user.prenomUtilisateur|first|upper }}{{ app.user.nomUtilisateur|first|upper }}
+        {% endif %}
+    </div>
 
-                                <div>
+    <div>
+        <strong>
+            {{ app.user.prenomUtilisateur }} {{ app.user.nomUtilisateur }}
+        </strong>
 
-                                    <strong>
-                                        {{ app.user.email|split('@')[0] }}
-                                    </strong>
+        <span>
+            {{ app.user.email }}
+        </span>
+    </div>
 
-                                    <span>
-                                        {{ app.user.email }}
-                                    </span>
-
-                                </div>
-
-                            </div>
+</div>
 
 
                             <div class="profile-dropdown-links">
 
-                                <a href="#">
-                                    Mon profil
-                                </a>
+                              <a href="{{ path('app_student_profile') }}">
+                                   Mon profil
+                              </a>
 
                                
                                 <a href="{{ path('app_mes_reservations') }}">

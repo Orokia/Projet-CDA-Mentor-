@@ -4,12 +4,12 @@ namespace App\Tests\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class MeetingControllerTest extends WebTestCase
+final class FormationControllerTestIT extends WebTestCase
 {
     public function testIndex(): void
     {
         $client = static::createClient();
-        $client->request('GET', '/meeting');
+        $client->request('GET', '/formations');
 
         self::assertResponseIsSuccessful();
     }

@@ -43,12 +43,13 @@ final class Version20260730235243 extends AbstractMigration
         $this->addSql('ALTER TABLE specialite_formateur ADD CONSTRAINT FK_41206D41155D8F51 FOREIGN KEY (formateur_id) REFERENCES formateur (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE student_formation ADD CONSTRAINT FK_272EE03FCB944F1A FOREIGN KEY (student_id) REFERENCES student (id) ON DELETE CASCADE');
         $this->addSql('ALTER TABLE student_formation ADD CONSTRAINT FK_272EE03F5200282E FOREIGN KEY (formation_id) REFERENCES formation (id) ON DELETE CASCADE');
-        $this->addSql('ALTER TABLE user ADD student_id INT DEFAULT NULL, ADD formateur_id INT DEFAULT NULL, DROP statut, CHANGE created_at created_at DATETIME DEFAULT NULL');
-        $this->addSql('ALTER TABLE user ADD CONSTRAINT FK_8D93D649CB944F1A FOREIGN KEY (student_id) REFERENCES student (id)');
-        $this->addSql('ALTER TABLE user ADD CONSTRAINT FK_8D93D649155D8F51 FOREIGN KEY (formateur_id) REFERENCES formateur (id)');
-        $this->addSql('CREATE INDEX IDX_8D93D649CB944F1A ON user (student_id)');
-        $this->addSql('CREATE INDEX IDX_8D93D649155D8F51 ON user (formateur_id)');
-    }
+       $this->addSql('ALTER TABLE user ADD student_id INT DEFAULT NULL, ADD formateur_id INT DEFAULT NULL, CHANGE created_at created_at DATETIME DEFAULT NULL');
+$this->addSql('ALTER TABLE user ADD CONSTRAINT FK_8D93D649CB944F1A FOREIGN KEY (student_id) REFERENCES student (id)');
+$this->addSql('ALTER TABLE user ADD CONSTRAINT FK_8D93D649155D8F51 FOREIGN KEY (formateur_id) REFERENCES formateur (id)');
+$this->addSql('CREATE INDEX IDX_8D93D649CB944F1A ON user (student_id)');
+$this->addSql('CREATE INDEX IDX_8D93D649155D8F51 ON user (formateur_id)');
+
+}
 
     public function down(Schema $schema): void
     {

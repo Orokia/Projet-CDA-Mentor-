@@ -16,7 +16,7 @@ class MentorFormateurInfo
 
     private ?string $videoPresentation = null;
 
-    private array $image = [];
+    private ?string $image = null;
 
 
     public function getId(): ?int
@@ -97,12 +97,12 @@ class MentorFormateurInfo
     }
 
 
-    public function getImage(): array
+    public function getImage(): ?string
     {
         return $this->image;
     }
 
-    public function setImage(array $image): static
+    public function setImage(?string $image): static
     {
         $this->image = $image;
 

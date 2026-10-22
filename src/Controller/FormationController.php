@@ -2,45 +2,85 @@
 
 namespace App\Controller;
 
-use App\Repository\FormateurRepository;
-use App\Repository\FormationRepository;
+// Importation du service qui gère la récupération des formations
+// et des formateurs.
+use App\Service\FormationService;
+
+// Importation des classes Symfony nécessaires au contrôleur
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
+// Contrôleur responsable des pages liées aux formations
 class FormationController extends AbstractController
 {
-    #[Route('/formations', name: 'app_formation')]
-    public function index(
-        FormationRepository $formationRepository
-    ): Response {
-        $formations = $formationRepository->findAll();
+    /**
+     * Constructeur du contrôleur.
+     *
+     * Symfony injecte automatiquement FormationService.
+     * Le contrôleur utilise ce service pour récupérer les données.
+     */
+    public function __construct(
+        private FormationService $formationService
+    ) {
+    }
 
+    /**
+     * Affiche la liste de toutes les formations.
+     *
+     * Route : /formations
+     * Template : templates/formation/index.html.twig
+     */
+    #[Route('/formations', name: 'app_formation', methods: ['GET'])]
+    public function index(): Response
+    {
+        // Récupération de toutes les formations via le service
+        $formations = $this->formationService->getAllFormations();
+
+        // Envoi des formations au template Twig pour affichage
         return $this->render('formation/index.html.twig', [
             'formations' => $formations,
         ]);
     }
 
+    /**
+     * Affiche le détail d'une formation.
+     *
+     * Route : /formations/{id}
+     * Template : templates/formation/show.html.twig
+     *
+     * @param int $id Identifiant de la formation
+     */
+    #[Route('/formations/{id}', name: 'app_formation_show', methods: ['GET'])]
+    public function show(int $id): Response
+    {
+        // Recherche de la formation à partir de son identifiant
+        $formation = $this->formationService->getFormationById($id);
 
-    #[Route('/formations/{id}', name: 'app_formation_show')]
-    public function show(
-        int $id,
-        FormationRepository $formationRepository
-    ): Response {
-        $formation = $formationRepository->find($id);
-
-        if (!$formation) {
+        // Si la formation n'existe pas, retourner une erreur 404
+        if ($formation === null) {
             throw $this->createNotFoundException(
                 'Formation introuvable.'
             );
         }
 
+        // Transmission de la formation au template Twig
         return $this->render('formation/show.html.twig', [
             'formation' => $formation,
         ]);
     }
 
+    /**
+     * Récupère le formateur sélectionné pour une formation
+     * et redirige l'utilisateur vers son profil.
+     *
+     * Route : /formations/{formationId}/choisir-formateur
+     * Méthode HTTP : POST
+     *
+     * @param int $formationId Identifiant de la formation
+     * @param Request $request Requête contenant le formateur sélectionné
+     */
     #[Route(
         '/formations/{formationId}/choisir-formateur',
         name: 'app_formation_formateur',
@@ -48,41 +88,50 @@ class FormationController extends AbstractController
     )]
     public function choisirFormateur(
         int $formationId,
-        Request $request,
-        FormationRepository $formationRepository,
-        FormateurRepository $formateurRepository
+        Request $request
     ): Response {
+        // Vérification de l'existence de la formation
+        $formation = $this->formationService
+            ->getFormationById($formationId);
 
-        $formation = $formationRepository->find($formationId);
-
-        if (!$formation) {
+        if ($formation === null) {
             throw $this->createNotFoundException(
                 'Formation introuvable.'
             );
         }
 
+        // Récupération de l'identifiant du formateur envoyé par le formulaire
         $formateurId = $request->request->get('formateur');
 
-        if (!$formateurId) {
+        // Si aucun formateur n'a été sélectionné, afficher un message
+        if (
+            !$formateurId
+            || !ctype_digit((string) $formateurId)
+        ) {
             $this->addFlash(
                 'error',
                 'Veuillez sélectionner un formateur.'
             );
 
+            // Retour à la page de détail de la formation
             return $this->redirectToRoute(
                 'app_formation_show',
                 ['id' => $formationId]
             );
         }
 
-        $formateur = $formateurRepository->find($formateurId);
+        // Recherche du formateur sélectionné via le service
+        $formateur = $this->formationService
+            ->getFormateurById((int) $formateurId);
 
-        if (!$formateur) {
+        // Si le formateur n'existe pas, retourner une erreur 404
+        if ($formateur === null) {
             throw $this->createNotFoundException(
                 'Formateur introuvable.'
             );
         }
 
+        // Redirection vers le profil du formateur sélectionné
         return $this->redirectToRoute(
             'app_formateur_profil',
             [

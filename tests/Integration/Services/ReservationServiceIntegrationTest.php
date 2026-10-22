@@ -22,18 +22,32 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
 
     protected function setUp(): void
     {
+         parent::setUp();
         self::bootKernel();
 
         $container = static::getContainer();
+
+
 
         $this->entityManager = $container->get(
             EntityManagerInterface::class
         );
 
+
         $this->reservationService = $container->get(
             ReservationService::class
         );
+
+          // Récupérer l'EntityManager utilisé par le service testé.
+    $schemaTool = new \Doctrine\ORM\Tools\SchemaTool($this->entityManager);
+    $metadata = $this->entityManager
+        ->getMetadataFactory()
+        ->getAllMetadata();
+
+    $schemaTool->createSchema($metadata);
     }
+
+
 
     public function testServiceEstDisponibleDansLeConteneur(): void
     {

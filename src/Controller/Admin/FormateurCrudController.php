@@ -32,7 +32,7 @@ class FormateurCrudController extends AbstractCrudController
     }
 
     /**
-     * Configurer les actions EasyAdmin.
+     
      */
     public function configureActions(Actions $actions): Actions
     {

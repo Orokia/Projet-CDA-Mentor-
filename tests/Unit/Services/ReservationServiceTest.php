@@ -11,7 +11,6 @@ use App\Repository\DisponibiliteRepository;
 use App\Service\ReservationService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
-
 class ReservationServiceTest extends TestCase
 {
     private DisponibiliteRepository $disponibiliteRepository;

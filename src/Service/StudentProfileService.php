@@ -39,8 +39,8 @@ class StudentProfileService
     }
 
     /**
-     * Synchronise la photo du profil étudiant
-     * avec celle du compte utilisateur.
+    
+    
      */
     public function updatePhoto(
         Student $student,

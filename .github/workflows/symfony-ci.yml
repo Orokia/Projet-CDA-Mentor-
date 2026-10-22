@@ -39,7 +39,7 @@ jobs:
       APP_ENV: ci
       APP_DEBUG: "1"
       # APP_SECRET: ${{ secrets.APP_SECRET_CI }}
-      DATABASE_URL: "sqlite:///:memory:"
+      # DATABASE_URL: "sqlite:///:memory:"
 
     steps:
       - name: Checkout

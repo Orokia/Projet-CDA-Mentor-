@@ -1,0 +1,196 @@
+
+name: Symfony CI Build and Deploy
+
+on:
+  push:
+    branches:
+      - "**"
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      deploy_version:
+        description: "Version à déployer (ex: v1.0.0)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: symfony-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PHP_VERSION: "8.4"
+  COMPOSER_ALLOW_SUPERUSER: "1"
+
+jobs:
+  # ==========================================
+  # CI : validations et trois suites de tests
+  # ==========================================
+  ci:
+    name: CI - Tests et validations
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    environment: ci
+
+    env:
+      APP_ENV: ci
+      APP_DEBUG: "1"
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_mysql, intl, mbstring, xml, ctype, iconv, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate Composer files
+        run: composer validate --no-check-publish
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Prepare reports
+        run: mkdir -p var/test-reports
+
+      - name: Validate Symfony container
+        run: php bin/console lint:container --env=ci
+
+      - name: Validate Doctrine mappings
+        run: php bin/console doctrine:schema:validate --env=ci
+
+      - name: Check MySQL CI connection
+        run: php bin/console dbal:run-sql "SELECT 1" --env=ci
+
+      - name: Apply CI database migrations
+        run: php bin/console doctrine:migrations:migrate --no-interaction --env=ci
+
+      - name: Unit tests
+        id: unit
+        continue-on-error: true
+        run: php bin/phpunit tests/Unit --log-junit var/test-reports/unit.xml
+
+      - name: Integration tests
+        id: integration
+        if: always()
+        continue-on-error: true
+        run: php bin/phpunit tests/Integration --log-junit var/test-reports/integration.xml
+
+      - name: Functional tests
+        id: functional
+        if: always()
+        continue-on-error: true
+        run: php bin/phpunit tests/Functional --log-junit var/test-reports/functional.xml
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ github.run_id }}
+          path: var/test-reports/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Fail if a test suite failed
+        if: always()
+        run: |
+          test "${{ steps.unit.outcome }}" = "success"
+          test "${{ steps.integration.outcome }}" = "success"
+          test "${{ steps.functional.outcome }}" = "success"
+
+  # ==========================================
+  # BUILD_PROD : déclenché par un tag v*
+  # ==========================================
+  build_prod:
+    name: Build production
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: prod
+
+    env:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
+
+    steps:
+      - name: Checkout tagged version
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_mysql, intl, mbstring, xml, ctype, iconv, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Validate Composer files
+        run: composer validate --no-check-publish
+
+      - name: Install production dependencies
+        run: composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Check production MySQL connection
+        run: php bin/console dbal:run-sql "SELECT 1" --env=prod
+
+      - name: Clear production cache
+        run: php bin/console cache:clear --env=prod
+
+      - name: Build production archive
+        run: |
+          mkdir -p build
+          tar --exclude=.git \
+              --exclude=.github \
+              --exclude=.env.local \
+              --exclude=var/cache \
+              --exclude=var/log \
+              --exclude=build \
+              -czf "build/app-${GITHUB_REF_NAME}.tar.gz" .
+
+      - name: Upload production artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-${{ github.ref_name }}
+          path: build/app-${{ github.ref_name }}.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+
+  # ==========================================
+  # DEPLOY : lancement manuel uniquement
+  # ==========================================
+  deploy:
+    name: Manual deployment
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Validate requested version
+        env:
+          DEPLOY_VERSION: ${{ inputs.deploy_version }}
+        run: |
+          if [[ ! "$DEPLOY_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-][A-Za-z0-9.-]+)?$ ]]; then
+            echo "Version invalide : $DEPLOY_VERSION"
+            exit 1
+          fi
+
+      - name: Checkout requested version
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.deploy_version }}
+
+      - name: Deployment placeholder
+        run: |
+          echo "Version demandée : ${{ inputs.deploy_version }}"
+          echo "Le serveur et la commande de déploiement restent à configurer."
+          echo "Aucun déploiement réel n'a été effectué."

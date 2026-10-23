@@ -33,6 +33,17 @@ class UserCrudController extends AbstractCrudController
         return User::class;
     }
 
+    /**
+     * Compte créé par l'administrateur : pas de confirmation par e-mail.
+     */
+    public function createEntity(string $entityFqcn): User
+    {
+        $user = new User();
+        $user->setIsVerified(true);
+
+        return $user;
+    }
+
     public function configureActions(Actions $actions): Actions
     {
         return $actions

@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Tests\Integration\Service;
+namespace App\Tests\Integration\Services;
 
 use App\Entity\Formateur;
 use App\Service\FormateurService;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class FormateurServiceIntegrationTest extends KernelTestCase
@@ -28,14 +27,6 @@ final class FormateurServiceIntegrationTest extends KernelTestCase
         $this->formateurService = $container->get(
             FormateurService::class
         );
-
-        $schemaTool = new SchemaTool($this->entityManager);
-        $metadata = $this->entityManager
-            ->getMetadataFactory()
-            ->getAllMetadata();
-
-        // Ce test suppose que SQLite est vide au démarrage.
-        $schemaTool->createSchema($metadata);
     }
 
     private function creerFormateur(string $email): Formateur

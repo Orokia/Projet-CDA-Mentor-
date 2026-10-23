@@ -6,12 +6,14 @@ use App\Entity\Student;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Psr\Log\LoggerInterface;
 
 class RegistrationService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private UserPasswordHasherInterface $userPasswordHasher
+        private UserPasswordHasherInterface $userPasswordHasher,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -42,6 +44,10 @@ class RegistrationService
         $this->entityManager->persist($user);
         $this->entityManager->persist($student);
         $this->entityManager->flush();
+
+        $this->logger->info('Nouveau compte étudiant créé.', [
+            'userId' => $user->getId(),
+        ]);
 
         return $user;
     }

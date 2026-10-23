@@ -47,6 +47,16 @@ final class ReservationController extends AbstractController
             );
         }
 
+        // Vérification du jeton CSRF envoyé par assets/reservation.js
+        if (!$this->isCsrfTokenValid('reservation', $request->request->getString('_token'))) {
+            $this->addFlash(
+                'error',
+                'La session a expiré. Veuillez réessayer.'
+            );
+
+            return $this->redirectToRoute('app_formateurs');
+        }
+
         // Récupération des données du formulaire
         $disponibiliteId = $request->request->get('disponibilite');
         $jourChoisi = $request->request->get('jour');

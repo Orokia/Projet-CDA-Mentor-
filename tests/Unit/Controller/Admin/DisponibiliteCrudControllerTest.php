@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Unit\Admin;
+namespace App\Tests\Unit\Controller\Admin;
 
 use App\Controller\Admin\DisponibiliteCrudController;
 use App\Entity\Disponibilite;

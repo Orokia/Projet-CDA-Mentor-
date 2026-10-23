@@ -39,7 +39,6 @@ jobs:
       APP_ENV: ci
       APP_DEBUG: "1"
       # APP_SECRET: ${{ secrets.APP_SECRET_CI }}
-      # DATABASE_URL: "sqlite:///:memory:"
 
     steps:
       - name: Checkout
@@ -65,20 +64,11 @@ jobs:
       - name: Validate Symfony container
         run: php bin/console lint:container --env=ci
 
-      - name: Create database schema
-        run: php bin/console doctrine:schema:create --env=ci
-
       - name: Validate Doctrine mappings
-        run: php bin/console doctrine:schema:validate --skip-sync --env=ci
+        run: php bin/console doctrine:schema:validate --skip-sync --env=test
 
-     
-
-      # IMPORTANT:
-      # SQLite in-memory databases are destroyed when their
-      # connection closes. Do not migrate in a separate process
-      # and expect the schema to persist for PHPUnit.
-      # The test bootstrap must create the schema in the same
-      # connection used by tests.
+      # Le schéma SQLite de test (var/test.db) est recréé par
+      # tests/bootstrap.php au lancement de chaque suite PHPUnit.
 
       - name: Unit tests
         id: unit

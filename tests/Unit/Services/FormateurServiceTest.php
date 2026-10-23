@@ -28,8 +28,8 @@ class FormateurServiceTest extends TestCase
     public function testGetAllFormateurs(): void
     {
         // Préparation des données simulées
-        $formateur1 = $this->createMock(Formateur::class);
-        $formateur2 = $this->createMock(Formateur::class);
+        $formateur1 = $this->createStub(Formateur::class);
+        $formateur2 = $this->createStub(Formateur::class);
 
         $formateurs = [$formateur1, $formateur2];
 
@@ -65,7 +65,7 @@ class FormateurServiceTest extends TestCase
     public function testGetFormateurById(): void
     {
         // Préparation d'un formateur simulé
-        $formateur = $this->createMock(Formateur::class);
+        $formateur = $this->createStub(Formateur::class);
 
         // Configuration du repository
         $this->formateurRepository

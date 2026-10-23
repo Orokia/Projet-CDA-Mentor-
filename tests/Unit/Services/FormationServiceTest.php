@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Service;
+namespace App\Tests\Unit\Services;
 
 use App\Entity\Formation;
 use App\Entity\Formateur;
@@ -50,6 +50,10 @@ class FormationServiceTest extends TestCase
             ->method('findAll')
             ->willReturn($formations);
 
+        $this->formateurRepository
+            ->expects($this->never())
+            ->method($this->anything());
+
         // Appeler la méthode du service
         $resultat = $this->formationService->getAllFormations();
 
@@ -74,6 +78,10 @@ class FormationServiceTest extends TestCase
             ->with($id)
             ->willReturn($formation);
 
+        $this->formateurRepository
+            ->expects($this->never())
+            ->method($this->anything());
+
         // Appeler le service
         $resultat = $this->formationService->getFormationById($id);
 
@@ -91,6 +99,10 @@ class FormationServiceTest extends TestCase
             ->method('find')
             ->with(999)
             ->willReturn(null);
+
+        $this->formateurRepository
+            ->expects($this->never())
+            ->method($this->anything());
 
         $resultat = $this->formationService->getFormationById(999);
 
@@ -113,6 +125,10 @@ class FormationServiceTest extends TestCase
             ->with($id)
             ->willReturn($formateur);
 
+        $this->formationRepository
+            ->expects($this->never())
+            ->method($this->anything());
+
         // Appeler le service
         $resultat = $this->formationService->getFormateurById($id);
 
@@ -130,6 +146,10 @@ class FormationServiceTest extends TestCase
             ->method('find')
             ->with(999)
             ->willReturn(null);
+
+        $this->formationRepository
+            ->expects($this->never())
+            ->method($this->anything());
 
         $resultat = $this->formationService->getFormateurById(999);
 

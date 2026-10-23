@@ -35,6 +35,9 @@ class StudentCrudService
 
         $user->setRoles(['ROLE_STUDENT']);
 
+        // Compte créé par l'administrateur : pas de confirmation par e-mail
+        $user->setIsVerified(true);
+
         $hashedPassword = $this->userPasswordHasher->hashPassword(
             $user,
             $plainPassword
@@ -80,6 +83,7 @@ class StudentCrudService
             $user->setStudent($student);
 
             $user->setRoles(['ROLE_STUDENT']);
+            $user->setIsVerified(true);
 
             $this->entityManager->persist($user);
 

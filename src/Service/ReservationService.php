@@ -5,13 +5,18 @@ namespace App\Service;
 use App\Entity\Reservation;
 use App\Entity\Student;
 use App\Repository\DisponibiliteRepository;
+use App\Repository\ReservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class ReservationService
 {
     public function __construct(
         private DisponibiliteRepository $disponibiliteRepository,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private ReservationRepository $reservationRepository,
+        #[Autowire('%jt_domain%')]
+        private string $jitsiDomain
     ) {
     }
 
@@ -105,6 +110,24 @@ class ReservationService
             );
         }
 
+        // Refus si l'étudiant a déjà réservé ce créneau
+        $premiereSeance = new \DateTime(
+            $datesSeances[0]->format('Y-m-d') . ' ' .
+            $disponibilite->getHeureDebut()->format('H:i:s')
+        );
+
+        $dejaReservee = $this->reservationRepository->findOneBy([
+            'student' => $student,
+            'disponibilite' => $disponibilite,
+            'dateHeureDebut' => $premiereSeance,
+        ]);
+
+        if ($dejaReservee !== null) {
+            throw new \RuntimeException(
+                'Vous avez déjà réservé ce créneau.'
+            );
+        }
+
         // Création d'une réservation pour chaque date trouvée
         $reservations = [];
 
@@ -143,12 +166,14 @@ class ReservationService
         // Premier enregistrement pour obtenir les identifiants
         $this->entityManager->flush();
 
-        // Génération du lien Jitsi pour chaque réservation
+        // Génération du lien Jitsi pour chaque réservation.
+        // Le suffixe aléatoire empêche de deviner l'URL d'une salle.
         foreach ($reservations as $reservation) {
-            $roomName = 'Mentor-Reservation-' . $reservation->getId();
+            $roomName = 'Mentor-Reservation-' . $reservation->getId()
+                . '-' . bin2hex(random_bytes(8));
 
             $reservation->setLienVisio(
-                'https://meet.jit.si/' . $roomName
+                rtrim($this->jitsiDomain, '/') . '/' . $roomName
             );
         }
 

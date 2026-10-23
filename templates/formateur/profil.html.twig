@@ -428,6 +428,8 @@
                 type="button"
                 id="btn-reserver"
                 class="btn btn-primary"
+                data-action-url="{{ path('app_reservation_create') }}"
+                data-csrf-token="{{ csrf_token('reservation') }}"
             >
 
                 <i class="bi bi-calendar-check me-2"></i>

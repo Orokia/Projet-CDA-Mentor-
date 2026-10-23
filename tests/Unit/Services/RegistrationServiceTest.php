@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Service\RegistrationService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\NullLogger;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class RegistrationServiceTest extends TestCase
@@ -29,7 +30,8 @@ class RegistrationServiceTest extends TestCase
         // Injection des dépendances dans le service
         $this->registrationService = new RegistrationService(
             $this->entityManager,
-            $this->userPasswordHasher
+            $this->userPasswordHasher,
+            new NullLogger()
         );
     }
 

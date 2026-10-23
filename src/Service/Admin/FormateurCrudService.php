@@ -37,6 +37,9 @@ class FormateurCrudService
         $user->setPrenomUtilisateur($formateur->getPrenom());
         $user->setRoles(['ROLE_FORMATEUR']);
 
+        // Compte créé par l'administrateur : pas de confirmation par e-mail
+        $user->setIsVerified(true);
+
         // Hacher le mot de passe
         $hashedPassword = $this->userPasswordHasher->hashPassword(
             $user,
@@ -74,6 +77,7 @@ class FormateurCrudService
             $formateur->setCompteUtilisateur($user);
             $user->setFormateur($formateur);
             $user->setRoles(['ROLE_FORMATEUR']);
+            $user->setIsVerified(true);
 
             $this->entityManager->persist($user);
         }

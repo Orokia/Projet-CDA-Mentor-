@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Integration\Service;
+namespace App\Tests\Integration\Services;
 
 use App\Entity\Disponibilite;
 use App\Entity\Formateur;
@@ -37,14 +37,6 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
         $this->reservationService = $container->get(
             ReservationService::class
         );
-
-          // Récupérer l'EntityManager utilisé par le service testé.
-    $schemaTool = new \Doctrine\ORM\Tools\SchemaTool($this->entityManager);
-    $metadata = $this->entityManager
-        ->getMetadataFactory()
-        ->getAllMetadata();
-
-    $schemaTool->createSchema($metadata);
     }
 
 
@@ -60,7 +52,7 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
     public function testDisponibiliteIntrouvableDeclencheUneException(): void
     {
 
-     $student = $this->createMock(Student::class);
+     $student = $this->createStub(Student::class);
 
      
         $this->expectException(\RuntimeException::class);

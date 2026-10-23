@@ -8,6 +8,7 @@ use App\Entity\Formateur;
 use App\Entity\Reservation;
 use App\Entity\Student;
 use App\Repository\DisponibiliteRepository;
+use App\Repository\ReservationRepository;
 use App\Service\ReservationService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
@@ -31,12 +32,32 @@ class ReservationServiceTest extends TestCase
         // Injection des dépendances dans le service
         $this->reservationService = new ReservationService(
             $this->disponibiliteRepository,
-            $this->entityManager
+            $this->entityManager,
+            $this->createStub(ReservationRepository::class),
+            'https://meet.jit.si'
         );
+    }
+
+    // Le service ne doit rien enregistrer en base.
+    private function attendreAucuneEcriture(): void
+    {
+        $this->entityManager
+            ->expects($this->never())
+            ->method($this->anything());
+    }
+
+    // Le service ne doit pas interroger les disponibilités.
+    private function attendreAucuneLecture(): void
+    {
+        $this->disponibiliteRepository
+            ->expects($this->never())
+            ->method($this->anything());
     }
 
     public function testCreerReservationsDisponibiliteIntrouvable(): void
     {
+        $this->attendreAucuneEcriture();
+
         $this->disponibiliteRepository
             ->expects($this->once())
             ->method('find')
@@ -47,7 +68,7 @@ class ReservationServiceTest extends TestCase
         $this->expectExceptionMessage('Disponibilité introuvable.');
 
         $this->reservationService->creerReservations(
-            $this->createMock(Student::class),
+            $this->createStub(Student::class),
             999,
             'lundi'
         );
@@ -55,7 +76,9 @@ class ReservationServiceTest extends TestCase
 
     public function testCreerReservationsDisponibiliteMalConfiguree(): void
     {
-        $disponibilite = $this->createMock(Disponibilite::class);
+        $this->attendreAucuneEcriture();
+
+        $disponibilite = $this->createStub(Disponibilite::class);
 
         $disponibilite
             ->method('getFormation')
@@ -63,9 +86,10 @@ class ReservationServiceTest extends TestCase
 
         $disponibilite
             ->method('getFormateur')
-            ->willReturn($this->createMock(Formateur::class));
+            ->willReturn($this->createStub(Formateur::class));
 
         $this->disponibiliteRepository
+            ->expects($this->once())
             ->method('find')
             ->with(1)
             ->willReturn($disponibilite);
@@ -76,7 +100,7 @@ class ReservationServiceTest extends TestCase
         );
 
         $this->reservationService->creerReservations(
-            $this->createMock(Student::class),
+            $this->createStub(Student::class),
             1,
             'lundi'
         );
@@ -84,21 +108,24 @@ class ReservationServiceTest extends TestCase
 
     public function testCreerReservationsJourNonDisponible(): void
     {
-        $disponibilite = $this->createMock(Disponibilite::class);
+        $this->attendreAucuneEcriture();
+
+        $disponibilite = $this->createStub(Disponibilite::class);
 
         $disponibilite
             ->method('getFormation')
-            ->willReturn($this->createMock(Formation::class));
+            ->willReturn($this->createStub(Formation::class));
 
         $disponibilite
             ->method('getFormateur')
-            ->willReturn($this->createMock(Formateur::class));
+            ->willReturn($this->createStub(Formateur::class));
 
         $disponibilite
             ->method('getJoursSemaine')
             ->willReturn(['mardi']);
 
         $this->disponibiliteRepository
+            ->expects($this->once())
             ->method('find')
             ->willReturn($disponibilite);
 
@@ -108,7 +135,7 @@ class ReservationServiceTest extends TestCase
         );
 
         $this->reservationService->creerReservations(
-            $this->createMock(Student::class),
+            $this->createStub(Student::class),
             1,
             'lundi'
         );
@@ -116,21 +143,24 @@ class ReservationServiceTest extends TestCase
 
     public function testCreerReservationsJourInvalide(): void
     {
-        $disponibilite = $this->createMock(Disponibilite::class);
+        $this->attendreAucuneEcriture();
+
+        $disponibilite = $this->createStub(Disponibilite::class);
 
         $disponibilite
             ->method('getFormation')
-            ->willReturn($this->createMock(Formation::class));
+            ->willReturn($this->createStub(Formation::class));
 
         $disponibilite
             ->method('getFormateur')
-            ->willReturn($this->createMock(Formateur::class));
+            ->willReturn($this->createStub(Formateur::class));
 
         $disponibilite
             ->method('getJoursSemaine')
             ->willReturn(['funday']);
 
         $this->disponibiliteRepository
+            ->expects($this->once())
             ->method('find')
             ->willReturn($disponibilite);
 
@@ -138,7 +168,7 @@ class ReservationServiceTest extends TestCase
         $this->expectExceptionMessage('Jour sélectionné invalide.');
 
         $this->reservationService->creerReservations(
-            $this->createMock(Student::class),
+            $this->createStub(Student::class),
             1,
             'funday'
         );
@@ -146,15 +176,17 @@ class ReservationServiceTest extends TestCase
 
     public function testCreerReservationsAucuneDateCorrespondante(): void
     {
-        $disponibilite = $this->createMock(Disponibilite::class);
+        $this->attendreAucuneEcriture();
+
+        $disponibilite = $this->createStub(Disponibilite::class);
 
         $disponibilite
             ->method('getFormation')
-            ->willReturn($this->createMock(Formation::class));
+            ->willReturn($this->createStub(Formation::class));
 
         $disponibilite
             ->method('getFormateur')
-            ->willReturn($this->createMock(Formateur::class));
+            ->willReturn($this->createStub(Formateur::class));
 
         $disponibilite
             ->method('getJoursSemaine')
@@ -170,6 +202,7 @@ class ReservationServiceTest extends TestCase
             ->willReturn(new \DateTime('2026-10-25'));
 
         $this->disponibiliteRepository
+            ->expects($this->once())
             ->method('find')
             ->willReturn($disponibilite);
 
@@ -179,7 +212,7 @@ class ReservationServiceTest extends TestCase
         );
 
         $this->reservationService->creerReservations(
-            $this->createMock(Student::class),
+            $this->createStub(Student::class),
             1,
             'lundi'
         );
@@ -187,10 +220,10 @@ class ReservationServiceTest extends TestCase
 
     public function testCreerReservationsAvecSucces(): void
     {
-        $student = $this->createMock(Student::class);
-        $formation = $this->createMock(Formation::class);
-        $formateur = $this->createMock(Formateur::class);
-        $disponibilite = $this->createMock(Disponibilite::class);
+        $student = $this->createStub(Student::class);
+        $formation = $this->createStub(Formation::class);
+        $formateur = $this->createStub(Formateur::class);
+        $disponibilite = $this->createStub(Disponibilite::class);
 
         $disponibilite
             ->method('getFormation')
@@ -298,10 +331,55 @@ class ReservationServiceTest extends TestCase
 
     }
 
+    public function testCreerReservationsRefuseUnCreneauDejaReserve(): void
+    {
+        $disponibilite = $this->createStub(Disponibilite::class);
+        $disponibilite->method('getFormation')->willReturn($this->createStub(Formation::class));
+        $disponibilite->method('getFormateur')->willReturn($this->createStub(Formateur::class));
+        $disponibilite->method('getJoursSemaine')->willReturn(['lundi']);
+        $disponibilite->method('getDateDebut')->willReturn(new \DateTime('2026-10-19'));
+        $disponibilite->method('getDateFin')->willReturn(new \DateTime('2026-10-26'));
+        $disponibilite->method('getHeureDebut')->willReturn(new \DateTime('09:00:00'));
+
+        $this->disponibiliteRepository
+            ->expects($this->once())
+            ->method('find')
+            ->willReturn($disponibilite);
+
+        // Une réservation existe déjà pour ce créneau
+        $reservationRepository = $this->createStub(ReservationRepository::class);
+        $reservationRepository
+            ->method('findOneBy')
+            ->willReturn(new Reservation());
+
+        $this->entityManager
+            ->expects($this->never())
+            ->method('persist');
+
+        $service = new ReservationService(
+            $this->disponibiliteRepository,
+            $this->entityManager,
+            $reservationRepository,
+            'https://meet.jit.si'
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Vous avez déjà réservé ce créneau.');
+
+        $service->creerReservations(
+            $this->createStub(Student::class),
+            1,
+            'lundi'
+        );
+    }
+
     public function testRegrouperParFormation(): void
     {
-        $formation1 = $this->createMock(Formation::class);
-        $formation2 = $this->createMock(Formation::class);
+        $this->attendreAucuneEcriture();
+        $this->attendreAucuneLecture();
+
+        $formation1 = $this->createStub(Formation::class);
+        $formation2 = $this->createStub(Formation::class);
 
         $formation1
             ->method('getId')
@@ -311,9 +389,9 @@ class ReservationServiceTest extends TestCase
             ->method('getId')
             ->willReturn(2);
 
-        $reservation1 = $this->createMock(Reservation::class);
-        $reservation2 = $this->createMock(Reservation::class);
-        $reservation3 = $this->createMock(Reservation::class);
+        $reservation1 = $this->createStub(Reservation::class);
+        $reservation2 = $this->createStub(Reservation::class);
+        $reservation3 = $this->createStub(Reservation::class);
 
         $reservation1
             ->method('getFormation')
@@ -349,7 +427,10 @@ class ReservationServiceTest extends TestCase
 
     public function testRegrouperParFormationIgnoreReservationsSansFormation(): void
     {
-        $reservation = $this->createMock(Reservation::class);
+        $this->attendreAucuneEcriture();
+        $this->attendreAucuneLecture();
+
+        $reservation = $this->createStub(Reservation::class);
 
         $reservation
             ->method('getFormation')
@@ -364,6 +445,9 @@ class ReservationServiceTest extends TestCase
 
     public function testRegrouperParFormationAvecListeVide(): void
     {
+        $this->attendreAucuneEcriture();
+        $this->attendreAucuneLecture();
+
         $resultat = $this->reservationService->regrouperParFormation([]);
 
         $this->assertSame([], $resultat);

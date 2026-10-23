@@ -3,7 +3,7 @@ namespace App\Tests\Integration\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class StudentProfileControllerTestIT extends WebTestCase
+final class StudentProfileControllerIntegrationTest extends WebTestCase
 {
     public function testIndexRedirectsToLoginWhenNotAuthenticated(): void
     {

@@ -7,12 +7,19 @@ services:
     container_name: mentor_app
     restart: unless-stopped
     environment:
+      # APP_ENV: ${APP_ENV:-dev}
       APP_ENV: dev
       DATABASE_URL: "mysql://mentor:mentor_dev_password@database:3306/mentor?serverVersion=8.0.0&charset=utf8mb4"
       MAILER_DSN: "smtp://mailer:1025"
+      APP_DEBUG: ${APP_DEBUG:-1}
     volumes:
       - .:/var/www/html
       - mentor_vendor:/var/www/html/vendor
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       database:
         condition: service_healthy

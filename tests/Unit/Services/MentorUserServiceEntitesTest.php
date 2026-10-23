@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Integration\Services;
+namespace App\Tests\Unit\Services;
 
 use App\Dto\MentorFormateurInfo;
 use App\Dto\MentorStudent;
@@ -11,7 +11,11 @@ use App\Entity\User;
 use App\Service\MentorUserService;
 use PHPUnit\Framework\TestCase;
 
-final class MentorUserServiceIntegrationTest extends TestCase
+/**
+ * Même service que MentorUserServiceTest, mais avec de vraies entités
+ * reliées entre elles (pas de mocks).
+ */
+final class MentorUserServiceEntitesTest extends TestCase
 {
     private MentorUserService $service;
 

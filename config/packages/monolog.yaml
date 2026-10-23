@@ -7,7 +7,8 @@ when@dev:
         handlers:
             main:
                 type: stream
-                path: "%kernel.logs_dir%/%kernel.environment%.log"
+                # stderr : visible via "docker compose logs app" sans polluer la sortie des commandes
+                path: 'php://stderr'
                 level: debug
                 channels: ["!event"]
             console:

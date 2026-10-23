@@ -36,8 +36,8 @@ class HomeServiceTest extends TestCase
     public function testGetAllFormations(): void
     {
         // Préparation des formations simulées
-        $formation1 = $this->createMock(Formation::class);
-        $formation2 = $this->createMock(Formation::class);
+        $formation1 = $this->createStub(Formation::class);
+        $formation2 = $this->createStub(Formation::class);
 
         $formations = [$formation1, $formation2];
 
@@ -46,6 +46,11 @@ class HomeServiceTest extends TestCase
             ->expects($this->once())
             ->method('findAll')
             ->willReturn($formations);
+
+        // Les formateurs ne doivent pas être chargés
+        $this->formateurRepository
+            ->expects($this->never())
+            ->method($this->anything());
 
         // Exécution du service
         $resultat = $this->homeService->getAllFormations();
@@ -63,6 +68,10 @@ class HomeServiceTest extends TestCase
             ->method('findAll')
             ->willReturn([]);
 
+        $this->formateurRepository
+            ->expects($this->never())
+            ->method($this->anything());
+
         // Exécution du service
         $resultat = $this->homeService->getAllFormations();
 
@@ -73,8 +82,8 @@ class HomeServiceTest extends TestCase
     public function testGetAllFormateurs(): void
     {
         // Préparation des formateurs simulés
-        $formateur1 = $this->createMock(Formateur::class);
-        $formateur2 = $this->createMock(Formateur::class);
+        $formateur1 = $this->createStub(Formateur::class);
+        $formateur2 = $this->createStub(Formateur::class);
 
         $formateurs = [$formateur1, $formateur2];
 
@@ -83,6 +92,11 @@ class HomeServiceTest extends TestCase
             ->expects($this->once())
             ->method('findAll')
             ->willReturn($formateurs);
+
+        // Les formations ne doivent pas être chargées
+        $this->formationRepository
+            ->expects($this->never())
+            ->method($this->anything());
 
         // Exécution du service
         $resultat = $this->homeService->getAllFormateurs();
@@ -99,6 +113,10 @@ class HomeServiceTest extends TestCase
             ->expects($this->once())
             ->method('findAll')
             ->willReturn([]);
+
+        $this->formationRepository
+            ->expects($this->never())
+            ->method($this->anything());
 
         // Exécution du service
         $resultat = $this->homeService->getAllFormateurs();

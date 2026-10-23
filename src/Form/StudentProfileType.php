@@ -11,7 +11,6 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Email;
 
 class StudentProfileType extends AbstractType
 {
@@ -32,12 +31,10 @@ class StudentProfileType extends AbstractType
                     new NotBlank(),
                 ],
             ])
+            // Identifiant de connexion : non modifiable ici (unicité et session)
             ->add('email', EmailType::class, [
                 'label' => 'Adresse e-mail',
-                'constraints' => [
-                    new NotBlank(),
-                    new Email(),
-                ],
+                'disabled' => true,
             ])
             ->add('photoFile', FileType::class, [
                 'label' => 'Photo de profil',

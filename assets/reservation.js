@@ -221,9 +221,22 @@ function initialiserDisponibilites() {
         // Utiliser POST pour transmettre les données.
         form.method = 'POST';
 
-        // Définir l'URL du contrôleur de réservation.
-        // Vérifie que cette route correspond bien à ton projet.
-        form.action = '/reservation/create';
+        // URL générée par Twig (route app_reservation_create).
+        form.action = boutonReserver.dataset.actionUrl;
+
+
+        /*
+         * Ajouter le jeton CSRF fourni par Twig.
+         */
+
+        const inputToken =
+            document.createElement('input');
+
+        inputToken.type = 'hidden';
+
+        inputToken.name = '_token';
+
+        inputToken.value = boutonReserver.dataset.csrfToken;
 
 
         /*
@@ -262,6 +275,8 @@ function initialiserDisponibilites() {
         form.appendChild(inputDisponibilite);
 
         form.appendChild(inputJour);
+
+        form.appendChild(inputToken);
 
 
         /*

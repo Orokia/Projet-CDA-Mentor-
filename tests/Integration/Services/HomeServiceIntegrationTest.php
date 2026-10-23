@@ -5,7 +5,6 @@ use App\Entity\Formation;
 use App\Entity\Formateur;
 use App\Service\HomeService;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class HomeServiceIntegrationTest extends KernelTestCase
@@ -22,15 +21,6 @@ final class HomeServiceIntegrationTest extends KernelTestCase
 
         $this->entityManager = $container->get(EntityManagerInterface::class);
         $this->homeService = $container->get(HomeService::class);
-
-        // Initialiser le schéma de la base de test
-        $metadata = $this->entityManager
-            ->getMetadataFactory()
-            ->getAllMetadata();
-
-        $schemaTool = new SchemaTool($this->entityManager);
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
     }
 
     private function creerFormation(string $titre): Formation

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Tests\Unit\Service;
+namespace App\Tests\Unit\Services;
 
 use App\Dto\MentorFormateurInfo;
 use App\Dto\MentorStudent;
@@ -24,7 +24,7 @@ class MentorUserServiceTest extends TestCase
     {
 
        
-        $user = $this->createMock(User::class);
+        $user = $this->createStub(User::class);
 
         $user->method('getId')->willReturn(1);
         $user->method('getEmail')->willReturn('test@example.com');
@@ -50,14 +50,14 @@ class MentorUserServiceTest extends TestCase
 
     public function testBuildCreatesStudentDtoWhenStudentExists(): void
     {
-        $student = $this->createMock(Student::class);
+        $student = $this->createStub(Student::class);
 
         $student->method('getId')->willReturn(10);
         $student->method('getNom')->willReturn('Diallo');
         $student->method('getPrenom')->willReturn('Aminata');
         $student->method('getPhoto')->willReturn('student.jpg');
 
-        $user = $this->createMock(User::class);
+        $user = $this->createStub(User::class);
 
         $user->method('getId')->willReturn(1);
         $user->method('getEmail')->willReturn('student@example.com');
@@ -82,7 +82,7 @@ class MentorUserServiceTest extends TestCase
     {
         $createdAt = new \DateTimeImmutable('2026-01-15 10:00:00');
 
-        $formateur = $this->createMock(Formateur::class);
+        $formateur = $this->createStub(Formateur::class);
 
         $formateur->method('getId')->willReturn(20);
         $formateur->method('getExperience')->willReturn('5 ans');
@@ -92,7 +92,7 @@ class MentorUserServiceTest extends TestCase
         $formateur->method('getVideoPresentation')->willReturn('presentation.mp4');
         $formateur->method('getImage')->willReturn('formateur.jpg');
 
-        $user = $this->createMock(User::class);
+        $user = $this->createStub(User::class);
 
         $user->method('getId')->willReturn(2);
         $user->method('getEmail')->willReturn('formateur@example.com');

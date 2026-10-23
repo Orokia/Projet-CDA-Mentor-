@@ -4,7 +4,6 @@ namespace App\Tests\Integration\Services;
 use App\Entity\Formation;
 use App\Service\FormationService;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class FormationServiceIntegrationTest extends KernelTestCase
@@ -21,15 +20,6 @@ final class FormationServiceIntegrationTest extends KernelTestCase
 
         $this->entityManager = $container->get(EntityManagerInterface::class);
         $this->formationService = $container->get(FormationService::class);
-
-        // Créer le schéma uniquement dans la base de test
-        $metadata = $this->entityManager
-            ->getMetadataFactory()
-            ->getAllMetadata();
-
-        $schemaTool = new SchemaTool($this->entityManager);
-        $schemaTool->dropSchema($metadata);
-        $schemaTool->createSchema($metadata);
     }
 
     private function creerFormation(string $titre): Formation

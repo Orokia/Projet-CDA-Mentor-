@@ -1,62 +1,22 @@
 <?php
+
 namespace App\Tests\Integration\Services;
 
-use App\Entity\Formation;
-use App\Entity\Formateur;
 use App\Service\HomeService;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Tests\Support\EntitesDeTestTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class HomeServiceIntegrationTest extends KernelTestCase
 {
-    private EntityManagerInterface $entityManager;
+    use EntitesDeTestTrait;
+
     private HomeService $homeService;
 
     protected function setUp(): void
     {
-        parent::setUp();
         self::bootKernel();
 
-        $container = static::getContainer();
-
-        $this->entityManager = $container->get(EntityManagerInterface::class);
-        $this->homeService = $container->get(HomeService::class);
-    }
-
-    private function creerFormation(string $titre): Formation
-    {
-        $formation = new Formation();
-
-        $formation
-            ->setTitre($titre)
-            ->setDescription('Description de test')
-            ->setDuree(20)
-            ->setPrix('199.99')
-            ->setImage('formation-test.jpg');
-
-        $this->entityManager->persist($formation);
-        $this->entityManager->flush();
-
-        return $formation;
-    }
-
-    private function creerFormateur(string $email): Formateur
-    {
-        $formateur = new Formateur();
-
-        $formateur
-            ->setNom('Diallo')
-            ->setPrenom('Aminata')
-            ->setEmail($email)
-            ->setExperience('5 ans')
-            ->setLangue('Français')
-            ->setLocalisation('Paris')
-            ->setVideoPresentation('presentation.mp4');
-
-        $this->entityManager->persist($formateur);
-        $this->entityManager->flush();
-
-        return $formateur;
+        $this->homeService = static::getContainer()->get(HomeService::class);
     }
 
     public function testGetAllFormations(): void
@@ -79,14 +39,5 @@ final class HomeServiceIntegrationTest extends KernelTestCase
         self::assertCount(1, $formateurs);
         self::assertSame($formateur->getId(), $formateurs[0]->getId());
         self::assertSame('aminata@example.test', $formateurs[0]->getEmail());
-    }
-
-    protected function tearDown(): void
-    {
-        if (isset($this->entityManager) && $this->entityManager->isOpen()) {
-            $this->entityManager->close();
-        }
-
-        parent::tearDown();
     }
 }

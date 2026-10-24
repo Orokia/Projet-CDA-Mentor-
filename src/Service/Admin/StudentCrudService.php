@@ -78,6 +78,7 @@ class StudentCrudService
             }
 
             $user = new User();
+            $user->setEmail($email);
 
             $student->setUser($user);
             $user->setStudent($student);

@@ -1,42 +1,23 @@
 <?php
+
 namespace App\Tests\Integration\Services;
 
-use App\Entity\Formation;
 use App\Service\FormationService;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Tests\Support\EntitesDeTestTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 final class FormationServiceIntegrationTest extends KernelTestCase
 {
-    private EntityManagerInterface $entityManager;
+    use EntitesDeTestTrait;
+
     private FormationService $formationService;
 
     protected function setUp(): void
     {
-        parent::setUp();
         self::bootKernel();
 
-        $container = static::getContainer();
-
-        $this->entityManager = $container->get(EntityManagerInterface::class);
-        $this->formationService = $container->get(FormationService::class);
-    }
-
-    private function creerFormation(string $titre): Formation
-    {
-        $formation = new Formation();
-
-        $formation
-            ->setTitre($titre)
-            ->setDescription('Description de la formation')
-            ->setDuree(20)
-            ->setPrix('199.99')
-            ->setImage('formation-test.jpg');
-
-        $this->entityManager->persist($formation);
-        $this->entityManager->flush();
-
-        return $formation;
+        $this->formationService = static::getContainer()
+            ->get(FormationService::class);
     }
 
     public function testGetAllFormations(): void
@@ -54,8 +35,7 @@ final class FormationServiceIntegrationTest extends KernelTestCase
     {
         $formation = $this->creerFormation('PHP');
 
-        $resultat = $this->formationService
-            ->getFormationById($formation->getId());
+        $resultat = $this->formationService->getFormationById($formation->getId());
 
         self::assertNotNull($resultat);
         self::assertSame($formation->getId(), $resultat->getId());
@@ -64,17 +44,15 @@ final class FormationServiceIntegrationTest extends KernelTestCase
 
     public function testGetFormationByIdReturnsNullWhenNotFound(): void
     {
-        $resultat = $this->formationService->getFormationById(999999);
-
-        self::assertNull($resultat);
+        self::assertNull($this->formationService->getFormationById(999999));
     }
 
-    protected function tearDown(): void
+    public function testGetFormateurById(): void
     {
-        if (isset($this->entityManager) && $this->entityManager->isOpen()) {
-            $this->entityManager->close();
-        }
+        $formateur = $this->creerFormateur();
 
-        parent::tearDown();
+        $resultat = $this->formationService->getFormateurById($formateur->getId());
+
+        self::assertSame($formateur->getId(), $resultat?->getId());
     }
 }

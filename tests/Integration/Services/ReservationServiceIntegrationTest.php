@@ -2,124 +2,123 @@
 
 namespace App\Tests\Integration\Services;
 
-use App\Entity\Disponibilite;
-use App\Entity\Formateur;
-use App\Entity\Formation;
 use App\Entity\Reservation;
-use App\Entity\Student;
-use App\Repository\DisponibiliteRepository;
+use App\Repository\ReservationRepository;
 use App\Service\ReservationService;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Tests\Support\EntitesDeTestTrait;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-
 
 final class ReservationServiceIntegrationTest extends KernelTestCase
 {
-    private EntityManagerInterface $entityManager;
-    private ReservationService $reservationService;
+    use EntitesDeTestTrait;
 
-    private Disponibilite $disponibilite;
+    private ReservationService $reservationService;
 
     protected function setUp(): void
     {
-         parent::setUp();
         self::bootKernel();
 
-        $container = static::getContainer();
-
-
-
-        $this->entityManager = $container->get(
-            EntityManagerInterface::class
-        );
-
-
-        $this->reservationService = $container->get(
-            ReservationService::class
-        );
+        $this->reservationService = static::getContainer()
+            ->get(ReservationService::class);
     }
 
-
-
-    public function testServiceEstDisponibleDansLeConteneur(): void
+    public function testCreerReservationsEnregistreUneSeanceParOccurrence(): void
     {
-        self::assertInstanceOf(
-            ReservationService::class,
-            $this->reservationService
+        $student = $this->creerUtilisateur()->getStudent();
+        $disponibilite = $this->creerDisponibilite(
+            $this->creerFormateur(),
+            $this->creerFormation()
+        );
+
+        $reservations = $this->reservationService->creerReservations(
+            $student,
+            $disponibilite->getId(),
+            'lundi'
+        );
+
+        self::assertCount(2, $reservations);
+
+        // On relit depuis la base pour vérifier ce qui a vraiment été écrit
+        $this->em()->clear();
+        $enBase = static::getContainer()
+            ->get(ReservationRepository::class)
+            ->findBy(['student' => $student->getId()], ['dateHeureDebut' => 'ASC']);
+
+        self::assertCount(2, $enBase);
+        self::assertSame(
+            '2026-10-19 09:00',
+            $enBase[0]->getDateHeureDebut()->format('Y-m-d H:i')
+        );
+        self::assertSame(
+            '2026-10-26 10:00',
+            $enBase[1]->getDateHeureFin()->format('Y-m-d H:i')
+        );
+
+        foreach ($enBase as $reservation) {
+            // Le lien est enregistré au second flush, avec l'identifiant réel
+            self::assertStringStartsWith(
+                'https://meet.jit.si/Mentor-Reservation-' . $reservation->getId() . '-',
+                $reservation->getLienVisio()
+            );
+        }
+
+        self::assertNotSame($enBase[0]->getLienVisio(), $enBase[1]->getLienVisio());
+    }
+
+    public function testCreerReservationsRefuseUnDoublon(): void
+    {
+        $student = $this->creerUtilisateur()->getStudent();
+        $disponibilite = $this->creerDisponibilite(
+            $this->creerFormateur(),
+            $this->creerFormation()
+        );
+
+        $this->reservationService->creerReservations($student, $disponibilite->getId(), 'lundi');
+
+        // La recherche du doublon (findOneBy sur un DateTime) doit fonctionner en vraie base
+        try {
+            $this->reservationService->creerReservations($student, $disponibilite->getId(), 'lundi');
+            self::fail('Une deuxième réservation du même créneau aurait dû être refusée.');
+        } catch (\RuntimeException $exception) {
+            self::assertSame('Vous avez déjà réservé ce créneau.', $exception->getMessage());
+        }
+
+        self::assertSame(
+            2,
+            $this->em()->getRepository(Reservation::class)->count([])
         );
     }
 
     public function testDisponibiliteIntrouvableDeclencheUneException(): void
     {
+        $student = $this->creerUtilisateur()->getStudent();
 
-     $student = $this->createStub(Student::class);
-
-     
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Disponibilité introuvable.');
-        // Vérifie que l'identifiant 999 n'existe pas en base.
-        $disponibilite = $this -> reservationService -> creerReservations(
-            $student ,
-            999,
-            'lundi'
-        );
 
-       
+        $this->reservationService->creerReservations($student, 999999, 'lundi');
     }
 
-     public function testCreerReservationsAucuneDateCorrespondante(): void
+    public function testCreerReservationsAucuneDateCorrespondante(): void
     {
+        $student = $this->creerUtilisateur()->getStudent();
 
-        $disponibilite = new Disponibilite();
-        $disponibilite->setId(2);
-
-
-        $disponibilite->setDateDebut(new \DateTime('2026-10-20'));
-        $disponibilite->setDateFin(new \DateTime('2026-10-25'));
-        $disponibilite->setHeureDebut(new \DateTime('14:30:00'));
-        $disponibilite->setHeureFin(new \DateTime('15:30:00'));
-        $disponibilite->setJoursSemaine(['lundi', 'mardi']);
-        $formateur = new Formateur();
-        $formateur->setId(2);
-        $formateur->setNom('Jeans');
-        $formateur->setPrenom('Dupont');
-        $formateur->setEmail('jeans@gmail.com');
-        $formateur->setExperience('5ans');
-        $formateur->setLocalisation('paris');
-        $formateur->setLangue('Français');
-        $formateur->setVideoPresentation('video');
-        $this->entityManager->persist($formateur);
-        $disponibilite->setFormateur( $formateur );
-
-        $formation = new Formation();
-        $formation->setId(2);
-
-        $formation->setTitre('nodejs');
-        $formation->setDuree(2);
-        $formation->setDescription('cours');
-        $formation->setPrix(500);
-        $formation->setImage('image.png');
-    
-        $this->entityManager->persist($formation);
-        $disponibilite->setFormation($formation);
-
-        $student = new Student();
-        $student->setNom('Alice');
-         
-        $this->entityManager->persist($disponibilite);
-        $this->entityManager->flush();
-        self::assertNotNull($disponibilite->getId());
-            
-        $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage(
-            'Aucune séance ne correspond au jour choisi.'
+        // Du mardi 20 au dimanche 25 octobre 2026 : aucun lundi
+        $disponibilite = $this->creerDisponibilite(
+            $this->creerFormateur(),
+            $this->creerFormation(),
+            ['lundi', 'mardi'],
+            '2026-10-20',
+            '2026-10-25'
         );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Aucune séance ne correspond au jour choisi.');
 
         $this->reservationService->creerReservations(
-           $student,
-             $disponibilite->getId(),
+            $student,
+            $disponibilite->getId(),
             'lundi'
         );
     }
-  
 }

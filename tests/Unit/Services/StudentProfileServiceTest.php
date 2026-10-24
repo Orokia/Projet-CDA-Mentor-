@@ -78,6 +78,12 @@ class StudentProfileServiceTest extends TestCase
 
         $filename = 'photo-profil.jpg';
 
+        // updatePhoto() ne doit pas appeler flush().
+        // L'attente doit être déclarée AVANT l'appel pour être vérifiée.
+        $this->entityManager
+            ->expects($this->never())
+            ->method('flush');
+
         // Exécution du service
         $this->studentProfileService->updatePhoto(
             $student,
@@ -95,10 +101,5 @@ class StudentProfileServiceTest extends TestCase
             $filename,
             $user->getPhotoUtilisateur()
         );
-
-        // updatePhoto() ne doit pas appeler flush()
-        $this->entityManager
-            ->expects($this->never())
-            ->method('flush');
     }
 }

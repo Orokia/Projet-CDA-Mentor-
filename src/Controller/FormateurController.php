@@ -30,7 +30,7 @@ final class FormateurController extends AbstractController
     /**
      * Affiche le profil d'un formateur.
      */
-    #[Route('/formateur/{id}', name: 'app_formateur_profil', methods: ['GET'])]
+    #[Route('/formateur/{id}', name: 'app_formateur_profil', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function profil(int $id): Response
     {
         $formateur = $this->formateurService->getFormateurById($id);

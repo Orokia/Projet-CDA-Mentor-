@@ -453,6 +453,197 @@ class ReservationServiceTest extends TestCase
         $this->assertSame([], $resultat);
     }
 
-   
+    /**
+     * Disponibilité simulée : mercredis de 14 h à 15 h 30
+     * entre le 4 et le 25 novembre 2026 (quatre mercredis).
+     *
+     * @param list<string> $jours
+     */
+    private function creerDisponibiliteSimulee(
+        array $jours = ['mercredi'],
+        string $dateDebut = '2026-11-04',
+        string $dateFin = '2026-11-25'
+    ): Disponibilite {
+        $disponibilite = $this->createStub(Disponibilite::class);
+        $disponibilite->method('getFormation')->willReturn($this->createStub(Formation::class));
+        $disponibilite->method('getFormateur')->willReturn($this->createStub(Formateur::class));
+        $disponibilite->method('getJoursSemaine')->willReturn($jours);
+        $disponibilite->method('getDateDebut')->willReturn(new \DateTime($dateDebut));
+        $disponibilite->method('getDateFin')->willReturn(new \DateTime($dateFin));
+        $disponibilite->method('getHeureDebut')->willReturn(new \DateTime('14:00:00'));
+        $disponibilite->method('getHeureFin')->willReturn(new \DateTime('15:30:00'));
 
+        return $disponibilite;
+    }
+
+    /**
+     * Simule l'identifiant attribué par la base au premier flush.
+     */
+    private function simulerIdentifiantsAuPersist(): void
+    {
+        $prochainId = 101;
+
+        $this->entityManager
+            ->expects($this->atLeastOnce())
+            ->method('persist')
+            ->willReturnCallback(static function (object $reservation) use (&$prochainId): void {
+                (new \ReflectionProperty(Reservation::class, 'id'))
+                    ->setValue($reservation, $prochainId++);
+            });
+    }
+
+    public function testCreerReservationsGenereUnLienJitsiUniqueParSeance(): void
+    {
+        $this->disponibiliteRepository
+            ->expects($this->once())
+            ->method('find')
+            ->with(12)
+            ->willReturn($this->creerDisponibiliteSimulee());
+        $this->simulerIdentifiantsAuPersist();
+
+        // La barre oblique finale du domaine ne doit pas être doublée
+        $service = new ReservationService(
+            $this->disponibiliteRepository,
+            $this->entityManager,
+            $this->createStub(ReservationRepository::class),
+            'https://meet.jit.si/'
+        );
+
+        $reservations = $service->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            'mercredi'
+        );
+
+        $this->assertCount(4, $reservations);
+
+        foreach ($reservations as $reservation) {
+            $this->assertMatchesRegularExpression(
+                '#^https://meet\.jit\.si/Mentor-Reservation-' . $reservation->getId() . '-[0-9a-f]{16}$#',
+                $reservation->getLienVisio()
+            );
+        }
+
+        $liens = array_map(
+            static fn (Reservation $reservation): string => $reservation->getLienVisio(),
+            $reservations
+        );
+        $this->assertCount(4, array_unique($liens), 'Chaque séance doit avoir sa propre salle.');
+    }
+
+    public function testCreerReservationsUtiliseLeDomaineJitsiConfigure(): void
+    {
+        $this->disponibiliteRepository
+            ->expects($this->once())
+            ->method('find')
+            ->with(12)
+            ->willReturn($this->creerDisponibiliteSimulee(dateFin: '2026-11-04'));
+        $this->simulerIdentifiantsAuPersist();
+
+        $service = new ReservationService(
+            $this->disponibiliteRepository,
+            $this->entityManager,
+            $this->createStub(ReservationRepository::class),
+            'https://visio.mentor-formation.fr'
+        );
+
+        $reservations = $service->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            'mercredi'
+        );
+
+        $this->assertStringStartsWith(
+            'https://visio.mentor-formation.fr/Mentor-Reservation-101-',
+            $reservations[0]->getLienVisio()
+        );
+    }
+
+    public function testCreerReservationsAccepteDesJoursEnregistresAvecMajuscules(): void
+    {
+        $this->disponibiliteRepository
+            ->expects($this->once())
+            ->method('find')
+            ->with(12)
+            ->willReturn($this->creerDisponibiliteSimulee([' Lundi', 'MERCREDI ']));
+
+        $this->entityManager
+            ->expects($this->exactly(4))
+            ->method('persist');
+
+        $reservations = $this->reservationService->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            'Mercredi'
+        );
+
+        $this->assertCount(4, $reservations);
+        $this->assertSame('2026-11-04', $reservations[0]->getDateHeureDebut()->format('Y-m-d'));
+        $this->assertSame('2026-11-25', $reservations[3]->getDateHeureDebut()->format('Y-m-d'));
+    }
+
+    public function testCreerReservationsSurUnePeriodeDUnSeulJour(): void
+    {
+        // Le mercredi 4 novembre 2026 est à la fois le début et la fin de la période
+        $this->disponibiliteRepository
+            ->expects($this->once())
+            ->method('find')
+            ->with(12)
+            ->willReturn($this->creerDisponibiliteSimulee(dateFin: '2026-11-04'));
+
+        $this->entityManager
+            ->expects($this->once())
+            ->method('persist');
+
+        $reservations = $this->reservationService->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            'mercredi'
+        );
+
+        $this->assertCount(1, $reservations);
+        $this->assertSame(
+            '2026-11-04 14:00 → 2026-11-04 15:30',
+            $reservations[0]->getDateHeureDebut()->format('Y-m-d H:i')
+                . ' → ' . $reservations[0]->getDateHeureFin()->format('Y-m-d H:i')
+        );
+    }
+
+    public function testCreerReservationsRechercheUnDoublonSurLaPremiereSeance(): void
+    {
+        $student = $this->createStub(Student::class);
+        $disponibilite = $this->creerDisponibiliteSimulee();
+
+        $this->disponibiliteRepository
+            ->expects($this->once())
+            ->method('find')
+            ->with(12)
+            ->willReturn($disponibilite);
+
+        $reservationRepository = $this->createMock(ReservationRepository::class);
+        $reservationRepository
+            ->expects($this->once())
+            ->method('findOneBy')
+            ->with($this->callback(
+                static function (array $criteres) use ($student, $disponibilite): bool {
+                    return $criteres['student'] === $student
+                        && $criteres['disponibilite'] === $disponibilite
+                        && $criteres['dateHeureDebut']->format('Y-m-d H:i:s') === '2026-11-04 14:00:00';
+                }
+            ))
+            ->willReturn(null);
+
+        $this->entityManager
+            ->expects($this->exactly(2))
+            ->method('flush');
+
+        $service = new ReservationService(
+            $this->disponibiliteRepository,
+            $this->entityManager,
+            $reservationRepository,
+            'https://meet.jit.si'
+        );
+
+        $this->assertCount(4, $service->creerReservations($student, 12, 'mercredi'));
+    }
 }

@@ -91,4 +91,44 @@ final class SecurityControllerTest extends WebTestCase
 
         self::assertResponseRedirects('http://localhost/mes-reservations');
     }
+
+    public function testPageDeConnexionAfficheLeFormulaire(): void
+    {
+        $this->client->request('GET', '/login');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('form input[type="email"][name="email"]');
+        self::assertSelectorExists('form input[type="password"][name="password"]');
+        self::assertSelectorExists('form input[type="hidden"][name="_csrf_token"]');
+        self::assertSelectorExists('form input[type="checkbox"][name="_remember_me"]');
+    }
+
+    public function testEmailInconnuAfficheUneErreur(): void
+    {
+        $this->client->request('GET', '/login');
+        $this->client->submitForm('Se connecter', [
+            'email' => 'inconnu@exemple.fr',
+            'password' => self::MOT_DE_PASSE,
+        ]);
+
+        self::assertResponseRedirects('/login');
+        $this->client->followRedirect();
+        self::assertSelectorExists('.alert-danger');
+        self::assertInputValueSame('email', 'inconnu@exemple.fr');
+    }
+
+    public function testDeconnexionFermeLaSession(): void
+    {
+        $this->client->loginUser($this->creerUtilisateur());
+
+        $this->client->request('GET', '/mes-reservations');
+        self::assertResponseIsSuccessful();
+
+        $this->client->request('GET', '/logout');
+        self::assertResponseRedirects('/');
+
+        // La page protégée n'est plus accessible
+        $this->client->request('GET', '/mes-reservations');
+        self::assertResponseRedirects('/login');
+    }
 }

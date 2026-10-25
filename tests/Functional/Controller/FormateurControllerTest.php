@@ -40,4 +40,33 @@ final class FormateurControllerTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(404);
     }
+
+    public function testProfilAvecUnIdentifiantNonNumeriqueRenvoie404(): void
+    {
+        $client = static::createClient();
+
+        $client->request('GET', '/formateur/aminata-diallo');
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testProfilSansDisponibiliteNePresenteAucunCreneau(): void
+    {
+        $client = static::createClient();
+        $formateur = $this->creerFormateur('youssouf.kone@exemple.fr');
+
+        $client->request('GET', '/formateur/' . $formateur->getId());
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorNotExists('.disponibilite-jour');
+    }
+
+    public function testListeRefuseLaMethodePost(): void
+    {
+        $client = static::createClient();
+
+        $client->request('POST', '/formateurs');
+
+        self::assertResponseStatusCodeSame(405);
+    }
 }

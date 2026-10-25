@@ -52,7 +52,7 @@ class FormationController extends AbstractController
      *
      * @param int $id Identifiant de la formation
      */
-    #[Route('/formations/{id}', name: 'app_formation_show', methods: ['GET'])]
+    #[Route('/formations/{id}', name: 'app_formation_show', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(int $id): Response
     {
         // Recherche de la formation à partir de son identifiant
@@ -84,6 +84,7 @@ class FormationController extends AbstractController
     #[Route(
         '/formations/{formationId}/choisir-formateur',
         name: 'app_formation_formateur',
+        requirements: ['formationId' => '\d+'],
         methods: ['POST']
     )]
     public function choisirFormateur(

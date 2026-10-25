@@ -19,14 +19,18 @@ class StudentProfileType extends AbstractType
         array $options
     ): void {
         $builder
+            // empty_data : un champ vidé arrive en chaîne vide (refusée par NotBlank)
+            // au lieu de null, que Student::setPrenom(string) n'accepte pas
             ->add('prenom', TextType::class, [
                 'label' => 'Prénom',
+                'empty_data' => '',
                 'constraints' => [
                     new NotBlank(),
                 ],
             ])
             ->add('nom', TextType::class, [
                 'label' => 'Nom',
+                'empty_data' => '',
                 'constraints' => [
                     new NotBlank(),
                 ],

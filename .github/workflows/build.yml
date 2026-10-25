@@ -280,7 +280,8 @@ jobs:
           context: dist/app
           file: docker/prod/Dockerfile
           load: true
-          push: false
+          push: true
+          # push: false  activer en cas de control trivy
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

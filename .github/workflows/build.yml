@@ -248,6 +248,17 @@ jobs:
           mkdir app
           tar -xzf ./*.tar.gz -C app
 
+      # Sans la variable de dépôt DOCKERHUB_USERNAME, le nom d'image devient "/mentor"
+      # et buildx échoue avec "invalid reference format" : on s'arrête avant, avec un message clair
+      - name: Check Docker Hub configuration
+        env:
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+        run: |
+          if [[ -z "$DOCKERHUB_USERNAME" ]]; then
+            echo "::error::Variable de dépôt DOCKERHUB_USERNAME absente. À définir dans Settings > Secrets and variables > Actions > onglet Variables (et non dans Secrets)."
+            exit 1
+          fi
+
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
@@ -267,6 +278,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: dist/app
+          # Gerer le dockerfile en fonction de l'environnement
           file: docker/prod/Dockerfile
           load: true
           push: false

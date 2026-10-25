@@ -1,6 +1,9 @@
 twig:
     file_name_pattern: '*.twig'
 
-when@test:
+when@test: &test_config
     twig:
         strict_variables: true
+
+# Environnement de la CI GitHub Actions : même configuration que les tests
+when@ci: *test_config

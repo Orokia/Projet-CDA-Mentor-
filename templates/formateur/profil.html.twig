@@ -287,6 +287,7 @@
 <section
     id="reservation"
     class="formateur-disponibilites-section"
+    data-controller="reservation"
 >
 
     <div class="formateur-section-header">
@@ -356,6 +357,9 @@
                                 class="disponibilite-jour"
                                 data-jour="{{ jour }}"
                                 data-disponibilite-id="{{ disponibilite.id }}"
+                                aria-pressed="false"
+                                data-reservation-target="jour"
+                                data-action="reservation#choisir"
                             >
 
                                 <span class="disponibilite-jour-name">
@@ -393,6 +397,7 @@
             id="disponibilite-selection"
             class="disponibilite-selection mt-4"
             style="display: none;"
+            data-reservation-target="selection"
         >
 
             <div class="disponibilite-selection-content">
@@ -405,7 +410,10 @@
                         Disponibilité sélectionnée
                     </strong>
 
-                    <span id="disponibilite-selection-text"></span>
+                    <span
+                        id="disponibilite-selection-text"
+                        data-reservation-target="selectionText"
+                    ></span>
 
                 </div>
 
@@ -422,6 +430,7 @@
             id="reservation-action"
             class="mt-4"
             style="display: none;"
+            data-reservation-target="action"
         >
 
             <button
@@ -430,6 +439,8 @@
                 class="btn btn-primary"
                 data-action-url="{{ path('app_reservation_create') }}"
                 data-csrf-token="{{ csrf_token('reservation') }}"
+                data-reservation-target="submit"
+                data-action="reservation#reserver"
             >
 
                 <i class="bi bi-calendar-check me-2"></i>

@@ -7,8 +7,15 @@ use Symfony\Component\Dotenv\Dotenv;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
+// L'environnement vient de TEST_APP_ENV (voir phpunit.dist.xml) et non de APP_ENV,
+// que le conteneur Docker fixe à "dev".
+$testEnv = getenv('TEST_APP_ENV') ?: 'test';
+$_SERVER['APP_ENV'] = $_ENV['APP_ENV'] = $testEnv;
+putenv('APP_ENV='.$testEnv);
+
 if (method_exists(Dotenv::class, 'bootEnv')) {
-    (new Dotenv())->bootEnv(dirname(__DIR__).'/.env');
+    // "ci" est traité comme "test" : .env.local n'est pas chargé.
+    (new Dotenv())->bootEnv(dirname(__DIR__).'/.env', 'dev', ['test', 'ci']);
 }
 
 if ($_SERVER['APP_DEBUG']) {

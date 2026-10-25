@@ -1,5 +1,8 @@
-when@test:
+when@test: &test_config
     dama_doctrine_test:
         enable_static_connection: true
         enable_static_meta_data_cache: true
         enable_static_query_cache: true
+
+# Environnement de la CI GitHub Actions : même configuration que les tests
+when@ci: *test_config

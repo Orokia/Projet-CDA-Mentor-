@@ -19,8 +19,6 @@ jobs:
   pipeline:
     name: Pipeline
     uses: ./.github/workflows/build.yml
-    with:
-      environment: prod 
     # SonarQube, Checkmarx et Docker Hub ont besoin des secrets du dépôt
     secrets: inherit
     permissions:

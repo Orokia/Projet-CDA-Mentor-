@@ -280,8 +280,8 @@ jobs:
           context: dist/app
           file: docker/prod/Dockerfile
           load: true
-          push: true
-          # push: false  activer en cas de control trivy
+          # La publication se fait plus bas, après le login, par l'étape "Push image to Docker Hub"
+          push: false
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

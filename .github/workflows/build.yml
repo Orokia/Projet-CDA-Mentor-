@@ -8,6 +8,12 @@ on:
     branches:
       - "**"
   workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: false
+        default: "ci"
+  
 
 # Aucun droit par défaut : chaque job déclare le minimum nécessaire
 permissions: {}
@@ -21,6 +27,10 @@ env:
   PHP_VERSION: "8.4"
   COMPOSER_ALLOW_SUPERUSER: "1"
   IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/mentor
+  DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  ENV: ${{inputs.environment}}
+  
 
 jobs:
   # ==========================================
@@ -49,10 +59,10 @@ jobs:
 
     env:
       # Variables fournies par .env.ci (DATABASE_URL SQLite, MAILER_DSN, APP_SECRET)
-      APP_ENV: ci
+      APP_ENV: ${{ env.ENV }}
       APP_DEBUG: "1"
       # Lu par tests/bootstrap.php pour lancer PHPUnit dans l'environnement "ci"
-      TEST_APP_ENV: ci
+      TEST_APP_ENV: ${{ env.ENV }}
 
     steps:
       - name: Checkout
@@ -76,6 +86,8 @@ jobs:
             version="sha-${GITHUB_SHA::7}"
           fi
           echo "PACKAGE_VERSION=$version" >> "$GITHUB_ENV"
+          echo "${{ env.ENV }} ${{ env.DOCKERHUB_USERNAME }} ${{ env.DOCKERHUB_TOKEN }} "
+          
 
       - name: Setup PHP
         if: matrix.check == 'build-test'
@@ -145,12 +157,12 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-      # Paquet de production, construit seulement si tous les tests passent
-      - name: Install production dependencies
+      # construit seulement si tous les tests passent
+      - name: Install dependencies
         if: matrix.check == 'build-test'
         env:
           # APP_ENV: prod
-          APP_ENV: ci
+          APP_ENV: ${{ env.ENV }}
           APP_DEBUG: "0"
           # Valeurs factices, utilisées seulement pendant le build (aucune connexion :
           # serverVersion est fourni). Les vraies valeurs sont fournies à l'exécution.
@@ -158,20 +170,20 @@ jobs:
           DATABASE_URL: "mysql://build:build@127.0.0.1:3306/app?serverVersion=8.0.0&charset=utf8mb4"
         run: composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
-      - name: Validate production container and compile assets
+      - name: Validate container and compile assets
         if: matrix.check == 'build-test'
         env:
           # APP_ENV: prod
-          APP_ENV: ci
+          APP_ENV: ${{ env.ENV }}
           APP_DEBUG: "0"
           APP_SECRET: build-placeholder
           DATABASE_URL: "mysql://build:build@127.0.0.1:3306/app?serverVersion=8.0.0&charset=utf8mb4"
         run: |
-          php bin/console lint:container --env=prod
-          php bin/console asset-map:compile --env=prod
+          php bin/console lint:container --env=${APP_ENV}
+          php bin/console asset-map:compile --env=${APP_ENV}
 
       # Seuls les fichiers nécessaires à l'exécution sont archivés (ni tests, ni var/, ni .env de dev/test/ci)
-      - name: Build production archive
+      - name: Build archive
         if: matrix.check == 'build-test'
         run: |
           mkdir -p build
@@ -182,7 +194,7 @@ jobs:
           cd build
           sha256sum "app-${PACKAGE_VERSION}.tar.gz" > "app-${PACKAGE_VERSION}.tar.gz.sha256"
 
-      - name: Upload production package
+      - name: Upload package
         if: matrix.check == 'build-test'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -237,7 +249,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Download production package
+      - name: Download package
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: app-package
@@ -254,7 +266,7 @@ jobs:
       # et buildx échoue avec "invalid reference format" : on s'arrête avant, avec un message clair
       - name: Check Docker Hub configuration
         env:
-          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          DOCKERHUB_USERNAME: ${{ env.DOCKERHUB_USERNAME }}
         run: |
           if [[ -z "$DOCKERHUB_USERNAME" ]]; then
             echo "::error::Variable de dépôt DOCKERHUB_USERNAME absente. À définir dans Settings > Secrets and variables > Actions > onglet Variables (et non dans Secrets)."
@@ -306,8 +318,8 @@ jobs:
         if: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')) }}
         uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_TOKEN }}
 
       # Pousse l'image qui vient d'être scannée, sans la reconstruire
       - name: Push image to Docker Hub

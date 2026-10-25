@@ -149,7 +149,8 @@ jobs:
       - name: Install production dependencies
         if: matrix.check == 'build-test'
         env:
-          APP_ENV: prod
+          # APP_ENV: prod
+          APP_ENV: ci
           APP_DEBUG: "0"
           # Valeurs factices, utilisées seulement pendant le build (aucune connexion :
           # serverVersion est fourni). Les vraies valeurs sont fournies à l'exécution.

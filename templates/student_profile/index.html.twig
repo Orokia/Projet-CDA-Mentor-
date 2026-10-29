@@ -11,6 +11,10 @@
 {% block body %}
 <div class="student-profile-page">
     <div class="container-fluid profile-container">
+        {# Le formulaire englobe les deux cartes : le champ photo doit être à l'intérieur pour être envoyé #}
+        {{ form_start(form, {
+            attr: { class: 'student-profile-form' }
+        }) }}
         <div class="row g-4">
 
             {# Carte photo de profil #}
@@ -73,10 +77,6 @@
                         </div>
                     {% endfor %}
 
-                    {{ form_start(form, {
-                        attr: { class: 'student-profile-form' }
-                    }) }}
-
                     <div class="form-floating profile-field">
                         {{ form_widget(form.prenom, {
                             attr: {
@@ -115,12 +115,11 @@
                             Enregistrer les modifications
                         </button>
                     </div>
-
-                    {{ form_end(form) }}
                 </div>
             </div>
 
         </div>
+        {{ form_end(form) }}
     </div>
 </div>
 {% endblock %}

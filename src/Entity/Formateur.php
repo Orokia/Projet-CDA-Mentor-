@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Entity;
 
 use App\Repository\FormateurRepository;
@@ -78,8 +77,8 @@ private ?User $compteUtilisateur = null;
     /**
      * Images du formateur
      */
-     #[ORM\Column(length: 255, nullable:true)]
-    private ?string $image = null;
+     #[ORM\Column(name:'image', length: 255, nullable:true)]
+    private ?string $imageName = null;
 
    
 
@@ -105,6 +104,15 @@ private ?User $compteUtilisateur = null;
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+     public function setId( int $id ): static{
+
+      $this->id= $id;
+
+        return $this;
+        
+
     }
 
     // =========================================================
@@ -390,17 +398,17 @@ private ?User $compteUtilisateur = null;
     // IMAGES
     // =========================================================
 
-    public function getImage(): ?string
-    {
-        return $this->image;
-    }
+  public function getImage(): ?string
+{
+    return $this->imageName;
+}
 
-    public function setImage(?string $image): static
-    {
-        $this->image = $image;
+public function setImage(?string $image): static
+{
+    $this->imageName = $image;
 
-        return $this;
-    }
+    return $this;
+}
 
   
 }

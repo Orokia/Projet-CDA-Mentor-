@@ -6,8 +6,11 @@ when@dev:
         profiler:
             collect_serializer_data: true
 
-when@test:
+when@test: &test_config
     framework:
         profiler:
             collect: false
             collect_serializer_data: true
+
+# Environnement de la CI GitHub Actions : même configuration que les tests
+when@ci: *test_config

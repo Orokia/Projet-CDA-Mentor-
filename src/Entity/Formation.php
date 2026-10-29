@@ -43,7 +43,7 @@ class Formation
     /**
      * @var Collection<int, Student>
      */
-    #[ORM\ManyToMany(targetEntity: Student::class, mappedBy: 'formation')]
+    #[ORM\ManyToMany(targetEntity: Student::class, mappedBy: 'formations')]
     private Collection $students;
 
     /**
@@ -81,6 +81,15 @@ private Collection $disponibilites;
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+     public function setId( int $id ): static{
+
+      $this->id= $id;
+
+        return $this;
+        
+
     }
 
     public function getTitre(): ?string

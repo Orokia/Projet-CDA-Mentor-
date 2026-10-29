@@ -55,14 +55,21 @@
 
             {% if app.user %}
 
-                 <div class="navbar-profile">
-
-                    
+                 <div
+                    class="navbar-profile"
+                    data-controller="profile-menu"
+                    data-action="click@window->profile-menu#closeOnClickOutside keydown.esc@window->profile-menu#close turbo:before-cache@document->profile-menu#close"
+                 >
 
                        <button
     type="button"
     class="profile-avatar"
     id="profileMenuButton"
+    aria-label="Ouvrir le menu du profil"
+    aria-haspopup="true"
+    aria-expanded="false"
+    data-profile-menu-target="button"
+    data-action="profile-menu#toggle"
 >
     {% if app.user.photoUtilisateur %}
         <img

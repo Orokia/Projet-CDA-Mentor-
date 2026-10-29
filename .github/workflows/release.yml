@@ -1,0 +1,54 @@
+name: Release
+
+# Création d'une release GitHub à partir d'un tag de version (ex: v1.2.0, v1.3.0-rc.1).
+# Enchaîne : chaîne complète de build.yml (tests, SonarQube, Checkmarx, image Docker
+# scannée par Trivy et publiée) -> publication de la release avec le paquet de production.
+on:
+  push:
+    tags:
+      - "v*"
+
+# Aucun droit par défaut : seul le job "publish" peut écrire dans le dépôt
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    name: Pipeline
+    uses: ./.github/workflows/build.yml
+    # SonarQube, Checkmarx et Docker Hub ont besoin des secrets du dépôt
+    secrets: inherit
+    permissions:
+      contents: read
+
+  publish:
+    name: Publication de la release
+    needs: pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      # Nécessaire pour créer la release et y attacher l'archive
+      contents: write
+
+    steps:
+      # Paquet construit et testé par build.yml dans ce même run
+      - name: Download production package
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: app-package
+          path: dist
+
+      # Un tag avec suffixe (v1.2.0-rc.1) est publié en pré-release
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          flags=(--title "$TAG" --generate-notes --verify-tag)
+          if [[ "$TAG" == *-* ]]; then
+            flags+=(--prerelease)
+          fi
+          gh release create "$TAG" dist/* --repo "$GITHUB_REPOSITORY" "${flags[@]}"

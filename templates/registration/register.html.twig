@@ -30,6 +30,7 @@
                     {{ form_widget(registrationForm.nomUtilisateur, {
                         attr: { class: 'form-control', placeholder: 'Nom' }
                     }) }}
+                    {{ form_errors(registrationForm.nomUtilisateur) }}
                 </div>
 
                 <div class="mb-3">
@@ -37,6 +38,7 @@
                     {{ form_widget(registrationForm.prenomUtilisateur, {
                         attr: { class: 'form-control', placeholder: 'Prenom' }
                     }) }}
+                    {{ form_errors(registrationForm.prenomUtilisateur) }}
                 </div>
 
                 <div class="mb-3">
@@ -54,6 +56,7 @@
                     {{ form_label(registrationForm.agreeTerms, null, {
                         label_attr: { class: 'form-check-label' }
                     }) }}
+                    {{ form_errors(registrationForm.agreeTerms) }}
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100">

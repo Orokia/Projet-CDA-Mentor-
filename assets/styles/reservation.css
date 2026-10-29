@@ -3,10 +3,10 @@
 
 .reservation-group {
     overflow: hidden;
-    background: #FFFFFF;
-    border: 1px solid #E5E7EB;
-    border-radius: 14px;
-    box-shadow: 0 4px 14px rgba(31, 41, 55, 0.04);
+    background: var(--mentor-surface);
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius);
+    box-shadow: var(--mentor-shadow-sm);
 }
 
 .reservation-group-header {
@@ -14,8 +14,8 @@
     align-items: center;
     gap: 16px;
     padding: 22px 24px;
-    background: #F9F7FF;
-    border-bottom: 1px solid #EDE9FE;
+    background: var(--mentor-primary-soft);
+    border-bottom: 1px solid #E0E7FF;
 }
 
 .reservation-group-icon,
@@ -26,30 +26,31 @@
     flex-shrink: 0;
     width: 44px;
     height: 44px;
-    border-radius: 10px;
-    background: #EDE9FE;
-    color: #6D28D9;
+    border-radius: var(--mentor-radius-sm);
+    background: #E0E7FF;
+    color: var(--mentor-primary);
     font-size: 20px;
 }
 
 .reservation-group-title small {
-    color: #7C3AED;
-    font-size: 11px;
+    color: var(--mentor-primary);
+    font-size: 12px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
 }
 
 .reservation-group-title h2 {
     margin: 4px 0;
-    color: #1F2937;
+    color: var(--mentor-text);
     font-size: 20px;
     font-weight: 700;
 }
 
 .reservation-group-title p {
     margin: 0;
-    color: #6B7280;
-    font-size: 13px;
+    color: var(--mentor-text-muted);
+    font-size: 14px;
 }
 
 /* Chaque séance */
@@ -67,6 +68,12 @@
     border-bottom: none;
 }
 
+.reservation-label {
+    display: block;
+    color: var(--mentor-text-muted);
+    font-size: 13px;
+}
+
 .reservation-session-date {
     display: flex;
     align-items: center;
@@ -76,7 +83,7 @@
 .reservation-date-icon {
     width: 40px;
     height: 40px;
-    background: #F5F3FF;
+    background: var(--mentor-primary-soft);
     font-size: 17px;
 }
 
@@ -84,13 +91,14 @@
 .reservation-session-date span,
 .reservation-session-trainer span {
     display: block;
-    color: #1F2937;
-    font-size: 13px;
+    color: var(--mentor-text);
+    font-size: 15px;
 }
 
 .reservation-session-date span {
-    margin-top: 4px;
-    color: #6B7280;
+    margin-top: 2px;
+    color: var(--mentor-text-muted);
+    font-size: 14px;
 }
 
 .reservation-session-trainer {
@@ -100,11 +108,37 @@
 }
 
 .reservation-session-trainer > i {
-    color: #6D28D9;
+    color: var(--mentor-primary);
     font-size: 20px;
 }
 
-.reservation-session-action .btn {
+/* Badge de statut */
+
+.reservation-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: #F3F4F6;
+    color: var(--mentor-text-soft);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.reservation-status-success {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.reservation-status-danger {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+.reservation-session-action .btn-mentor {
+    min-height: 44px;
     white-space: nowrap;
 }
 
@@ -131,7 +165,7 @@
         padding: 18px;
     }
 
-    .reservation-session-action .btn {
+    .reservation-session-action .btn-mentor {
         width: 100%;
     }
 }

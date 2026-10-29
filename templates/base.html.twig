@@ -2,13 +2,13 @@
 <html lang="fr">
 
 <head>
-	
 
     <meta charset="UTF-8">
 
     <meta name="viewport"
           content="width=device-width, initial-scale=1">
 
+    <meta name="theme-color" content="#4F46E5">
 
 	<link
     rel="stylesheet"
@@ -36,10 +36,16 @@
 
 <body>
 
+    {# Permet aux utilisateurs du clavier de sauter la navigation #}
+    <a href="#contenu-principal" class="skip-link">
+        Aller au contenu principal
+    </a>
 
     {% include 'components/navbar.html.twig' %}
 
-    <main>
+    <main id="contenu-principal" tabindex="-1">
+
+        {% include 'components/flashes.html.twig' %}
 
         {% block body %}
         {% endblock %}

@@ -287,127 +287,10 @@
            DISPONIBILITÉS
            ===================================================== #}
 
-<<<<<<< HEAD
         <section
             id="reservation"
             class="formateur-disponibilites-section"
             data-controller="reservation"
-=======
-<section
-    id="reservation"
-    class="formateur-disponibilites-section"
-    data-controller="reservation"
->
-
-    <div class="formateur-section-header">
-
-        <span class="formation-section-label">
-            Disponibilités
-        </span>
-
-        <h2>
-            Choisissez votre jour de formation
-        </h2>
-
-        <p>
-            Sélectionnez le jour qui vous convient.
-            Les horaires sont définis par le formateur.
-        </p>
-
-    </div>
-
-
-    {% if formateur.disponibilites|length > 0 %}
-
-        <div class="disponibilites-list">
-
-            {% for disponibilite in formateur.disponibilites %}
-
-                <div class="disponibilite-block">
-
-                    {# Période #}
-                    <div class="disponibilite-period">
-
-                        <i class="bi bi-calendar3"></i>
-
-                        <span>
-                            Du
-                            {{ disponibilite.dateDebut|date('d/m/Y') }}
-
-                            au
-
-                            {{ disponibilite.dateFin|date('d/m/Y') }}
-                        </span>
-
-                    </div>
-
-
-                    {# Horaire #}
-                    <div class="disponibilite-horaire">
-
-                        <i class="bi bi-clock"></i>
-
-                        <span>
-                            {{ disponibilite.heureDebut|date('H:i') }}
-                            -
-                            {{ disponibilite.heureFin|date('H:i') }}
-                        </span>
-
-                    </div>
-
-
-                    {# Jours disponibles #}
-                    <div class="disponibilite-jours">
-
-                        {% for jour in disponibilite.joursSemaine %}
-
-                            <button
-                                type="button"
-                                class="disponibilite-jour"
-                                data-jour="{{ jour }}"
-                                data-disponibilite-id="{{ disponibilite.id }}"
-                                aria-pressed="false"
-                                data-reservation-target="jour"
-                                data-action="reservation#choisir"
-                            >
-
-                                <span class="disponibilite-jour-name">
-                                    {{ jour|capitalize }}
-                                </span>
-
-                                <span class="disponibilite-jour-horaire">
-                                    {{ disponibilite.heureDebut|date('H:i') }}
-                                    -
-                                    {{ disponibilite.heureFin|date('H:i') }}
-                                </span>
-
-                                <span class="disponibilite-jour-action">
-                                    Choisir
-                                </span>
-
-                            </button>
-
-                        {% endfor %}
-
-                    </div>
-
-                </div>
-
-            {% endfor %}
-
-        </div>
-
-
-        {# =================================================
-           DISPONIBILITÉ SÉLECTIONNÉE
-           ================================================= #}
-
-        <div
-            id="disponibilite-selection"
-            class="disponibilite-selection mt-4"
-            style="display: none;"
-            data-reservation-target="selection"
->>>>>>> origin/develop
         >
 
             <div class="formateur-section-header">
@@ -420,23 +303,10 @@
                     Choisissez votre jour de formation
                 </h2>
 
-<<<<<<< HEAD
                 <p>
                     Une séance est réservée pour chaque semaine de la période,
                     le jour choisi. Les horaires sont définis par le formateur.
                 </p>
-=======
-                    <strong>
-                        Disponibilité sélectionnée
-                    </strong>
-
-                    <span
-                        id="disponibilite-selection-text"
-                        data-reservation-target="selectionText"
-                    ></span>
-
-                </div>
->>>>>>> origin/develop
 
             </div>
 
@@ -482,7 +352,6 @@
                             {# Jours disponibles #}
                             <div class="disponibilite-jours">
 
-<<<<<<< HEAD
                                 {% for jour in disponibilite.joursSemaine %}
 
                                     <button
@@ -494,24 +363,6 @@
                                         data-reservation-target="jour"
                                         data-action="reservation#choisir"
                                     >
-=======
-        <div
-            id="reservation-action"
-            class="mt-4"
-            style="display: none;"
-            data-reservation-target="action"
-        >
-
-            <button
-                type="button"
-                id="btn-reserver"
-                class="btn btn-primary"
-                data-action-url="{{ path('app_reservation_create') }}"
-                data-csrf-token="{{ csrf_token('reservation') }}"
-                data-reservation-target="submit"
-                data-action="reservation#reserver"
-            >
->>>>>>> origin/develop
 
                                         <span class="disponibilite-jour-name">
                                             {{ jour|capitalize }}

@@ -23,7 +23,6 @@ final class StudentProfileController extends AbstractController
     /**
      * Affiche et met à jour le profil de l'étudiant connecté.
      */
-
     #[Route('/student/profil', name: 'app_student_profile')]
     public function index(
         Request $request,

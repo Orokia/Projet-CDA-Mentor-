@@ -1,0 +1,77 @@
+name: Deploy
+
+# Déploiement manuel d'une release publiée vers un environnement GitHub.
+# Les règles de protection (relecteurs, branches autorisées) et les secrets
+# de déploiement se configurent par environnement : Settings > Environments.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environnement cible"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      version:
+        description: "Version à déployer (tag d'une release publiée, ex: v1.0.0)"
+        required: true
+        type: string
+
+# Aucun droit par défaut : le job ne fait que lire la release
+permissions: {}
+
+concurrency:
+  # Un seul déploiement à la fois par environnement, sans annuler celui en cours
+  group: deploy-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Déploiement ${{ inputs.version }} vers ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: ${{ inputs.environment }}
+    permissions:
+      # Lecture des fichiers de la release
+      contents: read
+
+    # Les entrées passent par des variables d'environnement, jamais directement dans les scripts
+    env:
+      DEPLOY_ENV: ${{ inputs.environment }}
+      DEPLOY_VERSION: ${{ inputs.version }}
+
+    steps:
+      - name: Validate requested version
+        run: |
+          if [[ ! "$DEPLOY_VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-][A-Za-z0-9.-]+)?$ ]]; then
+            echo "::error::Version invalide : $DEPLOY_VERSION"
+            exit 1
+          fi
+          # Les pré-releases (v1.2.0-rc.1) ne vont qu'en staging
+          if [[ "$DEPLOY_ENV" == "production" && "$DEPLOY_VERSION" == *-* ]]; then
+            echo "::error::Une pré-release ne peut pas être déployée en production : $DEPLOY_VERSION"
+            exit 1
+          fi
+
+      # On déploie l'archive construite par release.yml, sans rien reconstruire
+      - name: Download release package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "$DEPLOY_VERSION" \
+              --repo "$GITHUB_REPOSITORY" \
+              --pattern "app-${DEPLOY_VERSION}.tar.gz*" \
+              --dir dist
+
+      - name: Verify package checksum
+        working-directory: dist
+        run: sha256sum --check "app-${DEPLOY_VERSION}.tar.gz.sha256"
+
+      - name: Deployment placeholder
+        run: |
+          echo "Environnement : $DEPLOY_ENV"
+          echo "Version : $DEPLOY_VERSION"
+          echo "La cible de déploiement reste à configurer (secrets de l'environnement $DEPLOY_ENV)."
+          echo "Aucun déploiement réel n'a été effectué."

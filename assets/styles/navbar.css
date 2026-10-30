@@ -443,6 +443,7 @@
     }
 
 }
+<<<<<<< HEAD
 
 
 /* =========================================
@@ -542,3 +543,20 @@
     }
 
 }
+=======
+.profile-avatar img,
+.profile-avatar-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.profile-avatar,
+.profile-avatar-large {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+>>>>>>> origin/develop

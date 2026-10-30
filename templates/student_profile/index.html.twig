@@ -1,10 +1,14 @@
 
 {% extends 'base.html.twig' %}
 
+<<<<<<< HEAD
 {# Le thème Bootstrap 5 ajoute is-invalid et place les erreurs sous chaque champ #}
 {% form_theme form 'bootstrap_5_layout.html.twig' %}
 
 {% block title %}Mon profil étudiant - Mentor{% endblock %}
+=======
+{% block title %}Mon profil étudiant{% endblock %}
+>>>>>>> origin/develop
 
 {% block stylesheets %}
     {{ parent() }}
@@ -13,6 +17,7 @@
 
 {% block body %}
 <div class="student-profile-page">
+<<<<<<< HEAD
     <div class="container-mentor profile-container">
 
         <header class="page-header page-header-left">
@@ -24,17 +29,29 @@
         {# Le formulaire englobe les deux cartes : le champ photo doit être à l'intérieur pour être envoyé #}
         {{ form_start(form, {
             attr: { class: 'student-profile-form', novalidate: 'novalidate' }
+=======
+    <div class="container-fluid profile-container">
+        {# Le formulaire englobe les deux cartes : le champ photo doit être à l'intérieur pour être envoyé #}
+        {{ form_start(form, {
+            attr: { class: 'student-profile-form' }
+>>>>>>> origin/develop
         }) }}
         <div class="row g-4">
 
             {# Carte photo de profil #}
             <div class="col-lg-4">
+<<<<<<< HEAD
                 <section class="profile-card photo-card" aria-labelledby="titre-photo">
                     <h2 id="titre-photo">Photo de profil</h2>
+=======
+                <div class="profile-card photo-card">
+                    <h2>Photo de profil</h2>
+>>>>>>> origin/develop
                     <p class="card-description">
                         Cette image représente votre profil étudiant.
                     </p>
 
+<<<<<<< HEAD
                     <div class="student-photo-wrapper">
                         {% if student.photo %}
                             <img
@@ -46,6 +63,17 @@
                             >
                         {% else %}
                             <div class="student-photo student-photo-placeholder" aria-hidden="true">
+=======
+                    <div class="profile-avatar-wrapper">
+                        {% if student.photo %}
+                            <img
+                                src="{{ asset('uploads/students/' ~ student.photo) }}"
+                                alt="Photo de profil"
+                                class="profile-avatar"
+                            >
+                        {% else %}
+                            <div class="profile-avatar profile-avatar-placeholder">
+>>>>>>> origin/develop
                                 <span>
                                     {{ student.prenom|first|upper }}{{ student.nom|first|upper }}
                                 </span>
@@ -53,6 +81,7 @@
                         {% endif %}
                     </div>
 
+<<<<<<< HEAD
                     {{ form_label(form.photoFile, 'Changer de photo', {
                         label_attr: { class: 'profile-file-label' }
                     }) }}
@@ -68,18 +97,39 @@
                     </p>
                     {{ form_errors(form.photoFile) }}
                 </section>
+=======
+                    <p class="photo-hint">
+                        JPG, PNG ou WEBP — 2 Mo maximum
+                    </p>
+
+                    {{ form_widget(form.photoFile, {
+                        attr: {
+                            class: 'form-control profile-file-input',
+                            accept: 'image/jpeg,image/png,image/webp'
+                        }
+                    }) }}
+                    {{ form_errors(form.photoFile) }}
+                </div>
+>>>>>>> origin/develop
             </div>
 
             {# Carte informations du compte #}
             <div class="col-lg-8">
+<<<<<<< HEAD
                 <section class="profile-card account-card" aria-labelledby="titre-compte">
                     <div class="account-heading">
                         <h2 id="titre-compte">Informations du compte</h2>
+=======
+                <div class="profile-card account-card">
+                    <div class="account-heading">
+                        <h2>Informations du compte</h2>
+>>>>>>> origin/develop
                         <p class="card-description">
                             Consultez et modifiez vos informations personnelles.
                         </p>
                     </div>
 
+<<<<<<< HEAD
                     <div class="row g-3">
 
                         <div class="col-sm-6">
@@ -129,6 +179,59 @@
                         </button>
                     </div>
                 </section>
+=======
+                    {% for message in app.flashes('success') %}
+                        <div class="alert alert-success">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    {% for message in app.flashes('danger') %}
+                        <div class="alert alert-danger">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+
+                    <div class="form-floating profile-field">
+                        {{ form_widget(form.prenom, {
+                            attr: {
+                                class: 'form-control',
+                                placeholder: 'Prénom'
+                            }
+                        }) }}
+                        {{ form_label(form.prenom, 'Prénom') }}
+                        {{ form_errors(form.prenom) }}
+                    </div>
+
+                    <div class="form-floating profile-field">
+                        {{ form_widget(form.nom, {
+                            attr: {
+                                class: 'form-control',
+                                placeholder: 'Nom'
+                            }
+                        }) }}
+                        {{ form_label(form.nom, 'Nom') }}
+                        {{ form_errors(form.nom) }}
+                    </div>
+
+                    <div class="form-floating profile-field">
+                        {{ form_widget(form.email, {
+                            attr: {
+                                class: 'form-control',
+                                placeholder: 'Adresse e-mail'
+                            }
+                        }) }}
+                        {{ form_label(form.email, 'Adresse e-mail') }}
+                        {{ form_errors(form.email) }}
+                    </div>
+
+                    <div class="profile-actions">
+                        <button type="submit" class="btn-save-profile">
+                            Enregistrer les modifications
+                        </button>
+                    </div>
+                </div>
+>>>>>>> origin/develop
             </div>
 
         </div>

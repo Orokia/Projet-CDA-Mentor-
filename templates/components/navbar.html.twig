@@ -144,7 +144,11 @@
 >
     {% if app.user.photoUtilisateur %}
         <img
+<<<<<<< HEAD
             src="{{ asset('assets/images/utilisateurs/' ~ app.user.photoUtilisateur) }}"
+=======
+            src="{{ asset('uploads/students/' ~ app.user.photoUtilisateur) }}"
+>>>>>>> origin/develop
             alt="Photo de profil"
         >
     {% else %}
@@ -159,7 +163,11 @@
     <div class="profile-avatar-large">
         {% if app.user.photoUtilisateur %}
             <img
+<<<<<<< HEAD
                 src="{{ asset('assets/images/utilisateurs/' ~ app.user.photoUtilisateur) }}"
+=======
+                src="{{ asset('uploads/students/' ~ app.user.photoUtilisateur) }}"
+>>>>>>> origin/develop
                 alt="Photo de profil"
             >
         {% else %}
@@ -184,7 +192,13 @@
                                un User peut n'avoir ni Student ni Formateur #}
                             <div class="profile-dropdown-links">
 
+<<<<<<< HEAD
                                 {% if app.user.student %}
+=======
+                              <a href="{{ path('app_student_profile') }}">
+                                   Mon profil
+                              </a>
+>>>>>>> origin/develop
 
                                     <a href="{{ path('app_student_profile') }}">
                                         Mon profil

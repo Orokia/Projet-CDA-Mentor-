@@ -18,4 +18,12 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
-.env
+.env1.md
+# Archives locales
+*.zip
+
+# Sauvegardes de bases de données
+*.sql
+
+# Fichiers temporaires et rapports
+/analyse_projet.txt

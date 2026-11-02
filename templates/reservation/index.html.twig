@@ -73,11 +73,17 @@
 
                                 </div>
 
+<<<<<<< Updated upstream
+=======
+                                {# AUTRE PARTICIPANT : le formateur pour un étudiant, et inversement #}
+                                <div class="reservation-session-trainer">
+>>>>>>> Stashed changes
 
                                
                                 {# DATE / HEURE #}
                                
 
+<<<<<<< Updated upstream
                                 <div class="col-lg-3 mt-4 mt-lg-0">
 
                                     <small class="text-muted d-block mb-1">
@@ -100,6 +106,18 @@
                                         -
                                         {{ reservation.dateHeureFin|date('H:i') }}
 
+=======
+                                    <div>
+                                        <small class="reservation-label">
+                                            {{ app.user.student ? 'Formateur' : 'Étudiant' }}
+                                        </small>
+
+                                        <span>
+                                            {% set participant = app.user.student ? reservation.formateur : reservation.student %}
+                                            {{ participant.prenom }}
+                                            {{ participant.nom }}
+                                        </span>
+>>>>>>> Stashed changes
                                     </div>
 
                                 </div>
@@ -147,13 +165,22 @@
                                     {% if reservation.lienVisio %}
 
                                         <a
+<<<<<<< Updated upstream
                                             {# href="{{ path('app_reservation_visio', {
                                                 id: reservation.id
                                             }) }}" #}
                                             class="btn btn-primary"
+=======
+                                            href="{{ path('app_reservation_visio', {id: reservation.id}) }}"
+                                            class="btn-mentor btn-mentor-primary"
+>>>>>>> Stashed changes
                                         >
                                             <i class="bi bi-camera-video me-2"></i>
                                             Rejoindre
+<<<<<<< Updated upstream
+=======
+                                            <span class="visually-hidden">la séance du {{ reservation.dateHeureDebut|date('d/m/Y') }}</span>
+>>>>>>> Stashed changes
                                         </a>
 
                                     {% else %}

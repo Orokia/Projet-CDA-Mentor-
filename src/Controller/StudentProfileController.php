@@ -82,10 +82,11 @@ final class StudentProfileController extends AbstractController
                     . '.' . $photoFile->guessExtension();
 
                 try {
-                    // Déplacement de la photo vers le dossier public
+                    // Déplacement de la photo vers le dossier public,
+                    // le même que celui utilisé par l'admin EasyAdmin
                     $photoFile->move(
                         $this->getParameter('kernel.project_dir')
-                            . '/public/uploads/students',
+                            . '/public/assets/images/utilisateurs',
                         $newFilename
                     );
                 } catch (FileException) {

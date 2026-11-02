@@ -1,106 +1,43 @@
+<article class="formateur-card">
 
-<article
-    class="formateur-card"
-    data-formateur-search-target="card"
-    data-formateur-search="{{ (formateur.prenom ~ ' ' ~ formateur.nom ~ ' ' ~ (formateur.specialites|join(' ')))|lower|e('html_attr') }}"
->
-
-    {# IMAGE #}
-   
-<div class="formateur-card-image">
-    {% if formateur.image %}
-        <img
-            src="{{ asset('assets/images/utilisateurs/' ~ formateur.image) }}"
-            alt="{{ formateur.prenom }} {{ formateur.nom }}"
-        >
-    {% else %}
-        <div class="formateur-card-avatar">
-            {{ formateur.prenom|first|upper }}{{ formateur.nom|first|upper }}
-        </div>
-    {% endif %}
-</div>
-
-    {# CONTENU #}
-    <div class="formateur-card-content">
-
-        <div class="formateur-card-heading">
-            <h3 class="formateur-card-name">
-                {{ formateur.prenom }} {{ formateur.nom }}
-            </h3>
-
-            <p class="formateur-card-subtitle">
-                Accompagnement et montée en compétences
-            </p>
-        </div>
-
-        {# SPÉCIALITÉS #}
-        <div class="formateur-card-specialites">
-            {% for specialite in formateur.specialites|slice(0, 3) %}
-                <span class="formateur-specialite">
-                    {{ specialite }}
-                </span>
-           
-            {% endfor %}
-        </div>
-
-        {# INFORMATIONS #}
-        <div class="formateur-card-infos">
-
-            {% if formateur.experience %}
-                <div class="formateur-card-info">
-                    <span class="formateur-info-icon">
-                        <i class="bi bi-briefcase"></i>
-                    </span>
-                    <div>
-                        <span class="formateur-info-label">Expérience</span>
-                        <span class="formateur-info-value">
-                            {{ formateur.experience }}
-                        </span>
-                    </div>
-                </div>
-            {% endif %}
-
-            {% if formateur.localisation %}
-                <div class="formateur-card-info">
-                    <span class="formateur-info-icon">
-                        <i class="bi bi-geo-alt"></i>
-                    </span>
-                    <div>
-                        <span class="formateur-info-label">Localisation</span>
-                        <span class="formateur-info-value">
-                            {{ formateur.localisation }}
-                        </span>
-                    </div>
-                </div>
-            {% endif %}
-
-            {% if formateur.langue %}
-                <div class="formateur-card-info">
-                    <span class="formateur-info-icon">
-                        <i class="bi bi-translate"></i>
-                    </span>
-                    <div>
-                        <span class="formateur-info-label">Langue</span>
-                        <span class="formateur-info-value">
-                            {{ formateur.langue }}
-                        </span>
-                    </div>
-                </div>
-            {% endif %}
-
-        </div>
-
-        {# BOUTON #}
-        <div class="formateur-card-footer">
-            <a
-                href="{{ path('app_formateur_profil', {id: formateur.id}) }}"
-                class="formateur-card-button"
+    {# PHOTO OU INITIALES #}
+    <div class="formateur-card-photo">
+        {% if formateur.image %}
+            <img
+                src="{{ asset('assets/images/utilisateurs/' ~ formateur.image) }}"
+                alt=""
+                loading="lazy"
+                decoding="async"
             >
-                Voir le profil
-                <i class="bi bi-arrow-right"></i>
-            </a>
-        </div>
-
+        {% else %}
+            <span class="formateur-card-avatar" aria-hidden="true">
+                {{ formateur.prenom|first|upper }}{{ formateur.nom|first|upper }}
+            </span>
+        {% endif %}
     </div>
+
+    {# NOM ET SPÉCIALITÉS #}
+    <h2 class="formateur-card-name">
+        {{ formateur.prenom }} {{ formateur.nom }}
+    </h2>
+
+    <p class="formateur-card-subtitle">
+        {{ formateur.specialites|slice(0, 2)|join(' · ') ?: 'Formateur' }}
+    </p>
+
+    {% if formateur.localisation %}
+        <p class="formateur-card-location">
+            <i class="bi bi-geo-alt" aria-hidden="true"></i>
+            {{ formateur.localisation }}
+        </p>
+    {% endif %}
+
+    {# BOUTON #}
+    <a
+        href="{{ path('app_formateur_profil', {id: formateur.id}) }}"
+        class="btn btn-outline-primary formateur-card-button"
+    >
+        Voir le profil<span class="visually-hidden"> de {{ formateur.prenom }} {{ formateur.nom }}</span>
+    </a>
 
 </article>

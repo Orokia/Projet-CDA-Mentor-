@@ -134,7 +134,7 @@ final class StudentProfileControllerTest extends WebTestCase
 
     private function dossierUploads(): string
     {
-        return static::getContainer()->getParameter('kernel.project_dir') . '/public/uploads/students';
+        return static::getContainer()->getParameter('kernel.project_dir') . '/public/assets/images/utilisateurs';
     }
 
     private function cheminTemporaire(string $nom): string

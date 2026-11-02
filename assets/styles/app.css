@@ -1,5 +1,38 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+/* =========================================
+   VARIABLES (couleurs actuelles du site)
+========================================= */
+
+:root {
+    --mentor-primary: #4F46E5;
+    --mentor-primary-hover: #4338CA;
+    --mentor-primary-soft: #EEF2FF;
+
+    --mentor-bg: #F8F9FC;
+    --mentor-surface: #FFFFFF;
+    --mentor-dark: #111827;
+
+    --mentor-text: #1F2937;
+    --mentor-text-muted: #6B7280;
+    --mentor-text-soft: #374151;
+    --mentor-border: #E5E7EB;
+
+    --mentor-radius-sm: 10px;
+    --mentor-radius: 16px;
+    --mentor-radius-lg: 24px;
+
+    --mentor-shadow-sm: 0 1px 2px rgba(31, 41, 55, 0.06);
+    --mentor-shadow: 0 8px 24px rgba(31, 41, 55, 0.08);
+    --mentor-shadow-lg: 0 20px 45px rgba(31, 41, 55, 0.14);
+
+    --mentor-transition: 0.2s ease;
+}
+
+/* =========================================
+   BASE
+========================================= */
+
 * {
     box-sizing: border-box;
 }
@@ -11,8 +44,16 @@ html {
 body {
     margin: 0;
     font-family: "Inter", Arial, sans-serif;
-    background: #F8F9FC;
-    color: #1F2937;
+    background: var(--mentor-bg);
+    color: var(--mentor-text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3 {
+    letter-spacing: -0.02em;
 }
 
 a {
@@ -23,46 +64,440 @@ img {
     max-width: 100%;
 }
 
+/* Anneau de focus visible au clavier uniquement */
+:focus-visible {
+    outline: 3px solid rgba(79, 70, 229, 0.35);
+    outline-offset: 2px;
+}
+
 .container-mentor {
-    width: min(1200px, 90%);
+    /* Gouttière fixe de 16 px de chaque côté sur mobile */
+    width: min(1200px, calc(100% - 32px));
     margin: 0 auto;
 }
+
+/* Lien d'évitement : visible seulement quand il reçoit le focus clavier */
+.skip-link {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2000;
+
+    padding: 10px 16px;
+
+    border-radius: var(--mentor-radius-sm);
+    background: var(--mentor-primary);
+    color: #FFFFFF;
+
+    font-weight: 600;
+
+    transform: translateY(-200%);
+    transition: transform var(--mentor-transition);
+}
+
+.skip-link:focus {
+    color: #FFFFFF;
+    transform: translateY(0);
+}
+
+/* Cible du lien d'évitement : pas de contour au focus programmatique */
+main:focus {
+    outline: none;
+}
+
+.mentor-flashes {
+    padding-top: 20px;
+}
+
+.mentor-flashes .alert {
+    border-radius: var(--mentor-radius-sm);
+    box-shadow: var(--mentor-shadow-sm);
+}
+
+/* =========================================
+   BOUTONS
+========================================= */
 
 .btn-mentor {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
 
     padding: 12px 22px;
 
-    border-radius: 8px;
+    border-radius: var(--mentor-radius-sm);
 
-    border: none;
+    border: 1px solid transparent;
 
     font-weight: 600;
+    font-size: 15px;
+    line-height: 1.2;
 
     cursor: pointer;
 
-    transition: 0.2s ease;
+    transition:
+        background-color var(--mentor-transition),
+        color var(--mentor-transition),
+        box-shadow var(--mentor-transition),
+        transform var(--mentor-transition);
+}
+
+.btn-mentor:active {
+    transform: translateY(0);
 }
 
 .btn-mentor-primary {
-    background: #4F46E5;
-    color: white;
+    background: var(--mentor-primary);
+    color: #FFFFFF;
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
 }
 
 .btn-mentor-primary:hover {
-    background: #4338CA;
+    background: var(--mentor-primary-hover);
+    color: #FFFFFF;
     transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(79, 70, 229, 0.32);
 }
 
 .btn-mentor-outline {
-    border: 1px solid #4F46E5;
-    color: #4F46E5;
-    background: white;
+    border-color: var(--mentor-primary);
+    color: var(--mentor-primary);
+    background: var(--mentor-surface);
 }
 
 .btn-mentor-outline:hover {
-    background: #4F46E5;
-    color: white;
+    background: var(--mentor-primary);
+    color: #FFFFFF;
+    transform: translateY(-1px);
+}
+
+/* =========================================
+   PAGES DÉTAIL (formation, formateur)
+   Éléments communs : hero, cartes, sections
+========================================= */
+
+/* L'attribut hidden doit l'emporter sur les display: flex des composants */
+[hidden] {
+    display: none !important;
+}
+
+.detail-hero {
+    padding: 48px 0 110px;
+
+    background:
+        radial-gradient(circle at 85% 20%, rgba(129, 140, 248, 0.35), transparent 45%),
+        linear-gradient(135deg, #1E1B4B 0%, #312E81 55%, var(--mentor-primary) 100%);
+
+    color: #FFFFFF;
+}
+
+.detail-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+
+    margin-bottom: 22px;
+
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+}
+
+.detail-breadcrumb a {
+    color: #FFFFFF;
+    font-weight: 500;
+}
+
+.detail-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.detail-breadcrumb i {
+    font-size: 11px;
+}
+
+.detail-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    margin-bottom: 14px;
+    padding: 6px 12px;
+
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.detail-hero h1 {
+    margin: 0 0 16px;
+
+    font-size: clamp(30px, 4.5vw, 46px);
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.detail-hero-lead {
+    max-width: 680px;
+    margin: 0 0 24px;
+
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 17px;
+    line-height: 1.7;
+}
+
+.detail-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 8px 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Le contenu remonte sur le bas du hero */
+.detail-body {
+    position: relative;
+
+    margin-top: -70px;
+    padding-bottom: 80px;
+}
+
+.detail-card {
+    overflow: hidden;
+
+    background: var(--mentor-surface);
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius);
+
+    box-shadow: var(--mentor-shadow-lg);
+}
+
+.detail-section {
+    margin-bottom: 24px;
+    padding: 32px;
+
+    background: var(--mentor-surface);
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius);
+
+    box-shadow: var(--mentor-shadow-sm);
+
+    /* Laisse la place à la navbar lors d'un saut d'ancre */
+    scroll-margin-top: 100px;
+}
+
+.detail-section-title {
+    margin: 0 0 12px;
+
+    color: var(--mentor-text);
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.detail-section-text {
+    margin: 0 0 24px;
+
+    color: var(--mentor-text-muted);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+@media (min-width: 992px) {
+
+    /* La colonne de droite suit le défilement */
+    .detail-body aside > .detail-card {
+        position: sticky;
+        top: 100px;
+    }
+
+}
+
+@media (max-width: 767px) {
+
+    .detail-hero {
+        padding: 32px 0 90px;
+    }
+
+    .detail-hero-lead {
+        font-size: 15px;
+    }
+
+    .detail-section {
+        padding: 22px 18px;
+    }
+
+    .detail-section-title {
+        font-size: 21px;
+    }
+
+}
+
+/* =========================================
+   EN-TÊTE DES PAGES DE LISTE / ESPACE
+========================================= */
+
+.page-header {
+    max-width: 760px;
+    margin: 0 auto 40px;
+
+    text-align: center;
+}
+
+.page-header-left {
+    margin-left: 0;
+    text-align: left;
+}
+
+.page-eyebrow {
+    display: inline-block;
+
+    margin-bottom: 12px;
+    padding: 6px 14px;
+
+    border-radius: 999px;
+    background: var(--mentor-primary-soft);
+    color: var(--mentor-primary);
+
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.page-header h1 {
+    margin: 0 0 12px;
+
+    color: var(--mentor-text);
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.page-header p {
+    margin: 0;
+
+    color: var(--mentor-text-muted);
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.page-section {
+    padding: 48px 0 80px;
+}
+
+/* État vide commun (aucune réservation, aucune formation…) */
+.empty-state {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 48px 24px;
+
+    border: 1px dashed #D1D5DB;
+    border-radius: var(--mentor-radius);
+    background: var(--mentor-surface);
+
+    text-align: center;
+}
+
+.empty-state-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 64px;
+    height: 64px;
+    margin-bottom: 16px;
+
+    border-radius: 50%;
+    background: var(--mentor-primary-soft);
+    color: var(--mentor-primary);
+
+    font-size: 28px;
+}
+
+.empty-state h3 {
+    margin: 0 0 8px;
+
+    color: var(--mentor-text);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.empty-state p {
+    margin: 0 0 24px;
+    color: var(--mentor-text-muted);
+}
+
+/* =========================================
+   FORMULAIRES (Bootstrap harmonisé)
+========================================= */
+
+.form-label {
+    margin-bottom: 6px;
+
+    color: var(--mentor-text-soft);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.form-control,
+.form-select {
+    min-height: 48px;
+
+    border-color: #D1D5DB;
+    border-radius: var(--mentor-radius-sm);
+
+    font-size: 16px; /* évite le zoom automatique sur iOS */
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: var(--mentor-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+
+.form-check-input:checked {
+    background-color: var(--mentor-primary);
+    border-color: var(--mentor-primary);
+}
+
+.form-text {
+    color: var(--mentor-text-muted);
+}
+
+/* Les erreurs Symfony sont rendues sous le champ */
+.invalid-feedback {
+    display: block;
+}
+
+/* =========================================
+   ACCESSIBILITÉ : ANIMATIONS RÉDUITES
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
 }

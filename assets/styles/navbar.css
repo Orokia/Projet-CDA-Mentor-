@@ -1,10 +1,16 @@
 
+/* =========================================
+   HEADER (effet verre dépoli)
+========================================= */
+
 .mentor-header {
     height: 80px;
 
-    background-color: #FFFFFF;
+    background-color: rgba(255, 255, 255, 0.85);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    backdrop-filter: saturate(180%) blur(12px);
 
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid var(--mentor-border);
 
     position: sticky;
     top: 0;
@@ -13,143 +19,137 @@
 }
 
 .mentor-header-container {
-
     height: 100%;
 
     display: flex;
-
     align-items: center;
-
     justify-content: space-between;
 
     gap: 30px;
 }
 
 
-/* 
+/* =========================================
    LOGO
-   */
+========================================= */
 
 .mentor-logo {
-
     display: flex;
-
     align-items: center;
-
     gap: 10px;
 }
 
 .mentor-logo-icon {
-
     width: 42px;
     height: 42px;
 
     display: flex;
-
     align-items: center;
     justify-content: center;
 
-    border-radius: 10px;
+    border-radius: var(--mentor-radius-sm);
 
-    background-color: #EEF2FF;
+    background-color: var(--mentor-primary-soft);
+    color: var(--mentor-primary);
 
     font-size: 22px;
+
+    transition: transform var(--mentor-transition);
+}
+
+.mentor-logo:hover .mentor-logo-icon {
+    transform: rotate(-6deg) scale(1.05);
 }
 
 .mentor-logo-text strong {
-
     display: block;
 
-    color: #4F46E5;
+    color: var(--mentor-primary);
 
     font-size: 21px;
-
     font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
 }
 
 .mentor-logo-text span {
-
     display: block;
 
-    color: #6B7280;
+    color: var(--mentor-text-muted);
 
     font-size: 10px;
 }
 
 
-/* 
+/* =========================================
    NAVIGATION
-    */
+========================================= */
 
 .mentor-navigation {
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
 
-    gap: 30px;
+    gap: 6px;
 
     flex: 1;
 }
 
 .mentor-navigation a {
+    padding: 8px 14px;
 
-    color: #374151;
+    border-radius: 999px;
+
+    color: var(--mentor-text-soft);
 
     font-size: 14px;
-
     font-weight: 500;
 
-    transition: color 0.2s ease;
+    transition:
+        color var(--mentor-transition),
+        background-color var(--mentor-transition);
 }
 
 .mentor-navigation a:hover {
+    background-color: var(--mentor-primary-soft);
+    color: var(--mentor-primary);
+}
 
-    color: #4F46E5;
+/* Lien de la page courante */
+.mentor-navigation a.is-active {
+    background-color: var(--mentor-primary-soft);
+    color: var(--mentor-primary);
+    font-weight: 600;
 }
 
 
-/* 
+/* =========================================
    ACTIONS
-  */
+========================================= */
 
 .mentor-header-actions {
-
     display: flex;
-
     align-items: center;
-
     gap: 18px;
 }
 
 .mentor-header-actions > a:not(.btn-mentor) {
+    color: var(--mentor-text-soft);
 
     font-size: 14px;
-
     font-weight: 500;
+
+    transition: color var(--mentor-transition);
 }
 
-.mentor-user {
-
-    max-width: 180px;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-
-    white-space: nowrap;
-
-    font-size: 13px;
-
-    color: #374151;
+.mentor-header-actions > a:not(.btn-mentor):hover {
+    color: var(--mentor-primary);
 }
 
 
-/*
+/* =========================================
    RESPONSIVE
-   */
+========================================= */
 
 @media (max-width: 900px) {
 
@@ -169,8 +169,17 @@
         height: 70px;
     }
 
+    .mentor-header-actions {
+        gap: 12px;
+    }
+
     .mentor-header-actions > a:not(.btn-mentor) {
         display: none;
+    }
+
+    .mentor-header-actions .btn-mentor {
+        padding: 10px 16px;
+        font-size: 14px;
     }
 
     .mentor-logo-icon {
@@ -179,6 +188,7 @@
     }
 
 }
+
 
 /* =========================================
    PROFIL UTILISATEUR - NAVBAR
@@ -190,7 +200,7 @@
 
 
 /* =========================================
-   AVATAR CO
+   AVATAR
 ========================================= */
 
 .profile-avatar {
@@ -203,7 +213,9 @@
 
     padding: 0;
 
-    border: none;
+    overflow: hidden;
+
+    border: 2px solid #FFFFFF;
     border-radius: 50%;
 
     background: #171821;
@@ -212,13 +224,20 @@
     font-size: 14px;
     font-weight: 700;
 
+    box-shadow: 0 0 0 1px var(--mentor-border);
+
     cursor: pointer;
 
-    transition: 0.2s ease;
+    transition:
+        background-color var(--mentor-transition),
+        box-shadow var(--mentor-transition),
+        transform var(--mentor-transition);
 }
 
-.profile-avatar:hover {
-    background: #4F46E5;
+.profile-avatar:hover,
+.navbar-profile.open .profile-avatar {
+    background: var(--mentor-primary);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.25);
     transform: scale(1.05);
 }
 
@@ -235,29 +254,37 @@
 
     width: 320px;
 
-    background: #FFFFFF;
+    background: var(--mentor-surface);
 
-    border: 1px solid #E5E7EB;
-    border-radius: 12px;
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius);
 
-    box-shadow: 0 15px 40px rgba(31, 41, 55, 0.15);
+    box-shadow: var(--mentor-shadow-lg);
 
     overflow: hidden;
 
-    /*
-     * Caché par défaut
-     */
+    /* Caché par défaut */
     display: none;
 
     z-index: 2000;
 }
 
-
-/*
- * Lorsque le menu est ouvert
- */
+/* Lorsque le menu est ouvert */
 .navbar-profile.open .profile-dropdown {
     display: block;
+    animation: mentor-pop 0.18s ease-out;
+}
+
+@keyframes mentor-pop {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
 }
 
 
@@ -267,19 +294,16 @@
 
 .profile-dropdown-header {
     display: flex;
-
     align-items: center;
-
     gap: 14px;
 
     padding: 20px;
 
-    border-bottom: 1px solid #E5E7EB;
+    background: var(--mentor-bg);
+    border-bottom: 1px solid var(--mentor-border);
 }
 
-
 /* Grand avatar */
-
 .profile-avatar-large {
     width: 55px;
     height: 55px;
@@ -290,6 +314,8 @@
     align-items: center;
     justify-content: center;
 
+    overflow: hidden;
+
     border-radius: 50%;
 
     background: #171821;
@@ -299,9 +325,15 @@
     font-weight: 700;
 }
 
+.profile-avatar img,
+.profile-avatar-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
 
 /* Nom + email */
-
 .profile-dropdown-header > div:last-child {
     min-width: 0;
 
@@ -309,9 +341,8 @@
     flex-direction: column;
 }
 
-
 .profile-dropdown-header strong {
-    color: #1F2937;
+    color: var(--mentor-text);
 
     font-size: 15px;
 
@@ -320,11 +351,10 @@
     text-overflow: ellipsis;
 }
 
-
 .profile-dropdown-header span {
     margin-top: 4px;
 
-    color: #6B7280;
+    color: var(--mentor-text-muted);
 
     font-size: 12px;
 
@@ -339,27 +369,29 @@
 ========================================= */
 
 .profile-dropdown-links {
-    padding: 8px 0;
+    padding: 8px;
 }
-
 
 .profile-dropdown-links a {
     display: block;
 
-    padding: 13px 20px;
+    padding: 11px 14px;
 
-    color: #374151;
+    border-radius: var(--mentor-radius-sm);
+
+    color: var(--mentor-text-soft);
 
     font-size: 14px;
     font-weight: 500;
 
-    transition: 0.2s ease;
+    transition:
+        background-color var(--mentor-transition),
+        color var(--mentor-transition);
 }
 
-
 .profile-dropdown-links a:hover {
-    background: #F8F9FC;
-    color: #4F46E5;
+    background: var(--mentor-primary-soft);
+    color: var(--mentor-primary);
 }
 
 
@@ -368,25 +400,25 @@
 ========================================= */
 
 .profile-dropdown-footer {
-    padding: 8px 0;
+    padding: 8px;
 
-    border-top: 1px solid #E5E7EB;
+    border-top: 1px solid var(--mentor-border);
 }
-
 
 .profile-dropdown-footer a {
     display: block;
 
-    padding: 13px 20px;
+    padding: 11px 14px;
+
+    border-radius: var(--mentor-radius-sm);
 
     color: #DC2626;
 
     font-size: 14px;
     font-weight: 500;
 
-    transition: 0.2s ease;
+    transition: background-color var(--mentor-transition);
 }
-
 
 .profile-dropdown-footer a:hover {
     background: #FEF2F2;
@@ -394,7 +426,7 @@
 
 
 /* =========================================
-   RESPONSIVE
+   RESPONSIVE DU MENU PROFIL
 ========================================= */
 
 @media (max-width: 600px) {
@@ -411,18 +443,102 @@
     }
 
 }
-.profile-avatar img,
-.profile-avatar-large img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
+
+
+/* =========================================
+   MENU MOBILE
+========================================= */
+
+/* Bouton burger et lien de connexion : masqués sur grand écran */
+.mentor-menu-toggle,
+.mentor-navigation .mentor-navigation-auth {
+    display: none;
 }
 
-.profile-avatar,
-.profile-avatar-large {
-    overflow: hidden;
-    display: flex;
+.mentor-menu-toggle {
+    width: 42px;
+    height: 42px;
+
     align-items: center;
     justify-content: center;
+
+    padding: 0;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius-sm);
+
+    background: var(--mentor-surface);
+    color: var(--mentor-text);
+
+    font-size: 24px;
+
+    cursor: pointer;
+
+    transition:
+        background-color var(--mentor-transition),
+        color var(--mentor-transition);
+}
+
+.mentor-menu-toggle:hover,
+.mentor-header.nav-open .mentor-menu-toggle {
+    background: var(--mentor-primary-soft);
+    color: var(--mentor-primary);
+}
+
+@media (max-width: 900px) {
+
+    .mentor-menu-toggle {
+        display: inline-flex;
+    }
+
+    /* Le header est « sticky » : le menu se place juste en dessous.
+       Le sélecteur .nav-open l'emporte sur le display: none ci-dessus */
+    .mentor-header.nav-open .mentor-navigation {
+        display: flex;
+
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+
+        padding: 10px 5%;
+
+        background: var(--mentor-surface);
+        border-bottom: 1px solid var(--mentor-border);
+        box-shadow: var(--mentor-shadow);
+
+        animation: mentor-pop 0.18s ease-out;
+    }
+
+    .mentor-header.nav-open .mentor-navigation a {
+        padding: 12px 16px;
+
+        border-radius: var(--mentor-radius-sm);
+
+        font-size: 15px;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    /* Le lien « Se connecter » des actions est masqué : on l'affiche dans le menu */
+    .mentor-navigation .mentor-navigation-auth {
+        display: block;
+    }
+
+}
+
+/* Pas d'animation pour les personnes qui les désactivent */
+@media (prefers-reduced-motion: reduce) {
+
+    .navbar-profile.open .profile-dropdown,
+    .mentor-header.nav-open .mentor-navigation {
+        animation: none;
+    }
+
 }

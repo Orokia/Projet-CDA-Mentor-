@@ -51,8 +51,8 @@ export default class extends Controller {
         this.selectionTextTarget.textContent = `${bouton.dataset.jour} — ${horaire}`;
 
         // Afficher le récapitulatif et le bouton Réserver
-        this.selectionTarget.style.display = 'block';
-        this.actionTarget.style.display = 'block';
+        this.selectionTarget.hidden = false;
+        this.actionTarget.hidden = false;
     }
 
     // Méthode appelée au clic sur le bouton Réserver

@@ -7,22 +7,22 @@
 
 {% block body %}
 
-<div class="container py-5">
+<div class="container-mentor page-section">
 
     {# EN-TÊTE DE LA PAGE #}
-    <div class="mb-5">
-        <span class="text-primary fw-semibold">
-            MON ESPACE
+    <header class="page-header page-header-left">
+        <span class="page-eyebrow">
+            Mon espace
         </span>
 
-        <h1 class="mt-2">
+        <h1>
             Mes réservations
         </h1>
 
-        <p class="text-muted">
+        <p>
             Retrouvez toutes vos séances, regroupées par formation.
         </p>
-    </div>
+    </header>
 
     {# VÉRIFICATION DES RÉSERVATIONS #}
     {% if reservationsParFormation|length > 0 %}
@@ -32,19 +32,19 @@
             {# UNE CARTE PAR FORMATION #}
             {% for groupe in reservationsParFormation %}
 
-                <section class="reservation-group mb-4">
+                <section class="reservation-group mb-4" aria-labelledby="formation-{{ loop.index }}">
 
                     {# EN-TÊTE DE LA FORMATION #}
                     <div class="reservation-group-header">
 
-                        <div class="reservation-group-icon">
+                        <div class="reservation-group-icon" aria-hidden="true">
                             <i class="bi bi-mortarboard"></i>
                         </div>
 
                         <div class="reservation-group-title">
-                            <small>FORMATION</small>
+                            <small>Formation</small>
 
-                            <h2>
+                            <h2 id="formation-{{ loop.index }}">
                                 {{ groupe.formation.titre }}
                             </h2>
 
@@ -66,17 +66,19 @@
                                 {# DATE ET HORAIRES #}
                                 <div class="reservation-session-date">
 
-                                    <div class="reservation-date-icon">
+                                    <div class="reservation-date-icon" aria-hidden="true">
                                         <i class="bi bi-calendar3"></i>
                                     </div>
 
                                     <div>
-                                        <small class="text-muted">
+                                        <small class="reservation-label">
                                             Date et heure
                                         </small>
 
                                         <strong>
-                                            {{ reservation.dateHeureDebut|date('d/m/Y') }}
+                                            <time datetime="{{ reservation.dateHeureDebut|date('Y-m-d') }}">
+                                                {{ reservation.dateHeureDebut|date('d/m/Y') }}
+                                            </time>
                                         </strong>
 
                                         <span>
@@ -91,10 +93,10 @@
                                 {# FORMATEUR #}
                                 <div class="reservation-session-trainer">
 
-                                    <i class="bi bi-person"></i>
+                                    <i class="bi bi-person" aria-hidden="true"></i>
 
                                     <div>
-                                        <small class="text-muted">
+                                        <small class="reservation-label">
                                             Formateur
                                         </small>
 
@@ -106,29 +108,32 @@
 
                                 </div>
 
-                                {# STATUT #}
+                                {# STATUT : couleur + icône + texte, pour ne pas dépendre de la couleur seule #}
                                 <div class="reservation-session-status">
 
-                                    <small class="text-muted d-block mb-2">
+                                    <small class="reservation-label mb-2">
                                         Statut
                                     </small>
 
                                     {% if reservation.statut == 'confirmée' %}
 
-                                        <span class="badge bg-success">
+                                        <span class="reservation-status reservation-status-success">
+                                            <i class="bi bi-check-circle" aria-hidden="true"></i>
                                             Confirmée
                                         </span>
 
                                     {% elseif reservation.statut == 'annulée' %}
 
-                                        <span class="badge bg-danger">
+                                        <span class="reservation-status reservation-status-danger">
+                                            <i class="bi bi-x-circle" aria-hidden="true"></i>
                                             Annulée
                                         </span>
 
                                     {% else %}
 
-                                        <span class="badge bg-secondary">
-                                            {{ reservation.statut }}
+                                        <span class="reservation-status">
+                                            <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                                            {{ reservation.statut|capitalize }}
                                         </span>
 
                                     {% endif %}
@@ -143,17 +148,18 @@
 
                                         <a
                                             href="{{ reservation.lienVisio }}"
-                                            class="btn btn-primary"
+                                            class="btn-mentor btn-mentor-primary"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
-                                            <i class="bi bi-camera-video me-2"></i>
+                                            <i class="bi bi-camera-video" aria-hidden="true"></i>
                                             Rejoindre
+                                            <span class="visually-hidden">la séance du {{ reservation.dateHeureDebut|date('d/m/Y') }} (nouvel onglet)</span>
                                         </a>
 
                                     {% else %}
 
-                                        <span class="text-muted small">
+                                        <span class="reservation-label">
                                             Visioconférence indisponible
                                         </span>
 
@@ -176,23 +182,23 @@
     {% else %}
 
         {# AUCUNE RÉSERVATION #}
-        <div class="text-center py-5">
+        <div class="empty-state">
 
-            <div class="mb-3">
-                <i class="bi bi-calendar-x display-4 text-muted"></i>
-            </div>
+            <span class="empty-state-icon" aria-hidden="true">
+                <i class="bi bi-calendar-x"></i>
+            </span>
 
             <h3>
                 Aucune réservation
             </h3>
 
-            <p class="text-muted">
+            <p>
                 Vous n'avez pas encore réservé de formation.
             </p>
 
             <a
                 href="{{ path('app_formation') }}"
-                class="btn btn-primary"
+                class="btn-mentor btn-mentor-primary"
             >
                 Découvrir les formations
             </a>

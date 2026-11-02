@@ -4,47 +4,115 @@
 
 {% block body %}
 
-<section class="formations-page">
+{# Liste des spécialités présentes dans le catalogue, sans doublon #}
+{% set categories = [] %}
+{% for formation in formations %}
+    {% if formation.specialite and (formation.specialite ~ '') not in categories %}
+        {% set categories = categories|merge([formation.specialite ~ '']) %}
+    {% endif %}
+{% endfor %}
 
-    <div class="container py-5">
+<section class="formations-page page-section">
 
-        <div class="text-center mb-5">
-            <span class="badge bg-primary mb-3">
-                Mentor
-            </span>
+    <div class="container-mentor">
 
-            <h1 class="display-5 fw-bold">
+        <header class="catalog-header">
+            <h1>
                 Découvrez nos formations
             </h1>
 
-            <p class="lead text-muted">
+            <p>
                 Développez vos compétences avec nos formations.
             </p>
-        </div>
+        </header>
 
         {% if formations|length > 0 %}
 
-            <div class="row g-4">
+            <div data-controller="formation-search">
 
-                {% for formation in formations %}
+                {# RECHERCHE ET FILTRES #}
+                <div class="catalog-toolbar">
 
-                    <div class="col-6 col-md-4 col-lg-3">
+                    <div class="catalog-search">
+                        <i class="bi bi-search" aria-hidden="true"></i>
 
-                        {% include 'components/formation_card.html.twig' with {
-                            formation: formation
-                        } %}
-
+                        <input
+                            type="search"
+                            placeholder="Rechercher une formation"
+                            aria-label="Rechercher une formation"
+                            autocomplete="off"
+                            data-formation-search-target="input"
+                            data-action="input->formation-search#filter"
+                        >
                     </div>
 
-                {% endfor %}
+                    {% if categories is not empty %}
+                        <div class="catalog-categories" role="group" aria-label="Filtrer par spécialité">
+                            {% for categorie in categories %}
+                                <button
+                                    type="button"
+                                    class="catalog-chip"
+                                    aria-pressed="false"
+                                    data-categorie="{{ categorie }}"
+                                    data-formation-search-target="category"
+                                    data-action="formation-search#selectCategory"
+                                >
+                                    {{ categorie }}
+                                </button>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                </div>
+
+                <p
+                    class="catalog-count"
+                    data-formation-search-target="count"
+                    aria-live="polite"
+                    hidden
+                ></p>
+
+                <div class="row g-4">
+
+                    {% for formation in formations %}
+
+                        <div
+                            class="col-12 col-sm-6 col-md-4 col-lg-3"
+                            data-formation-search-target="item"
+                            data-categorie="{{ formation.specialite ? formation.specialite ~ '' }}"
+                            data-formation-search="{{ (formation.titre ~ ' ' ~ (formation.specialite ?? '') ~ ' ' ~ (formation.formateurs|join(' ')))|e('html_attr') }}"
+                        >
+
+                            {% include 'components/formation_card.html.twig' with {
+                                formation: formation
+                            } %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+                <div class="empty-state mt-4" data-formation-search-target="empty" hidden>
+                    <span class="empty-state-icon" aria-hidden="true">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <h3>Aucun résultat</h3>
+                    <p>
+                        Essayez un autre mot-clé ou retirez le filtre de spécialité.
+                    </p>
+                </div>
 
             </div>
 
         {% else %}
 
-            <div class="text-center py-5">
+            <div class="empty-state">
+                <span class="empty-state-icon" aria-hidden="true">
+                    <i class="bi bi-journal-x"></i>
+                </span>
                 <h3>Aucune formation disponible</h3>
-                <p class="text-muted">
+                <p>
                     Aucune formation n'est actuellement disponible.
                 </p>
             </div>

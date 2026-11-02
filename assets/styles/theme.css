@@ -1,0 +1,838 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,700&display=swap');
+
+/* =========================================================
+   THÈME « PLACE DE MARCHÉ DE COURS »
+   Chargé en dernier (voir app.js) : il surcharge les styles
+   des autres fichiers sans les modifier. Pour revenir à
+   l'ancien rendu, il suffit de retirer son import.
+   ========================================================= */
+
+:root {
+    --mentor-bg: #FFFFFF;
+    --mentor-surface: #FFFFFF;
+    --mentor-dark: #1C1D1F;
+
+    --mentor-text: #1C1D1F;
+    --mentor-text-soft: #2D2F31;
+    --mentor-text-muted: #595C73;
+    --mentor-border: #D1D2E0;
+
+    --mentor-radius-sm: 8px;
+    --mentor-radius: 12px;
+    --mentor-radius-lg: 16px;
+
+    --mentor-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+    --mentor-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    --mentor-shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.16);
+
+    --mentor-font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+}
+
+body {
+    background: var(--mentor-bg);
+}
+
+/* =========================================================
+   BOUTONS : plats, coins peu arrondis
+   ========================================================= */
+
+.btn-mentor {
+    min-height: 44px;
+    padding: 10px 18px;
+    border-radius: var(--mentor-radius-sm);
+    font-weight: 700;
+}
+
+.btn-mentor-primary,
+.btn-mentor-primary:hover {
+    box-shadow: none;
+    transform: none;
+}
+
+.btn-mentor-outline {
+    background: transparent;
+}
+
+.btn-mentor-outline:hover {
+    background: var(--mentor-primary-soft);
+    color: var(--mentor-primary-hover);
+    transform: none;
+}
+
+/* Boutons Bootstrap utilisés sur les pages formation et formateur */
+.btn-primary {
+    --bs-btn-bg: var(--mentor-primary);
+    --bs-btn-border-color: var(--mentor-primary);
+    --bs-btn-hover-bg: var(--mentor-primary-hover);
+    --bs-btn-hover-border-color: var(--mentor-primary-hover);
+    --bs-btn-active-bg: var(--mentor-primary-hover);
+    --bs-btn-active-border-color: var(--mentor-primary-hover);
+    --bs-btn-disabled-bg: var(--mentor-primary);
+    --bs-btn-disabled-border-color: var(--mentor-primary);
+    --bs-btn-border-radius: var(--mentor-radius-sm);
+    font-weight: 700;
+}
+
+/* =========================================================
+   EN-TÊTE : logo, grande recherche, liens, boutons
+   ========================================================= */
+
+.mentor-header {
+    height: 72px;
+    background-color: #FFFFFF;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-bottom: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.mentor-header-container {
+    gap: 20px;
+}
+
+.mentor-logo {
+    flex-shrink: 0;
+}
+
+.mentor-logo-text span {
+    display: none;
+}
+
+.mentor-logo-text strong {
+    color: var(--mentor-text);
+    font-size: 24px;
+}
+
+/* Barre de recherche en forme de pilule */
+.mentor-search {
+    display: flex;
+    align-items: center;
+    flex: 1;
+
+    max-width: 640px;
+    height: 48px;
+
+    border: 1px solid #9194AC;
+    border-radius: 999px;
+    background: #F6F7F9;
+
+    transition: border-color var(--mentor-transition), background-color var(--mentor-transition);
+}
+
+.mentor-search:focus-within {
+    border-color: var(--mentor-text);
+    background: #FFFFFF;
+}
+
+.mentor-search-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    width: 48px;
+    height: 46px;
+    padding: 0;
+
+    border: none;
+    border-radius: 999px 0 0 999px;
+    background: transparent;
+    color: var(--mentor-text-muted);
+
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.mentor-search input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0 18px 0 0;
+
+    border: none;
+    background: transparent;
+    color: var(--mentor-text);
+
+    font-size: 15px;
+}
+
+.mentor-search input::placeholder {
+    color: var(--mentor-text-muted);
+}
+
+/* Le contour est porté par la pilule entière */
+.mentor-search input:focus-visible {
+    outline: none;
+}
+
+.mentor-search-mobile {
+    display: none;
+}
+
+/* Liens de navigation : texte simple, sans pastille */
+.mentor-navigation {
+    flex: none;
+    gap: 2px;
+}
+
+.mentor-navigation a {
+    padding: 10px 12px;
+    border-radius: var(--mentor-radius-sm);
+    color: var(--mentor-text-soft);
+}
+
+.mentor-navigation a:hover,
+.mentor-navigation a.is-active {
+    background-color: transparent;
+    color: var(--mentor-primary);
+}
+
+.mentor-navigation a.is-active {
+    box-shadow: inset 0 -2px 0 var(--mentor-primary);
+    border-radius: 0;
+}
+
+.mentor-header-actions {
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+/* « Se connecter » devient un bouton à contour */
+.mentor-header-actions > a:not(.btn-mentor) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 18px;
+
+    border: 1px solid var(--mentor-primary);
+    border-radius: var(--mentor-radius-sm);
+    color: var(--mentor-primary);
+
+    font-weight: 700;
+}
+
+.mentor-header-actions > a:not(.btn-mentor):hover {
+    background: var(--mentor-primary-soft);
+    color: var(--mentor-primary-hover);
+}
+
+.mentor-menu-toggle {
+    width: 44px;
+    height: 44px;
+    border: none;
+}
+
+@media (max-width: 1100px) {
+
+    .mentor-navigation a[href="#"] {
+        display: none;
+    }
+
+}
+
+@media (max-width: 900px) {
+
+    .mentor-header > .mentor-header-container > .mentor-search {
+        display: none;
+    }
+
+    .mentor-header.nav-open .mentor-navigation a[href="#"] {
+        display: block;
+    }
+
+    .mentor-header.nav-open .mentor-search-mobile {
+        display: flex;
+        flex: none;
+        max-width: none;
+        margin-bottom: 8px;
+    }
+
+    .mentor-header.nav-open .mentor-navigation {
+        padding: 12px 16px 16px;
+    }
+
+    .mentor-header.nav-open .mentor-navigation a.is-active {
+        box-shadow: inset 3px 0 0 var(--mentor-primary);
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .mentor-header {
+        height: 64px;
+    }
+
+    .profile-dropdown {
+        top: 70px;
+    }
+
+}
+
+/* =========================================================
+   ACCUEIL
+   ========================================================= */
+
+.hero {
+    padding: 24px 0 48px;
+}
+
+/* Bannière pleine largeur avec un encart blanc posé dessus */
+.hero-banner {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+    min-height: 400px;
+    overflow: hidden;
+
+    border-radius: var(--mentor-radius);
+    background: linear-gradient(120deg, #EEF2FF 0%, #E0E7FF 55%, #C7D2FE 100%);
+}
+
+.hero-image {
+    width: 62%;
+    align-self: stretch;
+}
+
+.hero-image img {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: 400px;
+    object-fit: contain;
+    object-position: right center;
+}
+
+.hero-text {
+    position: absolute;
+    top: 50%;
+    left: 56px;
+
+    max-width: 440px;
+    padding: 28px;
+
+    background: #FFFFFF;
+    border-radius: var(--mentor-radius-sm);
+    box-shadow: var(--mentor-shadow-lg);
+
+    transform: translateY(-50%);
+}
+
+.hero h1 {
+    font-family: var(--mentor-font-display);
+    font-size: clamp(30px, 3.2vw, 40px);
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+    color: var(--mentor-text);
+}
+
+.hero p {
+    margin-top: 14px;
+    color: var(--mentor-text-soft);
+    font-size: 17px;
+    line-height: 1.5;
+}
+
+.hero-actions {
+    margin-top: 22px;
+    gap: 10px;
+}
+
+/* Bandeau des atouts */
+.home-features {
+    padding: 0 0 8px;
+}
+
+.home-features-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+
+    margin: 0;
+    padding: 20px 24px;
+    list-style: none;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius);
+}
+
+.home-features-list li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.home-features-list i {
+    color: var(--mentor-primary);
+    font-size: 26px;
+}
+
+.home-features-list strong,
+.home-features-list span {
+    display: block;
+}
+
+.home-features-list strong {
+    color: var(--mentor-text);
+    font-size: 15px;
+}
+
+.home-features-list span {
+    color: var(--mentor-text-muted);
+    font-size: 14px;
+}
+
+/* Titres de section alignés à gauche, en serif */
+.formations-section,
+.formateurs-section {
+    padding: 56px 0;
+    background: #FFFFFF;
+}
+
+.section-heading {
+    max-width: none;
+    margin: 0 0 20px;
+    text-align: left;
+}
+
+.section-heading h2,
+.catalog-header h1 {
+    font-family: var(--mentor-font-display);
+    font-size: clamp(26px, 3vw, 32px);
+    font-weight: 700;
+    color: var(--mentor-text);
+}
+
+.section-heading p {
+    max-width: 640px;
+    margin-top: 8px;
+    color: var(--mentor-text-muted);
+}
+
+.home-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 28px;
+}
+
+.section-more {
+    margin-top: 32px;
+}
+
+.formateurs-section {
+    background: #F7F9FA;
+}
+
+
+@media (max-width: 900px) {
+
+    .hero-banner {
+        flex-direction: column;
+        min-height: 0;
+        background: none;
+        border-radius: 0;
+        overflow: visible;
+    }
+
+    .hero-image {
+        width: 100%;
+        border-radius: var(--mentor-radius);
+        background: linear-gradient(120deg, #EEF2FF 0%, #C7D2FE 100%);
+    }
+
+    .hero-image img {
+        max-height: 280px;
+        object-position: center;
+    }
+
+    .hero-text {
+        position: static;
+        max-width: none;
+        padding: 24px 0 0;
+        box-shadow: none;
+        transform: none;
+        text-align: left;
+    }
+
+    .hero-actions {
+        justify-content: flex-start;
+    }
+
+    .home-features-list {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 600px) {
+
+    .hero {
+        padding: 16px 0 32px;
+    }
+
+    .hero-content {
+        text-align: left;
+    }
+
+}
+
+/* =========================================================
+   CARTES FORMATION : sans cadre, image 16/9, titre en gras
+   ========================================================= */
+
+.formation-card {
+    position: relative; /* conteneur du stretched-link */
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
+}
+
+.formation-card:hover,
+.formation-card:focus-within {
+    border-color: transparent;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Le lien couvre la carte : on montre le focus sur la carte entière */
+.formation-card:focus-within {
+    outline: 3px solid rgba(79, 70, 229, 0.45);
+    outline-offset: 4px;
+    border-radius: var(--mentor-radius-sm);
+}
+
+.formation-card .formation-discover:focus-visible {
+    outline: none;
+}
+
+.formation-card .formation-image {
+    position: relative;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius-sm);
+}
+
+/* Assombrit légèrement l'image au survol */
+.formation-card .formation-image::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(28, 29, 31, 0);
+    transition: background-color var(--mentor-transition);
+}
+
+.formation-card:hover .formation-image::after {
+    background: rgba(28, 29, 31, 0.12);
+}
+
+.formation-card .formation-content {
+    padding: 10px 0 0;
+}
+
+.formation-card .formation-title {
+    height: auto;
+    min-height: 42px;
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 21px;
+}
+
+/* Le lien prend l'apparence du titre */
+.formation-card .formation-discover {
+    display: inline;
+    min-height: 0;
+    padding: 0;
+    border-radius: 0;
+    background: none;
+    color: var(--mentor-text);
+    font-size: inherit;
+    font-weight: inherit;
+    white-space: normal;
+}
+
+.formation-card .formation-discover:hover {
+    background: none;
+    color: var(--mentor-text);
+}
+
+.formation-card .formation-trainers {
+    margin: 0 0 4px;
+    overflow: hidden;
+    color: var(--mentor-text-muted);
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.formation-card .formation-meta {
+    justify-content: flex-start;
+    gap: 6px;
+    margin: 0 0 6px;
+    color: var(--mentor-text-muted);
+    font-size: 13px;
+}
+
+.formation-card .formation-footer {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 2px;
+    border-top: none;
+}
+
+.formation-card .formation-footer strong {
+    color: var(--mentor-text);
+    font-size: 17px;
+}
+
+.formation-card .formation-category {
+    margin: 0;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--mentor-primary-soft);
+    color: #3730A3;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* =========================================================
+   CATALOGUE : recherche et filtres
+   ========================================================= */
+
+.catalog-header {
+    margin-bottom: 24px;
+}
+
+.catalog-header h1 {
+    margin: 0 0 8px;
+    font-size: clamp(28px, 3.4vw, 36px);
+}
+
+.catalog-header p {
+    margin: 0;
+    color: var(--mentor-text-muted);
+    font-size: 16px;
+}
+
+.catalog-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    margin-bottom: 12px;
+}
+
+.catalog-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    flex: 1 1 320px;
+    max-width: 480px;
+    height: 48px;
+    padding: 0 16px;
+
+    border: 1px solid #9194AC;
+    border-radius: var(--mentor-radius-sm);
+    background: #FFFFFF;
+}
+
+.catalog-search:focus-within {
+    border-color: var(--mentor-text);
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+}
+
+.catalog-search i {
+    color: var(--mentor-text-muted);
+}
+
+.catalog-search input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: transparent;
+    font-size: 16px;
+}
+
+.catalog-search input:focus-visible {
+    outline: none;
+}
+
+.catalog-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.catalog-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 8px 16px;
+
+    border: 1px solid var(--mentor-text);
+    border-radius: 999px;
+    background: #FFFFFF;
+    color: var(--mentor-text);
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+    transition: background-color var(--mentor-transition), color var(--mentor-transition);
+}
+
+.catalog-chip:hover {
+    background: #F6F7F9;
+    color: var(--mentor-text);
+}
+
+.catalog-chip[aria-pressed="true"] {
+    background: var(--mentor-text);
+    color: #FFFFFF;
+}
+
+.catalog-count {
+    margin: 0 0 16px;
+    color: var(--mentor-text-muted);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* =========================================================
+   PAGES DÉTAIL : bandeau sombre, carte d'achat sur le côté
+   ========================================================= */
+
+.detail-hero {
+    padding: 40px 0 96px;
+    background: var(--mentor-dark);
+}
+
+.detail-breadcrumb a {
+    color: #C0C4FC;
+    font-weight: 700;
+}
+
+.detail-badge {
+    border-radius: 4px;
+    background: #ECEB98;
+    color: #3D3C0A;
+}
+
+.detail-hero h1 {
+    font-size: clamp(28px, 3.6vw, 36px);
+    font-weight: 700;
+}
+
+.detail-chip {
+    padding: 0;
+    border: none;
+    background: none;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.formation-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+}
+
+.detail-card {
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius-sm);
+    box-shadow: var(--mentor-shadow-lg);
+}
+
+.detail-section {
+    padding: 24px;
+    border-radius: var(--mentor-radius-sm);
+    box-shadow: none;
+}
+
+.detail-section-title {
+    font-size: 22px;
+}
+
+/* =========================================================
+   ESPACES (réservations, profil, connexion)
+   ========================================================= */
+
+.page-header h1,
+.auth-header h1 {
+    font-family: var(--mentor-font-display);
+    font-weight: 700;
+}
+
+.page-eyebrow {
+    padding: 0;
+    background: none;
+    border-radius: 0;
+}
+
+.auth-page {
+    background: #F7F9FA;
+}
+
+.auth-card {
+    border-radius: var(--mentor-radius-sm);
+    box-shadow: var(--mentor-shadow);
+}
+
+.reservation-group,
+.profile-card,
+.empty-state {
+    border-radius: var(--mentor-radius-sm);
+}
+
+.student-profile-page {
+    background: #F7F9FA;
+}
+
+/* =========================================================
+   BOUTONS À FOND BLANC : contour noir
+   ========================================================= */
+
+.btn-mentor-outline,
+.btn-mentor-outline:hover,
+.mentor-header-actions > a:not(.btn-mentor),
+.mentor-header-actions > a:not(.btn-mentor):hover,
+.btn-light,
+.btn-outline-primary {
+    border: 1px solid var(--mentor-text);
+    color: var(--mentor-text);
+}
+
+/* Au survol : fond gris clair, texte toujours noir */
+.btn-mentor-outline:hover,
+.mentor-header-actions > a:not(.btn-mentor):hover {
+    background: #F6F7F9;
+}
+
+.btn-light,
+.btn-outline-primary {
+    --bs-btn-color: var(--mentor-text);
+    --bs-btn-bg: #FFFFFF;
+    --bs-btn-border-color: var(--mentor-text);
+    --bs-btn-hover-color: var(--mentor-text);
+    --bs-btn-hover-bg: #F6F7F9;
+    --bs-btn-hover-border-color: var(--mentor-text);
+    --bs-btn-active-color: var(--mentor-text);
+    --bs-btn-active-bg: #EDEEF2;
+    --bs-btn-active-border-color: var(--mentor-text);
+}
+
+
+/* Boutons « Se connecter » et « S'inscrire » de l'en-tête : taille réduite */
+.mentor-header-actions > a:not(.btn-mentor),
+.mentor-header-actions > .btn-mentor {
+    min-height: 36px;
+    padding: 6px 14px;
+    font-size: 14px;
+}

@@ -6,9 +6,18 @@
 
 {% block body %}
 
+{% set nbDisponibilites = formateur.disponibilites|length %}
+
 <div class="formateur-profile">
 
     <div class="container py-5">
+
+        <nav class="formateur-breadcrumb" aria-label="Fil d'Ariane">
+            <a href="{{ path('app_formateurs') }}">Formateurs</a>
+            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+            <span>{{ formateur.prenom }} {{ formateur.nom }}</span>
+        </nav>
+
 
         {# =====================================================
            VIDÉO DE PRÉSENTATION
@@ -20,17 +29,14 @@
 
                 <div class="formateur-video">
 
-                    <video
-                        controls
-                        poster="{{ formateur.image ? asset('assets/images/formateurs/' ~ formateur.image) : '' }}"
-                    >
+                    {# preload="metadata" : la vidéo n'est téléchargée qu'à la lecture #}
+                    <video controls preload="metadata">
                         <source
                             src="{{ asset('assets/videos/formateurs/' ~ formateur.videoPresentation) }}"
                             type="video/mp4"
                         >
 
                         Votre navigateur ne supporte pas la lecture vidéo.
-
                     </video>
 
                 </div>
@@ -39,7 +45,7 @@
 
                 <div class="formateur-video-empty">
 
-                    <i class="bi bi-camera-video"></i>
+                    <i class="bi bi-camera-video-off" aria-hidden="true"></i>
 
                     <p>
                         Aucune vidéo de présentation disponible.
@@ -70,13 +76,12 @@
                 {% else %}
 
                     <div class="formateur-profile-avatar">
-                        {{ formateur.prenom|first|upper }}
+                        {{ formateur.prenom|first|upper }}{{ formateur.nom|first|upper }}
                     </div>
 
                 {% endif %}
 
             </div>
-
 
             <h1>
                 {{ formateur.prenom }} {{ formateur.nom }}
@@ -86,20 +91,19 @@
                 Formateur Mentor
             </p>
 
-
             <div class="formateur-profile-actions">
 
-                <a href="#reservation"
-                   class="btn btn-primary">
+                <a href="#reservation" class="btn btn-primary">
+                    <i class="bi bi-calendar-check me-2" aria-hidden="true"></i>
                     Réserver une session
                 </a>
 
-                <button
-                    type="button"
-                    class="btn btn-outline-primary"
-                >
-                    Contacter
-                </button>
+                {% if formateur.email %}
+                    <a href="mailto:{{ formateur.email }}" class="btn btn-outline-primary">
+                        <i class="bi bi-envelope me-2" aria-hidden="true"></i>
+                        Contacter
+                    </a>
+                {% endif %}
 
             </div>
 
@@ -112,19 +116,19 @@
 
         <section class="formateur-profile-informations">
 
-            <div class="row g-4">
+            <div class="row g-3">
 
                 <div class="col-md-6">
 
                     <div class="formateur-info-item">
 
-                        <i class="bi bi-briefcase"></i>
+                        <i class="bi bi-briefcase" aria-hidden="true"></i>
 
                         <div>
                             <span>Expérience</span>
 
                             <strong>
-                                {{ formateur.experience }}
+                                {{ formateur.experience ?: 'Non renseignée' }}
                             </strong>
                         </div>
 
@@ -137,13 +141,13 @@
 
                     <div class="formateur-info-item">
 
-                        <i class="bi bi-translate"></i>
+                        <i class="bi bi-translate" aria-hidden="true"></i>
 
                         <div>
                             <span>Langue</span>
 
                             <strong>
-                                {{ formateur.langue }}
+                                {{ formateur.langue ?: 'Non renseignée' }}
                             </strong>
                         </div>
 
@@ -156,13 +160,13 @@
 
                     <div class="formateur-info-item">
 
-                        <i class="bi bi-geo-alt"></i>
+                        <i class="bi bi-geo-alt" aria-hidden="true"></i>
 
                         <div>
                             <span>Localisation</span>
 
                             <strong>
-                                {{ formateur.localisation }}
+                                {{ formateur.localisation ?: 'Non renseignée' }}
                             </strong>
                         </div>
 
@@ -175,24 +179,18 @@
 
                     <div class="formateur-info-item">
 
-                        <i class="bi bi-book"></i>
+                        <i class="bi bi-book" aria-hidden="true"></i>
 
                         <div>
 
                             <span>Spécialités</span>
 
                             <strong>
-
                                 {% for specialite in formateur.specialites %}
-
                                     {{ specialite }}{% if not loop.last %}, {% endif %}
-
                                 {% else %}
-
                                     Non renseignées
-
                                 {% endfor %}
-
                             </strong>
 
                         </div>
@@ -212,7 +210,7 @@
 
         <section class="formateur-formations-section">
 
-            <div class="mb-4">
+            <div class="formateur-section-header">
 
                 <span class="formation-section-label">
                     Formations
@@ -224,34 +222,39 @@
 
             </div>
 
-
             <div class="row g-4">
 
                 {% for formation in formateur.formation %}
 
-                    <div class="col-12 col-md-6 col-lg-3">
+                    <div class="col-12 col-sm-6 col-lg-3">
 
                         <div class="formateur-formation-card">
 
-                            {% if formation.image %}
+                            <div class="formateur-formation-image">
+                                {% if formation.image %}
+                                    <img
+                                        src="{{ asset('assets/images/formations/' ~ formation.image) }}"
+                                        alt=""
+                                        loading="lazy"
+                                    >
+                                {% else %}
+                                    <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
+                                {% endif %}
+                            </div>
 
-                                <img
-                                    src="{{ asset('assets/images/formations/' ~ formation.image) }}"
-                                    alt="{{ formation.titre }}"
-                                >
-
-                            {% endif %}
-
-                            <div class="p-3">
+                            <div class="formateur-formation-body">
 
                                 <h3>
                                     {{ formation.titre }}
                                 </h3>
 
+                                <p class="formateur-formation-meta">
+                                    <span><i class="bi bi-clock" aria-hidden="true"></i> {{ formation.duree }} h</span>
+                                    <span>{{ formation.prix|number_format(0, ',', ' ') }} €</span>
+                                </p>
+
                                 <a
-                                    href="{{ path('app_formation_show', {
-                                        id: formation.id
-                                    }) }}"
+                                    href="{{ path('app_formation_show', { id: formation.id }) }}"
                                     class="btn btn-outline-primary btn-sm"
                                 >
                                     Voir la formation
@@ -267,7 +270,7 @@
 
                     <div class="col-12">
 
-                        <p class="text-muted">
+                        <p class="text-muted mb-0">
                             Aucune formation disponible.
                         </p>
 
@@ -280,198 +283,202 @@
         </section>
 
 
-       {# =====================================================
-   DISPONIBILITÉS
-   ===================================================== #}
+        {# =====================================================
+           DISPONIBILITÉS
+           ===================================================== #}
 
-<section
-    id="reservation"
-    class="formateur-disponibilites-section"
-    data-controller="reservation"
->
-
-    <div class="formateur-section-header">
-
-        <span class="formation-section-label">
-            Disponibilités
-        </span>
-
-        <h2>
-            Choisissez votre jour de formation
-        </h2>
-
-        <p>
-            Sélectionnez le jour qui vous convient.
-            Les horaires sont définis par le formateur.
-        </p>
-
-    </div>
-
-
-    {% if formateur.disponibilites|length > 0 %}
-
-        <div class="disponibilites-list">
-
-            {% for disponibilite in formateur.disponibilites %}
-
-                <div class="disponibilite-block">
-
-                    {# Période #}
-                    <div class="disponibilite-period">
-
-                        <i class="bi bi-calendar3"></i>
-
-                        <span>
-                            Du
-                            {{ disponibilite.dateDebut|date('d/m/Y') }}
-
-                            au
-
-                            {{ disponibilite.dateFin|date('d/m/Y') }}
-                        </span>
-
-                    </div>
-
-
-                    {# Horaire #}
-                    <div class="disponibilite-horaire">
-
-                        <i class="bi bi-clock"></i>
-
-                        <span>
-                            {{ disponibilite.heureDebut|date('H:i') }}
-                            -
-                            {{ disponibilite.heureFin|date('H:i') }}
-                        </span>
-
-                    </div>
-
-
-                    {# Jours disponibles #}
-                    <div class="disponibilite-jours">
-
-                        {% for jour in disponibilite.joursSemaine %}
-
-                            <button
-                                type="button"
-                                class="disponibilite-jour"
-                                data-jour="{{ jour }}"
-                                data-disponibilite-id="{{ disponibilite.id }}"
-                                aria-pressed="false"
-                                data-reservation-target="jour"
-                                data-action="reservation#choisir"
-                            >
-
-                                <span class="disponibilite-jour-name">
-                                    {{ jour|capitalize }}
-                                </span>
-
-                                <span class="disponibilite-jour-horaire">
-                                    {{ disponibilite.heureDebut|date('H:i') }}
-                                    -
-                                    {{ disponibilite.heureFin|date('H:i') }}
-                                </span>
-
-                                <span class="disponibilite-jour-action">
-                                    Choisir
-                                </span>
-
-                            </button>
-
-                        {% endfor %}
-
-                    </div>
-
-                </div>
-
-            {% endfor %}
-
-        </div>
-
-
-        {# =================================================
-           DISPONIBILITÉ SÉLECTIONNÉE
-           ================================================= #}
-
-        <div
-            id="disponibilite-selection"
-            class="disponibilite-selection mt-4"
-            style="display: none;"
-            data-reservation-target="selection"
+        <section
+            id="reservation"
+            class="formateur-disponibilites-section"
+            data-controller="reservation"
         >
 
-            <div class="disponibilite-selection-content">
+            <div class="formateur-section-header">
 
-                <i class="bi bi-check-circle"></i>
+                <span class="formation-section-label">
+                    Disponibilités
+                </span>
 
-                <div>
+                <h2>
+                    Choisissez votre jour de formation
+                </h2>
 
-                    <strong>
-                        Disponibilité sélectionnée
-                    </strong>
-
-                    <span
-                        id="disponibilite-selection-text"
-                        data-reservation-target="selectionText"
-                    ></span>
-
-                </div>
+                <p>
+                    Une séance est réservée pour chaque semaine de la période,
+                    le jour choisi. Les horaires sont définis par le formateur.
+                </p>
 
             </div>
 
-        </div>
+
+            {% if nbDisponibilites > 0 %}
+
+                <div class="disponibilites-list">
+
+                    {% for disponibilite in formateur.disponibilites %}
+
+                        <div class="disponibilite-block">
+
+                            <div class="disponibilite-header">
+
+                                {% if disponibilite.formation %}
+                                    <strong class="disponibilite-formation">
+                                        {{ disponibilite.formation.titre }}
+                                    </strong>
+                                {% endif %}
+
+                                <div class="disponibilite-infos">
+
+                                    {# Période #}
+                                    <span>
+                                        <i class="bi bi-calendar3" aria-hidden="true"></i>
+                                        Du {{ disponibilite.dateDebut|date('d/m/Y') }}
+                                        au {{ disponibilite.dateFin|date('d/m/Y') }}
+                                    </span>
+
+                                    {# Horaire #}
+                                    <span>
+                                        <i class="bi bi-clock" aria-hidden="true"></i>
+                                        {{ disponibilite.heureDebut|date('H:i') }}
+                                        -
+                                        {{ disponibilite.heureFin|date('H:i') }}
+                                    </span>
+
+                                </div>
+
+                            </div>
 
 
-        {# =================================================
-           BOUTON RÉSERVER
-           ================================================= #}
+                            {# Jours disponibles #}
+                            <div class="disponibilite-jours">
 
-        <div
-            id="reservation-action"
-            class="mt-4"
-            style="display: none;"
-            data-reservation-target="action"
-        >
+                                {% for jour in disponibilite.joursSemaine %}
 
-            <button
-                type="button"
-                id="btn-reserver"
-                class="btn btn-primary"
-                data-action-url="{{ path('app_reservation_create') }}"
-                data-csrf-token="{{ csrf_token('reservation') }}"
-                data-reservation-target="submit"
-                data-action="reservation#reserver"
-            >
+                                    <button
+                                        type="button"
+                                        class="disponibilite-jour"
+                                        data-jour="{{ jour }}"
+                                        data-disponibilite-id="{{ disponibilite.id }}"
+                                        aria-pressed="false"
+                                        data-reservation-target="jour"
+                                        data-action="reservation#choisir"
+                                    >
 
-                <i class="bi bi-calendar-check me-2"></i>
+                                        <span class="disponibilite-jour-name">
+                                            {{ jour|capitalize }}
+                                        </span>
 
-                Réserver
+                                        <span class="disponibilite-jour-horaire">
+                                            {{ disponibilite.heureDebut|date('H:i') }}
+                                            -
+                                            {{ disponibilite.heureFin|date('H:i') }}
+                                        </span>
 
-            </button>
+                                        <span class="disponibilite-jour-action">
+                                            Choisir
+                                        </span>
 
-        </div>
+                                    </button>
+
+                                {% endfor %}
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
 
 
-    {% else %}
+                {# =================================================
+                   DISPONIBILITÉ SÉLECTIONNÉE + BOUTON RÉSERVER
+                   (affichés par le contrôleur Stimulus après le choix d'un jour)
+                   ================================================= #}
 
-        <div class="formateurs-empty text-center">
+                <div
+                    id="disponibilite-selection"
+                    class="disponibilite-selection"
+                    hidden
+                    data-reservation-target="selection"
+                >
 
-            <i class="bi bi-calendar-x"></i>
+                    <i class="bi bi-check-circle" aria-hidden="true"></i>
 
-            <h3>
-                Aucune disponibilité
-            </h3>
+                    <div>
+                        <strong>
+                            Disponibilité sélectionnée
+                        </strong>
 
-            <p>
-                Ce formateur n'a pas encore défini
-                ses disponibilités.
-            </p>
+                        <span
+                            id="disponibilite-selection-text"
+                            data-reservation-target="selectionText"
+                        ></span>
+                    </div>
 
-        </div>
+                </div>
 
-    {% endif %}
+                <div
+                    id="reservation-action"
+                    class="reservation-action"
+                    hidden
+                    data-reservation-target="action"
+                >
 
-</section>
+                    {# Seul un compte étudiant peut réserver : un visiteur est invité
+                       à se connecter, sinon le POST finirait en GET (405) après la connexion #}
+                    {% if not app.user %}
+
+                        <a href="{{ path('app_login') }}" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>
+                            Connectez-vous pour réserver
+                        </a>
+
+                    {% elseif not app.user.student %}
+
+                        <p class="text-muted mb-0">
+                            Seul un compte étudiant peut réserver une session.
+                        </p>
+
+                    {% else %}
+
+                        <button
+                            type="button"
+                            id="btn-reserver"
+                            class="btn btn-primary"
+                            data-action-url="{{ path('app_reservation_create') }}"
+                            data-csrf-token="{{ csrf_token('reservation') }}"
+                            data-reservation-target="submit"
+                            data-action="reservation#reserver"
+                        >
+                            <i class="bi bi-calendar-check me-2" aria-hidden="true"></i>
+                            Réserver
+                        </button>
+
+                    {% endif %}
+
+                </div>
+
+            {% else %}
+
+                <div class="formateurs-empty text-center">
+
+                    <i class="bi bi-calendar-x" aria-hidden="true"></i>
+
+                    <h3>
+                        Aucune disponibilité
+                    </h3>
+
+                    <p>
+                        Ce formateur n'a pas encore défini
+                        ses disponibilités.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </section>
 
     </div>
 

@@ -1,82 +1,59 @@
-
 import { Controller } from '@hotwired/stimulus';
 
-// Création du contrôleur de recherche des formateurs
+// Contrôleur de recherche des formateurs (filtrage dans le navigateur).
 export default class extends Controller {
 
-    // Déclaration des éléments HTML utilisés par le contrôleur
     // input : champ de recherche
-    // card  : cartes des formateurs
+    // item  : colonne qui contient une carte (masquée en entier pour ne pas laisser de trou)
     // count : compteur des résultats
+    // empty : message affiché quand rien ne correspond
     // clear : bouton pour effacer la recherche
-    static targets = ['input', 'card', 'count', 'clear'];
+    static targets = ['input', 'item', 'count', 'empty', 'clear'];
 
-    // Méthode exécutée lorsque Stimulus connecte le contrôleur à la page
     connect() {
-        // Initialise l'affichage sans montrer le compteur
+        // Reprend une recherche passée dans l'URL (?q=...)
+        const query = new URLSearchParams(window.location.search).get('q');
+
+        if (query) {
+            this.inputTarget.value = query;
+        }
+
         this.filter();
     }
 
-    // Méthode qui filtre les formateurs selon le texte saisi
+    // Affiche les cartes qui contiennent le texte saisi
     filter() {
-
-        // Récupère le texte saisi, retire les espaces inutiles
-        // et convertit le texte en minuscules
         const query = this.inputTarget.value
             .trim()
             .toLocaleLowerCase('fr');
 
-        // Vérifie si l'utilisateur a saisi une recherche
-        const isSearching = query.length > 0;
-
-        // Initialise le nombre de cartes correspondantes
         let visibleCount = 0;
 
-        // Parcourt toutes les cartes des formateurs
-        this.cardTargets.forEach((card) => {
-
-            // Récupère le nom, le prénom et les spécialités
-            // associés à la carte
-            const text = card.dataset.formateurSearch || '';
-
-            // Vérifie si les informations contiennent la recherche
-            const matches = text
+        this.itemTargets.forEach((item) => {
+            const matches = (item.dataset.formateurSearch || '')
                 .toLocaleLowerCase('fr')
                 .includes(query);
 
-            // Affiche ou masque la carte selon le résultat
-            card.hidden = !matches;
+            item.hidden = !matches;
 
-            // Compte les cartes correspondantes
             if (matches) {
                 visibleCount++;
             }
         });
 
-        // Affiche le compteur uniquement si une recherche est saisie
+        const isSearching = query.length > 0;
+
         this.countTarget.hidden = !isSearching;
+        this.countTarget.textContent = `${visibleCount} formateur${visibleCount > 1 ? 's' : ''} trouvé${visibleCount > 1 ? 's' : ''}`;
 
-        // Met à jour le message seulement pendant une recherche
-        if (isSearching) {
-            this.countTarget.textContent = visibleCount === 0
-                ? 'Aucun formateur trouvé'
-                : `${visibleCount} formateur${visibleCount > 1 ? 's' : ''} trouvé${visibleCount > 1 ? 's' : ''}`;
-        }
-
-        // Affiche le bouton d'effacement uniquement si le champ contient du texte
+        this.emptyTarget.hidden = visibleCount > 0;
         this.clearTarget.hidden = !isSearching;
     }
 
-    // Méthode appelée lorsque l'utilisateur clique sur le bouton d'effacement
+    // Vide le champ de recherche et replace le curseur dedans
     clear() {
-
-        // Vide le champ de recherche
         this.inputTarget.value = '';
-
-        // Réaffiche toutes les cartes et masque le compteur
         this.filter();
-
-        // Replace le curseur dans le champ de recherche
         this.inputTarget.focus();
     }
 }

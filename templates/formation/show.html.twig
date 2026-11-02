@@ -6,135 +6,24 @@
 
 {% block body %}
 
+{# La description vient de l'éditeur EasyAdmin (HTML) : on garde les retours
+   à la ligne, puis on retire les balises pour ne jamais afficher de HTML brut #}
+{% set description = formation.description
+    |replace({'<br>': "\n", '</p>': "\n", '</div>': "\n", '</li>': "\n", '&nbsp;': ' ', '&amp;': '&'})
+    |striptags
+    |trim %}
+
+{% set resume = description|replace({"\n": ' '}) %}
+
+{% set nbFormateurs = formation.formateurs|length %}
+
 <div class="formation-detail">
 
     {# =========================================================
        HERO
        ========================================================= #}
 
-    <section class="formation-hero">
-
-        <div class="container">
-
-            <div class="row g-5 align-items-start">
-
-                {# CONTENU GAUCHE #}
-                <div class="col-lg-8">
-
-                    <div class="formation-breadcrumb">
-
-                        <a href="{{ path('app_formation') }}">
-                            Formations
-                        </a>
-
-                        <span>›</span>
-
-                        {% if formation.specialite %}
-                            <span>
-                                {{ formation.specialite }}
-                            </span>
-                        {% endif %}
-
-                    </div>
-
-
-                    <h1 class="formation-detail-title">
-                        {{ formation.titre }}
-                    </h1>
-
-
-                   
-
-
-                  <div class="formation-detail-meta">
-
-    <span>
-        <i class="bi bi-clock me-2"></i>
-        {{ formation.duree }} heures
-    </span>
-
-    <span>
-        <i class="bi bi-laptop me-2"></i>
-        Formation en ligne
-    </span>
-
-    {% if formation.specialite %}
-        <span>
-            <i class="bi bi-mortarboard me-2"></i>
-            {{ formation.specialite }}
-        </span>
-    {% endif %}
-
-
-     <p class="formation-detail-description">
-    {{ formation.description|striptags}}
-
-    
-</p>
-</div>
-
-                </div>
-
-
-                {# =================================================
-                   CARD IMAGE / PRIX
-                   ================================================= #}
-
-                <div class="col-lg-4">
-
-                    <div class="formation-purchase-card">
-
-                        {# IMAGE #}
-                        <div class="formation-preview">
-
-                            <img
-                                src="{{ asset('assets/images/formations/' ~ formation.image) }}"
-                                alt="{{ formation.titre }}"
-                            >
-
-                        </div>
-
-
-                        {# PRIX + ACTION #}
-                        <div class="formation-purchase-body">
-
-                            <div class="formation-price">
-                                {{ formation.prix|number_format(0, ',', ' ') }} €
-                            </div>
-
-                            <p class="formation-price-info">
-                                Tarif de la formation
-                            </p>
-
-
-                            <a
-                                href="#formateurs"
-                                class="btn btn-primary btn-lg w-100 formation-reservation-btn"
-                            >
-                                Choisir un formateur
-                            </a>
-
-
-                            
-
-                        </div>
-²
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    {# =========================================================
-       CONTENU PRINCIPAL
-       ========================================================= #}
-
-    <section class="formation-content-section">
+    <section class="detail-hero">
 
         <div class="container">
 
@@ -142,237 +31,54 @@
 
                 <div class="col-lg-8">
 
+                    <nav class="detail-breadcrumb" aria-label="Fil d'Ariane">
 
-                    {# =================================================
-                       À PROPOS
-                       ================================================= #}
+                        <a href="{{ path('app_formation') }}">
+                            Formations
+                        </a>
 
-                    <section class="formation-description-block">
+                        {% if formation.specialite %}
+                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                            <span>{{ formation.specialite }}</span>
+                        {% endif %}
 
-                        <span class="formation-section-label">
-                            Présentation
+                    </nav>
+
+                    {% if formation.specialite %}
+                        <span class="detail-badge">
+                            <i class="bi bi-mortarboard" aria-hidden="true"></i>
+                            {{ formation.specialite }}
                         </span>
+                    {% endif %}
 
-                        <h2>
-                            À propos de cette formation
-                        </h2>
+                    <h1 class="formation-detail-title">
+                        {{ formation.titre }}
+                    </h1>
 
-                        <p>
-                            {{ formation.description|striptags }}
+                    {% if resume %}
+                        <p class="detail-hero-lead">
+                            {{ resume|length > 220 ? resume|slice(0, 220)|trim ~ '…' : resume }}
                         </p>
+                    {% endif %}
 
-                    </section>
+                    <div class="formation-detail-meta">
 
-
-                    {# =================================================
-                       INFORMATIONS PRATIQUES
-                       ================================================= #}
-
-                    <section class="formation-informations">
-
-                        <span class="formation-section-label">
-                            Informations
+                        <span class="detail-chip">
+                            <i class="bi bi-clock" aria-hidden="true"></i>
+                            {{ formation.duree }} heures
                         </span>
 
-                        <h5>
-                            Informations pratiques
-                        </h5>
-
-
-                        <div class="row g-3">
-
-                            {# DURÉE #}
-                            <div class="col-md-4">
-
-                                <div class="formation-info-item">
-
-                                    <span class="formation-info-label">
-                                        Durée
-                                    </span>
-
-                                    <strong>
-                                        {{ formation.duree }} heures
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-
-                            {# FORMAT #}
-                            <div class="col-md-4">
-
-                                <div class="formation-info-item">
-
-                                    <span class="formation-info-label">
-                                        Format
-                                    </span>
-
-                                    <strong>
-                                        En ligne
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-
-                            {# SPÉCIALITÉ #}
-                            <div class="col-md-4">
-
-                                <div class="formation-info-item">
-
-                                    <span class="formation-info-label">
-                                        Spécialité
-                                    </span>
-
-                                    <strong>
-                                        {{ formation.specialite }}
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </section>
-
-
-                    {# =================================================
-                       ÉTAPE 1 - FORMATEURS
-                       ================================================= #}
-
-                    <section
-                        id="formateurs"
-                        class="formation-trainers-section"
-                    >
-
-                        <div class="formation-section-header">
-
-                            <span class="formation-section-label">
-                                Étape 1
-                            </span>
-
-                            <h2>
-                                Choisissez votre formateur
-                            </h2>
-
-                            <p>
-                                Sélectionnez le formateur avec lequel
-                                vous souhaitez suivre cette formation.
-                            </p>
-
-                        </div>
-
-
-                        <form
-                            method="post"
-                            action="{{ path('app_formation_formateur', { formationId: formation.id }) }}"
-                            class="formation-trainers-form"
-                        >
-
-                            <div class="row g-4">
-
-                                {% for formateur in formation.formateurs %}
-
-                                    <div class="col-md-6">
-
-                                        <label class="formation-trainer-card">
-
-                                            <input
-                                                type="radio"
-                                                name="formateur"
-                                                value="{{ formateur.id }}"
-                                                required
-                                            >
-
-
-                                            <div class="formation-trainer-content">
-
-                                                <div class="formation-trainer-avatar">
-                                                    {{ formateur|first|upper }}
-                                                </div>
-
-
-                                                <div class="formation-trainer-info">
-
-                                                    <h3>
-                                                        {{ formateur }}
-                                                    </h3>
-
-                                                    <p>
-                                                        Formateur Mentor
-                                                    </p>
-
-                                                    <span class="formation-trainer-status">
-                                                        ✓ Formateur associé
-                                                    </span>
-
-                                                </div>
-
-                                            </div>
-
-
-                                            <div class="formation-trainer-select">
-
-                                                <span>
-                                                    Sélectionner ce formateur
-                                                </span>
-
-                                                <span class="formation-radio">
-                                                    ✓
-                                                </span>
-
-                                            </div>
-
-                                        </label>
-
-                                    </div>
-
-                                {% else %}
-
-                                    <div class="col-12">
-
-                                        <div class="formation-empty">
-
-                                            <h3>
-                                                Aucun formateur disponible
-                                            </h3>
-
-                                            <p>
-                                                Aucun formateur n'est actuellement
-                                                associé à cette formation.
-                                            </p>
-
-                                        </div>
-
-                                    </div>
-
-                                {% endfor %}
-
-                            </div>
-
-
-                            {% if formation.formateurs|length > 0 %}
-
-                                <div class="formation-trainer-action">
-
-                                    <button
-                                        type="submit"
-                                        class="btn btn-primary"
-                                    >
-                                        Continuer
-                                        <span>→</span>
-                                    </button>
-
-                                </div>
-
-                            {% endif %}
-
-                        </form>
-
-                    </section>
+                        <span class="detail-chip">
+                            <i class="bi bi-camera-video" aria-hidden="true"></i>
+                            En ligne, en visio
+                        </span>
+
+                        <span class="detail-chip">
+                            <i class="bi bi-people" aria-hidden="true"></i>
+                            {{ nbFormateurs }} formateur{{ nbFormateurs > 1 ? 's' }}
+                        </span>
+
+                    </div>
 
                 </div>
 
@@ -381,6 +87,293 @@
         </div>
 
     </section>
+
+
+    {# =========================================================
+       CONTENU
+       ========================================================= #}
+
+    <div class="container detail-body">
+
+        <div class="row g-4 g-lg-5">
+
+            {# =================================================
+               CARTE PRIX (à droite sur grand écran,
+               juste sous le hero sur mobile)
+               ================================================= #}
+
+            <aside class="col-lg-4 order-lg-2">
+
+                <div class="formation-purchase-card detail-card">
+
+                    <div class="formation-preview">
+
+                        {% if formation.image %}
+
+                            <img
+                                src="{{ asset('assets/images/formations/' ~ formation.image) }}"
+                                alt="{{ formation.titre }}"
+                            >
+
+                        {% else %}
+
+                            <div class="formation-image-placeholder">
+                                <i class="bi bi-image" aria-hidden="true"></i>
+                                Image indisponible
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="formation-purchase-body">
+
+                        <p class="formation-price-info">
+                            Tarif de la formation
+                        </p>
+
+                        <div class="formation-price">
+                            {{ formation.prix|number_format(0, ',', ' ') }} €
+                        </div>
+
+                        {% if nbFormateurs > 0 %}
+                            <a
+                                href="#formateurs"
+                                class="btn btn-primary btn-lg w-100 formation-reservation-btn"
+                            >
+                                Choisir un formateur
+                                <i class="bi bi-arrow-down-short" aria-hidden="true"></i>
+                            </a>
+                        {% endif %}
+
+                        <ul class="detail-checklist">
+                            <li>
+                                <i class="bi bi-check2-circle" aria-hidden="true"></i>
+                                {{ formation.duree }} heures d'accompagnement
+                            </li>
+                            <li>
+                                <i class="bi bi-check2-circle" aria-hidden="true"></i>
+                                Séances en visioconférence
+                            </li>
+                            <li>
+                                <i class="bi bi-check2-circle" aria-hidden="true"></i>
+                                Planning choisi avec votre formateur
+                            </li>
+                        </ul>
+
+                    </div>
+
+                </div>
+
+            </aside>
+
+
+            {# =================================================
+               COLONNE PRINCIPALE
+               ================================================= #}
+
+            <div class="col-lg-8 order-lg-1">
+
+                {# À PROPOS #}
+
+                <section class="detail-section">
+
+                    <span class="formation-section-label">
+                        Présentation
+                    </span>
+
+                    <h2 class="detail-section-title">
+                        À propos de cette formation
+                    </h2>
+
+                    <div class="formation-description-text">
+                        {% if description %}
+                            {{ description|nl2br }}
+                        {% else %}
+                            <p class="text-muted mb-0">
+                                Aucune description pour le moment.
+                            </p>
+                        {% endif %}
+                    </div>
+
+                </section>
+
+
+                {# INFORMATIONS PRATIQUES #}
+
+                <section class="detail-section">
+
+                    <span class="formation-section-label">
+                        Informations
+                    </span>
+
+                    <h2 class="detail-section-title">
+                        Informations pratiques
+                    </h2>
+
+                    <div class="detail-facts">
+
+                        <div class="detail-fact">
+                            <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                            <span>Durée</span>
+                            <strong>{{ formation.duree }} heures</strong>
+                        </div>
+
+                        <div class="detail-fact">
+                            <i class="bi bi-laptop" aria-hidden="true"></i>
+                            <span>Format</span>
+                            <strong>En ligne</strong>
+                        </div>
+
+                        <div class="detail-fact">
+                            <i class="bi bi-bookmark-star" aria-hidden="true"></i>
+                            <span>Spécialité</span>
+                            <strong>{{ formation.specialite ?? 'Non renseignée' }}</strong>
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                {# ÉTAPES DE RÉSERVATION #}
+
+                <ol class="detail-steps" aria-label="Étapes de réservation">
+                    <li class="is-current">
+                        <span>1</span>
+                        Choisir un formateur
+                    </li>
+                    <li>
+                        <span>2</span>
+                        Choisir un jour
+                    </li>
+                    <li>
+                        <span>3</span>
+                        Réserver
+                    </li>
+                </ol>
+
+
+                {# ÉTAPE 1 - FORMATEURS #}
+
+                <section id="formateurs" class="detail-section formation-trainers-section">
+
+                    <span class="formation-section-label">
+                        Étape 1
+                    </span>
+
+                    <h2 class="detail-section-title">
+                        Choisissez votre formateur
+                    </h2>
+
+                    <p class="detail-section-text">
+                        Sélectionnez le formateur avec lequel vous souhaitez
+                        suivre cette formation, puis choisissez un jour.
+                    </p>
+
+                    <form
+                        method="post"
+                        action="{{ path('app_formation_formateur', { formationId: formation.id }) }}"
+                        class="formation-trainers-form"
+                    >
+
+                        <div class="row g-3">
+
+                            {% for formateur in formation.formateurs %}
+
+                                <div class="col-md-6">
+
+                                    <label class="formation-trainer-card">
+
+                                        <input
+                                            type="radio"
+                                            name="formateur"
+                                            value="{{ formateur.id }}"
+                                            required
+                                        >
+
+                                        <span class="formation-trainer-avatar">
+                                            {% if formateur.image %}
+                                                <img
+                                                    src="{{ asset('assets/images/utilisateurs/' ~ formateur.image) }}"
+                                                    alt=""
+                                                    loading="lazy"
+                                                >
+                                            {% else %}
+                                                {{ formateur.prenom|first|upper }}{{ formateur.nom|first|upper }}
+                                            {% endif %}
+                                        </span>
+
+                                        <span class="formation-trainer-info">
+
+                                            <strong>{{ formateur }}</strong>
+
+                                            <span class="formation-trainer-details">
+                                                {% if formateur.experience %}
+                                                    <span><i class="bi bi-briefcase" aria-hidden="true"></i> {{ formateur.experience }}</span>
+                                                {% endif %}
+                                                {% if formateur.langue %}
+                                                    <span><i class="bi bi-translate" aria-hidden="true"></i> {{ formateur.langue }}</span>
+                                                {% endif %}
+                                            </span>
+
+                                        </span>
+
+                                        <span class="formation-radio" aria-hidden="true">
+                                            <i class="bi bi-check-lg"></i>
+                                        </span>
+
+                                    </label>
+
+                                </div>
+
+                            {% else %}
+
+                                <div class="col-12">
+
+                                    <div class="formation-empty">
+
+                                        <i class="bi bi-person-x" aria-hidden="true"></i>
+
+                                        <h3>
+                                            Aucun formateur disponible
+                                        </h3>
+
+                                        <p>
+                                            Aucun formateur n'est actuellement
+                                            associé à cette formation.
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                        {% if nbFormateurs > 0 %}
+
+                            <div class="formation-trainer-action">
+
+                                <button type="submit" class="btn btn-primary">
+                                    Continuer
+                                    <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                                </button>
+
+                            </div>
+
+                        {% endif %}
+
+                    </form>
+
+                </section>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 

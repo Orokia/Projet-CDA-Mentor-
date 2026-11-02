@@ -169,3 +169,16 @@
         width: 100%;
     }
 }
+
+/* Salle de visioconférence intégrée */
+
+.reservation-visio {
+    overflow: hidden;
+    min-height: 480px;
+    height: 75vh;
+    background: var(--mentor-surface);
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius);
+    box-shadow: var(--mentor-shadow-sm);
+}
+

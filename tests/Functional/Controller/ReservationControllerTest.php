@@ -3,7 +3,10 @@
 namespace App\Tests\Functional\Controller;
 
 use App\Entity\Disponibilite;
+use App\Entity\Formateur;
 use App\Entity\Reservation;
+use App\Entity\User;
+use App\Service\JitsiService;
 use App\Tests\Support\EntitesDeTestTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -221,8 +224,168 @@ final class ReservationControllerTest extends WebTestCase
         $crawler = $this->client->request('GET', '/mes-reservations');
 
         self::assertResponseIsSuccessful();
-        $liens = $crawler->filter('.reservation-session a[href^="https://meet.jit.si/Mentor-Reservation-"]');
+        $liens = $crawler->filter('.reservation-session a[href$="/visio"]');
         self::assertCount(2, $liens);
+    }
+
+    public function testMesReservationsAfficheLesSeancesDuFormateur(): void
+    {
+        $reservation = $this->creerReservation();
+
+        $this->client->loginUser($this->creerCompteFormateur($reservation->getFormateur()));
+
+        $crawler = $this->client->request('GET', '/mes-reservations');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorTextContains('.reservation-session-trainer', 'Étudiant');
+        self::assertCount(1, $crawler->filter('.reservation-session a[href$="/visio"]'));
+    }
+
+    public function testVisioRedirigeUnVisiteurVersLaConnexion(): void
+    {
+        $this->client->request('GET', '/reservation/' . $this->creerReservation()->getId() . '/visio');
+
+        self::assertResponseRedirects('/login');
+    }
+
+    public function testVisioRefuseUnEtudiantQuiNaPasReserve(): void
+    {
+        $reservation = $this->creerReservation();
+
+        $this->client->loginUser($this->creerUtilisateur('autre.etudiant@example.test'));
+        $this->configurerJaas();
+        $this->client->request('GET', '/reservation/' . $reservation->getId() . '/visio');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testVisioRefuseUneSeanceAnnulee(): void
+    {
+        $reservation = $this->creerReservation(statut: 'annulée');
+
+        $this->client->loginUser($this->creerUtilisateur('amadou2@example.test', avecProfilEtudiant: false));
+        $this->client->request('GET', '/reservation/' . $reservation->getId() . '/visio');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
+    public function testVisioSansJaasOuvreLeLienJitsi(): void
+    {
+        $user = $this->creerUtilisateur();
+        $reservation = $this->creerReservation($user);
+
+        $this->client->loginUser($user);
+        $this->client->request('GET', '/reservation/' . $reservation->getId() . '/visio');
+
+        self::assertResponseRedirects($reservation->getLienVisio());
+    }
+
+    public function testVisioIntegreLaSalleDansLaPage(): void
+    {
+        $user = $this->creerUtilisateur();
+        $reservation = $this->creerReservation($user);
+
+        $this->client->loginUser($user);
+        $this->configurerJaas();
+        $crawler = $this->client->request('GET', '/reservation/' . $reservation->getId() . '/visio');
+
+        self::assertResponseIsSuccessful();
+
+        $salle = $crawler->filter('[data-controller="jitsi"]');
+        self::assertCount(1, $salle);
+        self::assertSame('8x8.vc', $salle->attr('data-jitsi-domaine-value'));
+        self::assertSame(
+            'vpaas-magic-cookie-test/Mentor-Reservation-1-test',
+            $salle->attr('data-jitsi-salle-value')
+        );
+        self::assertSame(
+            'https://8x8.vc/vpaas-magic-cookie-test/external_api.js',
+            $salle->attr('data-jitsi-script-value')
+        );
+        self::assertCount(3, explode('.', $salle->attr('data-jitsi-jeton-value')));
+    }
+
+    public function testVisioAfficheUneErreurSiLeJetonNePeutPasEtreSigne(): void
+    {
+        $user = $this->creerUtilisateur();
+        $reservation = $this->creerReservation($user);
+
+        $this->client->loginUser($user);
+        $this->configurerJaas('cle-invalide');
+        $this->client->request('GET', '/reservation/' . $reservation->getId() . '/visio');
+
+        self::assertResponseRedirects('/mes-reservations');
+        $this->assertFlash('error', 'La visioconférence est momentanément indisponible.');
+    }
+
+    /**
+     * Crée une réservation, pour le compte donné ou pour un autre étudiant.
+     */
+    private function creerReservation(?User $user = null, string $statut = 'confirmée'): Reservation
+    {
+        $user ??= $this->creerUtilisateur('proprietaire@example.test');
+        $disponibilite = $this->creerDisponibilite(
+            $this->creerFormateur(),
+            $this->creerFormation()
+        );
+
+        $reservation = (new Reservation())
+            ->setDateReservation(new \DateTime())
+            ->setDateHeureDebut(new \DateTime('2026-10-19 09:00:00'))
+            ->setDateHeureFin(new \DateTime('2026-10-19 10:00:00'))
+            ->setStatut($statut)
+            ->setLienVisio('https://meet.jit.si/Mentor-Reservation-1-test')
+            ->setStudent($user->getStudent())
+            ->setFormateur($disponibilite->getFormateur())
+            ->setFormation($disponibilite->getFormation())
+            ->setDisponibilite($disponibilite);
+
+        // La requête partage le gestionnaire d'entités du test :
+        // le formateur doit déjà connaître sa réservation.
+        $disponibilite->getFormateur()->addReservation($reservation);
+
+        $this->em()->persist($reservation);
+        $this->em()->flush();
+
+        return $reservation;
+    }
+
+    private function creerCompteFormateur(Formateur $formateur): User
+    {
+        $user = $this->creerUtilisateur(
+            'compte.formateur@example.test',
+            ['ROLE_FORMATEUR'],
+            avecProfilEtudiant: false
+        );
+
+        $user->setFormateur($formateur);
+        $formateur->setCompteUtilisateur($user);
+        $this->em()->flush();
+
+        return $user;
+    }
+
+    /**
+     * Remplace le service par un service configuré, pour la prochaine requête.
+     * Sans contenu fourni, une vraie clé RSA est générée.
+     */
+    private function configurerJaas(?string $clePrivee = null): void
+    {
+        if ($clePrivee === null) {
+            openssl_pkey_export(openssl_pkey_new([
+                'private_key_bits' => 2048,
+                'private_key_type' => OPENSSL_KEYTYPE_RSA,
+            ]), $clePrivee);
+        }
+
+        $chemin = tempnam(sys_get_temp_dir(), 'jaas');
+        file_put_contents($chemin, $clePrivee);
+        register_shutdown_function('unlink', $chemin);
+
+        static::getContainer()->set(
+            JitsiService::class,
+            new JitsiService('vpaas-magic-cookie-test', 'vpaas-magic-cookie-test/abc123', $chemin)
+        );
     }
 
     private function assertFlash(string $type, string $message): void

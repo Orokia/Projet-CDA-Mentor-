@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Visioconférence - Mentor
+{% endblock %}
+
+{# Le jeton est à usage limité : Turbo ne doit pas garder cette page en cache #}
+{% block stylesheets %}
+    <meta name="turbo-cache-control" content="no-cache">
+{% endblock %}
+
+{% block body %}
+
+<div class="container-mentor page-section">
+
+    <header class="page-header page-header-left">
+        <span class="page-eyebrow">
+            Visioconférence
+        </span>
+
+        <h1>
+            {{ reservation.formation.titre }}
+        </h1>
+
+        <p>
+            Séance du {{ reservation.dateHeureDebut|date('d/m/Y') }},
+            de {{ reservation.dateHeureDebut|date('H:i') }}
+            à {{ reservation.dateHeureFin|date('H:i') }}
+        </p>
+    </header>
+
+    <div
+        class="reservation-visio"
+        data-controller="jitsi"
+        data-jitsi-domaine-value="{{ domaine }}"
+        data-jitsi-salle-value="{{ salle }}"
+        data-jitsi-jeton-value="{{ jeton }}"
+        data-jitsi-script-value="{{ scriptUrl }}"
+        data-jitsi-retour-value="{{ path('app_mes_reservations') }}"
+    ></div>
+
+    <a href="{{ path('app_mes_reservations') }}" class="btn-mentor btn-mentor-outline mt-4">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+        Retour à mes réservations
+    </a>
+
+</div>
+
+{% endblock %}

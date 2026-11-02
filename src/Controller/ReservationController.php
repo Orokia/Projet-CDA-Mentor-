@@ -2,6 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Reservation;
+use App\Repository\DisponibiliteRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\User;
 use App\Service\ReservationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -110,7 +113,12 @@ final class ReservationController extends AbstractController
 
         return $this->redirectToRoute(
             'app_formateur_profil',
+            [
+                'id' => $formateur->getId(),
+            ]
+
             ['id' => $formateur->getId()]
+
         );
     }
 

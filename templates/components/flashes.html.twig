@@ -1,0 +1,40 @@
+{# Affiche tous les messages flash de la session.
+   Les types utilisés par les contrôleurs sont convertis en classes Bootstrap. #}
+{% set classes = {
+    success: 'alert-success',
+    error: 'alert-danger',
+    danger: 'alert-danger',
+    verify_email_error: 'alert-danger',
+    warning: 'alert-warning',
+    info: 'alert-info'
+} %}
+
+{% set messages = app.flashes %}
+
+{% if messages is not empty %}
+
+    <div class="container-mentor mentor-flashes">
+
+        {% for type, liste in messages %}
+            {% for message in liste %}
+
+                <div
+                    class="alert {{ classes[type] ?? 'alert-info' }} alert-dismissible fade show"
+                    role="alert"
+                >
+                    {{ message }}
+
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert"
+                        aria-label="Fermer"
+                    ></button>
+                </div>
+
+            {% endfor %}
+        {% endfor %}
+
+    </div>
+
+{% endif %}

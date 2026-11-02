@@ -1,80 +1,81 @@
+
 /* =========================================
    HERO
 ========================================= */
 
 .hero {
-    padding: 90px 0;
-    background: #ffffff;
+    padding: 65px 0 75px;
+    background: #FFFFFF;
+    overflow: hidden;
 }
 
 .hero-content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 0.95fr 1.05fr;
     align-items: center;
-    gap: 60px;
+    gap: 35px;
 }
 
 .hero-text {
-    max-width: 600px;
+    max-width: 560px;
+    position: relative;
+    z-index: 1;
 }
 
 .hero-badge {
     display: inline-block;
-
-    padding: 8px 14px;
-
-    margin-bottom: 20px;
-
+    padding: 9px 16px;
+    margin-bottom: 24px;
     border-radius: 30px;
-
-    background: #EEF2FF;
+    background: #F5F3FF;
     color: #4F46E5;
-
     font-size: 14px;
     font-weight: 600;
 }
 
 .hero h1 {
     margin: 0;
-
-    font-size: clamp(40px, 5vw, 64px);
-
-    line-height: 1.1;
-
+    max-width: 560px;
+    font-size: clamp(38px, 4.2vw, 58px);
+    line-height: 1.12;
+    letter-spacing: -1.5px;
     font-weight: 800;
-
     color: #1F2937;
 }
 
 .hero p {
-    margin-top: 24px;
-
-    font-size: 18px;
-
-    line-height: 1.7;
-
+    max-width: 540px;
+    margin: 24px 0 0;
+    font-size: 17px;
+    line-height: 1.8;
     color: #6B7280;
 }
 
 .hero-actions {
     display: flex;
-
+    align-items: center;
     gap: 14px;
-
-    margin-top: 32px;
-
+    margin-top: 30px;
     flex-wrap: wrap;
 }
 
 .hero-image {
     display: flex;
+    align-items: center;
     justify-content: center;
+    min-width: 0;
+    background: transparent;
 }
 
 .hero-image img {
+    display: block;
     width: 100%;
-    max-width: 520px;
+    max-width: 720px;
+    height: auto;
+    object-fit: contain;
 }
+
+
 
 
 /* =========================================
@@ -110,8 +111,7 @@
     letter-spacing: 0.5px;
 }
 
-.section-heading h2,
-.formateurs-text h2 {
+.section-heading h2 {
     margin: 0;
 
     font-size: 36px;
@@ -121,8 +121,7 @@
     color: #1F2937;
 }
 
-.section-heading p,
-.formateurs-text p {
+.section-heading p {
     margin-top: 16px;
 
     color: #6B7280;
@@ -130,103 +129,6 @@
     line-height: 1.7;
 }
 
-
-/* =========================================
-   FORMATIONS
-========================================= */
-
-.formations-grid {
-    display: grid;
-
-    grid-template-columns: repeat(3, 1fr);
-
-    gap: 28px;
-}
-
-.formation-card {
-    overflow: hidden;
-
-    background: #ffffff;
-
-    border-radius: 16px;
-
-    box-shadow: 0 8px 30px rgba(31, 41, 55, 0.06);
-
-    transition: transform 0.2s ease,
-                box-shadow 0.2s ease;
-}
-
-.formation-card:hover {
-    transform: translateY(-5px);
-
-    box-shadow: 0 15px 40px rgba(31, 41, 55, 0.10);
-}
-
-.formation-image {
-    height: 210px;
-
-    overflow: hidden;
-}
-
-.formation-image img {
-    width: 100%;
-
-    height: 100%;
-
-    object-fit: cover;
-}
-
-.formation-content {
-    padding: 24px;
-}
-
-.formation-category {
-    display: inline-block;
-
-    padding: 6px 10px;
-
-    border-radius: 6px;
-
-    background: #EEF2FF;
-
-    color: #4F46E5;
-
-    font-size: 12px;
-
-    font-weight: 700;
-}
-
-.formation-content h3 {
-    margin: 14px 0 8px;
-
-    font-size: 22px;
-
-    color: #1F2937;
-}
-
-.formation-content p {
-    margin: 0;
-
-    color: #6B7280;
-
-    line-height: 1.6;
-}
-
-.formation-footer {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    margin-top: 24px;
-}
-
-.formation-footer strong {
-    font-size: 20px;
-
-    color: #1F2937;
-}
 
 
 /* =========================================
@@ -239,75 +141,7 @@
     background: #ffffff;
 }
 
-.formateurs-content {
-    display: grid;
 
-    grid-template-columns: 0.9fr 1.1fr;
-
-    align-items: center;
-
-    gap: 70px;
-}
-
-.formateurs-image img {
-    width: 100%;
-
-    max-height: 500px;
-
-    object-fit: cover;
-
-    border-radius: 20px;
-}
-
-.formateurs-text h2 {
-    margin-top: 0;
-
-    font-size: 40px;
-}
-
-.formateurs-text ul {
-    list-style: none;
-
-    padding: 0;
-
-    margin: 30px 0;
-}
-
-.formateurs-text li {
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    margin-bottom: 16px;
-
-    color: #374151;
-
-    font-weight: 500;
-}
-
-.formateurs-text li span {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    width: 24px;
-
-    height: 24px;
-
-    border-radius: 50%;
-
-    background: #EEF2FF;
-
-    color: #4F46E5;
-
-    font-size: 13px;
-
-    font-weight: 700;
-}
 
 
 /* =========================================
@@ -316,50 +150,83 @@
 
 @media (max-width: 900px) {
 
+    .hero {
+        padding: 50px 0 60px;
+    }
+
     .hero-content {
         grid-template-columns: 1fr;
-
+        gap: 25px;
         text-align: center;
     }
 
     .hero-text {
+        max-width: 650px;
         margin: auto;
+    }
+
+    .hero h1,
+    .hero p {
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .hero-actions {
         justify-content: center;
     }
 
+    .hero-image img {
+        max-width: 560px;
+    }
+
     .formations-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .formateurs-content {
-        grid-template-columns: 1fr;
-
-        gap: 40px;
-    }
-
 }
-
 
 @media (max-width: 600px) {
 
     .hero {
-        padding: 60px 0;
+        padding: 40px 0 50px;
+    }
+
+    .hero-content {
+        gap: 20px;
     }
 
     .hero h1 {
-        font-size: 40px;
+        font-size: clamp(34px, 9vw, 42px);
+        letter-spacing: -0.8px;
+        line-height: 1.15;
+    }
+
+    .hero p {
+        margin-top: 18px;
+        font-size: 16px;
+        line-height: 1.7;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .hero-actions .btn-mentor {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .hero-image img {
+        max-width: 100%;
     }
 
     .formations-grid {
         grid-template-columns: 1fr;
     }
 
-    .section-heading h2,
-    .formateurs-text h2 {
+    .section-heading h2 {
         font-size: 30px;
     }
-
 }

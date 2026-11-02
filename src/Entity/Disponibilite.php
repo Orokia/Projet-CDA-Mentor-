@@ -57,6 +57,15 @@ public function __construct()
         return $this->id;
     }
 
+    public function setId( int $id ): static{
+
+      $this->id= $id;
+
+        return $this;
+        
+
+    }
+
     public function getDateDebut(): ?\DateTimeInterface
     {
         return $this->dateDebut;

@@ -1,77 +1,120 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}
-    Nos formateurs - Mentor
-{% endblock %}
+{% block title %}Nos formateurs - Mentor{% endblock %}
 
 {% block body %}
 
-<div class="formateurs-page py-5">
+<section class="formateurs-page page-section">
 
-    <div class="container">
+    <div class="container-mentor">
 
-        {# =====================================================
-           EN-TÊTE
-           ===================================================== #}
-
-        <div class="formateurs-page-header text-center mb-5">
-
-            <span class="formation-section-label">
-                Nos formateurs
-            </span>
-
+        {# EN-TÊTE DE LA PAGE #}
+        <header class="catalog-header formateurs-page-header">
             <h1>
                 Trouvez le formateur qui vous correspond
             </h1>
 
-            <p class="text-muted mx-auto">
+            <p>
                 Découvrez nos formateurs et choisissez celui qui
                 vous accompagnera dans votre apprentissage.
             </p>
+        </header>
 
-        </div>
-
-
-        {# =====================================================
-           LISTE DES FORMATEURS
-           ===================================================== #}
-
+        {# VÉRIFICATION DE LA PRÉSENCE DE FORMATEURS #}
         {% if formateurs|length > 0 %}
 
-            <div class="row g-4">
+            {# Le contrôleur Stimulus englobe la recherche ET les cartes #}
+            <div data-controller="formateur-search">
 
-                {% for formateur in formateurs %}
+                {# RECHERCHE ET FILTRES #}
+                <div class="catalog-toolbar">
 
-                    <div class="col-12 col-md-6 col-lg-4">
+                    <div class="catalog-search">
+                        <i class="bi bi-search" aria-hidden="true"></i>
 
-                        {% include 'components/formateur_card.html.twig' with {
-                            formateur: formateur
-                        } %}
+                        <input
+                            type="search"
+                            placeholder="Rechercher par nom ou spécialité"
+                            aria-label="Rechercher un formateur"
+                            autocomplete="off"
+                            data-formateur-search-target="input"
+                            data-action="input->formateur-search#filter"
+                        >
 
+                        <button
+                            type="button"
+                            class="formateurs-search-clear"
+                            aria-label="Effacer la recherche"
+                            data-formateur-search-target="clear"
+                            data-action="click->formateur-search#clear"
+                            hidden
+                        >
+                            <i class="bi bi-x-lg" aria-hidden="true"></i>
+                        </button>
                     </div>
 
-                {% endfor %}
+                </div>
+
+                {# NOMBRE DE RÉSULTATS #}
+                <p
+                    class="catalog-count"
+                    data-formateur-search-target="count"
+                    aria-live="polite"
+                    hidden
+                ></p>
+
+                {# GRILLE DES FORMATEURS #}
+                <div class="row g-4">
+
+                    {% for formateur in formateurs %}
+
+                        {# La colonne entière est masquée pour ne pas laisser de trou dans la grille #}
+                        <div
+                            class="col-12 col-sm-6 col-lg-3"
+                            data-formateur-search-target="item"
+                            data-formateur-search="{{ (formateur.prenom ~ ' ' ~ formateur.nom ~ ' ' ~ (formateur.specialites|join(' ')) ~ ' ' ~ (formateur.localisation ?? ''))|lower|e('html_attr') }}"
+                        >
+
+                            {% include 'components/formateur_card.html.twig' with {
+                                formateur: formateur
+                            } %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+                {# MESSAGE SI LA RECHERCHE NE DONNE RIEN #}
+                <div class="empty-state mt-4" data-formateur-search-target="empty" hidden>
+                    <span class="empty-state-icon" aria-hidden="true">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <h3>Aucun résultat</h3>
+                    <p>
+                        Essayez un autre nom ou une autre spécialité.
+                    </p>
+                </div>
 
             </div>
 
         {% else %}
 
-            <div class="formateurs-empty text-center py-5">
-
-                <h3>
-                    Aucun formateur disponible
-                </h3>
-
+            {# MESSAGE SI AUCUN FORMATEUR N'EST DISPONIBLE #}
+            <div class="empty-state">
+                <span class="empty-state-icon" aria-hidden="true">
+                    <i class="bi bi-person-x"></i>
+                </span>
+                <h3>Aucun formateur disponible</h3>
                 <p>
                     Aucun formateur n'est actuellement disponible.
                 </p>
-
             </div>
 
         {% endif %}
 
     </div>
 
-</div>
+</section>
 
 {% endblock %}

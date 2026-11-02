@@ -1,4 +1,8 @@
-<header class="mentor-header">
+<header
+    class="mentor-header"
+    data-controller="mobile-menu"
+    data-action="keydown.esc@window->mobile-menu#close turbo:before-cache@document->mobile-menu#close"
+>
 
     <div class="container-mentor mentor-header-container">
 
@@ -7,8 +11,8 @@
         <a href="{{ path('app_home') }}"
            class="mentor-logo">
 
-            <div class="mentor-logo-icon">
-                
+            <div class="mentor-logo-icon" aria-hidden="true">
+                <i class="bi bi-mortarboard-fill"></i>
             </div>
 
             <div class="mentor-logo-text">
@@ -26,25 +30,92 @@
         </a>
 
 
+        {# RECHERCHE : envoie ?q=... au catalogue, qui filtre les formations #}
+
+        <form
+            class="mentor-search"
+            action="{{ path('app_formation') }}"
+            method="get"
+            role="search"
+        >
+            <label for="mentor-search-input" class="visually-hidden">
+                Rechercher une formation
+            </label>
+
+            <button type="submit" class="mentor-search-submit" aria-label="Lancer la recherche">
+                <i class="bi bi-search" aria-hidden="true"></i>
+            </button>
+
+            <input
+                type="search"
+                id="mentor-search-input"
+                name="q"
+                value="{{ app.request.query.get('q') }}"
+                placeholder="Rechercher une formation"
+                autocomplete="off"
+            >
+        </form>
+
+
         {# NAVIGATION #}
 
-        <nav class="mentor-navigation">
+        {# Route courante : sert à mettre en évidence le lien de la page affichée #}
+        {% set route = app.request.attributes.get('_route') %}
 
-            <a href="{{ path('app_home') }}">
+        <nav class="mentor-navigation" id="mentor-navigation" aria-label="Navigation principale">
+
+            {# Recherche du menu mobile (la barre de l'en-tête est masquée sous 900 px) #}
+            <form
+                class="mentor-search mentor-search-mobile"
+                action="{{ path('app_formation') }}"
+                method="get"
+                role="search"
+            >
+                <label for="mentor-search-mobile-input" class="visually-hidden">
+                    Rechercher une formation
+                </label>
+
+                <button type="submit" class="mentor-search-submit" aria-label="Lancer la recherche">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                </button>
+
+                <input
+                    type="search"
+                    id="mentor-search-mobile-input"
+                    name="q"
+                    placeholder="Rechercher une formation"
+                    autocomplete="off"
+                >
+            </form>
+
+            <a href="{{ path('app_home') }}"
+               {% if route == 'app_home' %}class="is-active" aria-current="page"{% endif %}>
                 Accueil
             </a>
 
-            <a href="{{ path('app_formation') }}">
+            <a href="{{ path('app_formation') }}"
+               {% if route in ['app_formation', 'app_formation_show'] %}class="is-active" aria-current="page"{% endif %}>
                 Formations
             </a>
 
-            <a href="{{ path('app_formateurs') }}">
+            <a href="{{ path('app_formateurs') }}"
+               {% if route in ['app_formateurs', 'app_formateur_profil'] %}class="is-active" aria-current="page"{% endif %}>
                 Formateurs
             </a>
 
             <a href="#">
                 À propos
             </a>
+
+            {# Visible uniquement dans le menu mobile, où le lien
+               « Se connecter » des actions est masqué #}
+            {% if not app.user %}
+
+                <a href="{{ path('app_login') }}" class="mentor-navigation-auth">
+                    Se connecter
+                </a>
+
+            {% endif %}
 
         </nav>
 
@@ -55,55 +126,70 @@
 
             {% if app.user %}
 
-                 <div class="navbar-profile">
+                 <div
+                    class="navbar-profile"
+                    data-controller="profile-menu"
+                    data-action="click@window->profile-menu#closeOnClickOutside keydown.esc@window->profile-menu#close turbo:before-cache@document->profile-menu#close"
+                 >
 
-                    
-
-                        <button
-                            type="button"
-                            class="profile-avatar"
-                            id="profileMenuButton"
-                        >
-                            CO
-                        </button>
+                       <button
+    type="button"
+    class="profile-avatar"
+    id="profileMenuButton"
+    aria-label="Ouvrir le menu du profil"
+    aria-haspopup="true"
+    aria-expanded="false"
+    data-profile-menu-target="button"
+    data-action="profile-menu#toggle"
+>
+    {% if app.user.photoUtilisateur %}
+        <img
+            src="{{ asset('assets/images/utilisateurs/' ~ app.user.photoUtilisateur) }}"
+            alt="Photo de profil"
+        >
+    {% else %}
+        {{ app.user.prenomUtilisateur|first|upper }}{{ app.user.nomUtilisateur|first|upper }}
+    {% endif %}
+</button>
 
                         <div class="profile-dropdown">
 
-                            <div class="profile-dropdown-header">
+                           <div class="profile-dropdown-header">
 
-                                <div class="profile-avatar-large">
-                                    CO
-                                </div>
+    <div class="profile-avatar-large">
+        {% if app.user.photoUtilisateur %}
+            <img
+                src="{{ asset('assets/images/utilisateurs/' ~ app.user.photoUtilisateur) }}"
+                alt="Photo de profil"
+            >
+        {% else %}
+            {{ app.user.prenomUtilisateur|first|upper }}{{ app.user.nomUtilisateur|first|upper }}
+        {% endif %}
+    </div>
 
-                                <div>
+    <div>
+        <strong>
+            {{ app.user.prenomUtilisateur }} {{ app.user.nomUtilisateur }}
+        </strong>
 
-                                    <strong>
-                                        {{ app.user.email|split('@')[0] }}
-                                    </strong>
+        <span>
+            {{ app.user.email }}
+        </span>
+    </div>
 
-                                    <span>
-                                        {{ app.user.email }}
-                                    </span>
-
-                                </div>
-
-                            </div>
+</div>
 
 
+                            {# Les liens dépendent du profil lié au compte :
+                               un User peut n'avoir ni Student ni Formateur #}
                             <div class="profile-dropdown-links">
 
-                                <a href="#">
-                                    Mon profil
-                                </a>
+                                {% if app.user.student %}
 
-                               
-                                <a href="#">
-                                    Mes réservations
-                                </a>
+                                    <a href="{{ path('app_student_profile') }}">
+                                        Mon profil
+                                    </a>
 
-<<<<<<< Updated upstream
-                               
-=======
                                     <a href="{{ path('app_mes_reservations') }}">
                                         Mes réservations
                                     </a>
@@ -116,12 +202,9 @@
                                         Mon profil formateur
                                     </a>
 
-                                    <a href="{{ path('app_mes_reservations') }}">
-                                        Mes réservations
-                                    </a>
-
                                 {% endif %}
 
+                               
                                 {% if is_granted('ROLE_ADMIN') %}
 
                                     <a href="{{ path('admin') }}">
@@ -129,7 +212,7 @@
                                     </a>
 
                                 {% endif %}
->>>>>>> Stashed changes
+
 
                             </div>
 
@@ -164,6 +247,19 @@
                 </a>
 
             {% endif %}
+
+            {# BOUTON DU MENU MOBILE #}
+            <button
+                type="button"
+                class="mentor-menu-toggle"
+                aria-label="Ouvrir le menu"
+                aria-controls="mentor-navigation"
+                aria-expanded="false"
+                data-mobile-menu-target="button"
+                data-action="mobile-menu#toggle"
+            >
+                <i class="bi bi-list" aria-hidden="true"></i>
+            </button>
 
         </div>
 

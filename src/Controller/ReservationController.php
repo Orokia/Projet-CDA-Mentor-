@@ -3,14 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Reservation;
-<<<<<<< Updated upstream
 use App\Repository\DisponibiliteRepository;
 use Doctrine\ORM\EntityManagerInterface;
-=======
 use App\Entity\User;
-use App\Service\JitsiService;
 use App\Service\ReservationService;
->>>>>>> Stashed changes
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -18,26 +14,25 @@ use Symfony\Component\Routing\Attribute\Route;
 
 final class ReservationController extends AbstractController
 {
+    public function __construct(
+        private ReservationService $reservationService
+    ) {
+    }
+
+    /**
+     * Crée les réservations de l'étudiant connecté.
+     */
     #[Route(
         '/reservation/create',
         name: 'app_reservation_create',
         methods: ['POST']
     )]
-    public function create(
-        Request $request,
-        DisponibiliteRepository $disponibiliteRepository,
-        EntityManagerInterface $entityManager
-    ): Response {
-
-        /*
-         
-         * 1. Vérification de la connexion
-         
-         */
-
+    public function create(Request $request): Response
+    {
+        // Vérification de la connexion
         $user = $this->getUser();
 
-        if (!$user) {
+        if (!$user || !$user instanceof User) {
             $this->addFlash(
                 'error',
                 'Vous devez être connecté pour réserver une session.'
@@ -46,13 +41,7 @@ final class ReservationController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-
-        /*
-         
-         * 2. Récupération de l'étudiant
-         
-         */
-
+        // Vérification du profil étudiant
         $student = $user->getStudent();
 
         if (!$student) {
@@ -61,395 +50,80 @@ final class ReservationController extends AbstractController
             );
         }
 
+        // Vérification du jeton CSRF envoyé par assets/reservation.js
+        if (!$this->isCsrfTokenValid('reservation', $request->request->getString('_token'))) {
+            $this->addFlash(
+                'error',
+                'La session a expiré. Veuillez réessayer.'
+            );
 
-        /*
-         
-         * 3. Récupération des données envoyées
-         
-         */
+            return $this->redirectToRoute('app_formateurs');
+        }
 
+        // Récupération des données du formulaire
         $disponibiliteId = $request->request->get('disponibilite');
         $jourChoisi = $request->request->get('jour');
 
-        if (!$disponibiliteId) {
-            throw $this->createNotFoundException(
-                'Aucune disponibilité sélectionnée.'
+        if (
+            !$disponibiliteId ||
+            !ctype_digit((string) $disponibiliteId)
+        ) {
+            $this->addFlash(
+                'error',
+                'Veuillez sélectionner une disponibilité valide.'
             );
+
+            return $this->redirectToRoute('app_formateurs');
         }
 
         if (!$jourChoisi) {
-            throw $this->createNotFoundException(
-                'Aucun jour sélectionné.'
+            $this->addFlash(
+                'error',
+                'Veuillez sélectionner un jour.'
             );
+
+            return $this->redirectToRoute('app_formateurs');
         }
 
-
-        /*
-         
-         * 4. Récupération de la disponibilité
-         
-         */
-
-        $disponibilite = $disponibiliteRepository->find(
-            $disponibiliteId
-        );
-
-        if (!$disponibilite) {
-            throw $this->createNotFoundException(
-                'Disponibilité introuvable.'
+        // Appel du service pour créer les réservations
+        try {
+            $reservations = $this->reservationService->creerReservations(
+                $student,
+                (int) $disponibiliteId,
+                (string) $jourChoisi
             );
+        } catch (\InvalidArgumentException | \RuntimeException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+
+            return $this->redirectToRoute('app_formateurs');
         }
 
-
-        /*
-         
-         * 5. Récupération de la formation et du formateur
-         
-         */
-
-        $formation = $disponibilite->getFormation();
-        $formateur = $disponibilite->getFormateur();
-
-        if (!$formation || !$formateur) {
-            throw $this->createNotFoundException(
-                'La disponibilité est mal configurée.'
-            );
-        }
-
-
-        /*
-         
-         * 6. Vérification du jour choisi
-         
-         */
-
-        $joursDisponibles = $disponibilite->getJoursSemaine();
-
-        $jourChoisiNormalise = mb_strtolower(
-            trim($jourChoisi)
-        );
-
-        $joursDisponiblesNormalises = array_map(
-            fn ($jour) => mb_strtolower(trim($jour)),
-            $joursDisponibles
-        );
-
-        if (!in_array(
-            $jourChoisiNormalise,
-            $joursDisponiblesNormalises,
-            true
-        )) {
-            throw $this->createNotFoundException(
-                'Le jour sélectionné n\'est pas disponible pour cette formation.'
-            );
-        }
-
-
-        /*
-         
-         * 7. Correspondance jour français → numéro ISO
-         *
-         * 1 = lundi
-         * 2 = mardi
-         * 3 = mercredi
-         * 4 = jeudi
-         * 5 = vendredi
-         * 6 = samedi
-         * 7 = dimanche
-         
-         */
-
-        $joursSemaine = [
-            'lundi' => 1,
-            'mardi' => 2,
-            'mercredi' => 3,
-            'jeudi' => 4,
-            'vendredi' => 5,
-            'samedi' => 6,
-            'dimanche' => 7,
-        ];
-
-        if (!isset($joursSemaine[$jourChoisiNormalise])) {
-            throw $this->createNotFoundException(
-                'Jour sélectionné invalide.'
-            );
-        }
-
-        $numeroJour = $joursSemaine[$jourChoisiNormalise];
-
-
-        /*
-         
-         * 8. Récupération de la période
-         
-         */
-
-        $dateDebut = clone $disponibilite->getDateDebut();
-        $dateFin = clone $disponibilite->getDateFin();
-
-
-        /*
-         
-         * 9. Recherche des dates correspondant au jour choisi
-         
-         */
-
-        $datesSeances = [];
-
-        $dateCourante = new \DateTime(
-            $dateDebut->format('Y-m-d')
-        );
-
-        while ($dateCourante <= $dateFin) {
-
-            if (
-                (int) $dateCourante->format('N')
-                === $numeroJour
-            ) {
-                $datesSeances[] = clone $dateCourante;
-            }
-
-            $dateCourante->modify('+1 day');
-        }
-
-
-        /*
-         
-         * 10. Vérification qu'au moins une séance existe
-         
-         */
-
-        if (count($datesSeances) === 0) {
-            throw $this->createNotFoundException(
-                'Aucune séance ne correspond au jour sélectionné dans cette période.'
-            );
-        }
-
-
-        /*
-         
-         * 11. Création des réservations
-         
-         */
-
-        $reservations = [];
-
-        foreach ($datesSeances as $dateSeance) {
-
-            /*
-             * -----------------------------------------------------
-             * Date + heure de début
-             * -----------------------------------------------------
-             */
-
-            $dateHeureDebut = new \DateTime(
-                $dateSeance->format('Y-m-d')
-                . ' '
-                . $disponibilite
-                    ->getHeureDebut()
-                    ->format('H:i:s')
-            );
-
-
-            /*
-             * -----------------------------------------------------
-             * Date + heure de fin
-             * -----------------------------------------------------
-             */
-
-            $dateHeureFin = new \DateTime(
-                $dateSeance->format('Y-m-d')
-                . ' '
-                . $disponibilite
-                    ->getHeureFin()
-                    ->format('H:i:s')
-            );
-
-
-            /*
-             * -----------------------------------------------------
-             * Création de la réservation
-             * -----------------------------------------------------
-             */
-
-            $reservation = new Reservation();
-
-            $reservation->setDateReservation(
-                new \DateTime()
-            );
-
-            $reservation->setDateHeureDebut(
-                $dateHeureDebut
-            );
-
-            $reservation->setDateHeureFin(
-                $dateHeureFin
-            );
-
-            $reservation->setStatut(
-                'confirmée'
-            );
-
-            $reservation->setStudent(
-                $student
-            );
-
-            $reservation->setFormation(
-                $formation
-            );
-
-            $reservation->setFormateur(
-                $formateur
-            );
-
-            $reservation->setDisponibilite(
-                $disponibilite
-            );
-
-            /*
-             * Le lien Jitsi sera généré après le premier flush(),
-             * car nous avons besoin de l'ID de la réservation.
-             */
-
-            $reservation->setLienVisio(null);
-
-            /*
-             * Préparation de la réservation
-             */
-
-            $entityManager->persist($reservation);
-
-            $reservations[] = $reservation;
-        }
-
-
-        /*
-         
-         * 12. Premier flush
-         *
-         * Permet d'obtenir les IDs des réservations.
-         
-         */
-
-        $entityManager->flush();
-
-
-        /*
-         
-         * 13. Génération des liens Jitsi
-         
-         */
-
-        foreach ($reservations as $reservation) {
-
-            /*
-             * Exemple :
-             *
-             * Reservation ID = 25
-             *
-             * Room :
-             * Mentor-Reservation-25
-             */
-
-            $roomName = 'Mentor-Reservation-'
-                . $reservation->getId();
-
-            $lienVisio = 'https://meet.jit.si/'
-                . $roomName;
-
-            $reservation->setLienVisio(
-                $lienVisio
-            );
-        }
-
-
-        /*
-         
-         * 14. Deuxième flush
-         *
-         * Enregistre les liens Jitsi.
-         
-         */
-
-        $entityManager->flush();
-
-
-        /*
-       
-         * 15. Message de confirmation
-         
-         */
-
-        $nombreSeances = count($datesSeances);
-
+        // Message de confirmation
         $this->addFlash(
             'success',
             sprintf(
                 'Votre réservation a été créée. Vous êtes inscrit à %d séance(s) chaque %s.',
-                $nombreSeances,
-                ucfirst($jourChoisiNormalise)
+                count($reservations),
+                ucfirst(mb_strtolower(trim((string) $jourChoisi)))
             )
         );
 
-
-        /*
-         16. Retour vers le profil du formateur
-         */
+        // Redirection vers le profil du formateur réservé
+        $formateur = $reservations[0]->getFormateur();
 
         return $this->redirectToRoute(
             'app_formateur_profil',
-<<<<<<< Updated upstream
-=======
+            [
+                'id' => $formateur->getId(),
+            ]
+
             ['id' => $formateur->getId()]
+
         );
     }
 
     /**
-     * Affiche la salle de visioconférence d'une réservation dans la page.
-     */
-    #[Route(
-        '/reservation/{id}/visio',
-        name: 'app_reservation_visio',
-        requirements: ['id' => '\d+'],
-        methods: ['GET']
-    )]
-    public function visio(
-        Reservation $reservation,
-        JitsiService $jitsiService
-    ): Response {
-        // Vérification de la connexion
-        $user = $this->getUser();
-
-        if (!$user instanceof User) {
-            return $this->redirectToRoute('app_login');
-        }
-
-        // Seuls les participants de la séance peuvent y accéder
-        if (!$jitsiService->peutRejoindre($reservation, $user)) {
-            throw $this->createAccessDeniedException();
-        }
-
-        // Sans identifiants JaaS, la salle s'ouvre directement sur Jitsi
-        if (!$jitsiService->estConfigure()) {
-            return $this->redirect((string) $reservation->getLienVisio());
-        }
-
-        try {
-            $salle = $jitsiService->preparerSalle($reservation, $user);
-        } catch (\RuntimeException $exception) {
-            $this->addFlash('error', $exception->getMessage());
-
-            return $this->redirectToRoute('app_mes_reservations');
-        }
-
-        return $this->render(
-            'reservation/visio.html.twig',
-            ['reservation' => $reservation] + $salle
-        );
-    }
-
-    /**
-     * Affiche les réservations de l'étudiant ou du formateur connecté,
+     * Affiche les réservations de l'étudiant connecté,
      * regroupées par formation.
      */
     #[Route(
@@ -466,17 +140,17 @@ final class ReservationController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
        
-        // Récupération du profil lié au compte
-        $profil = $user->getStudent() ?? $user->getFormateur();
+        // Récupération du profil étudiant
+        $student = $user->getStudent();
 
-        if (!$profil) {
+        if (!$student) {
             throw $this->createNotFoundException(
-                'Aucun profil étudiant ou formateur associé à votre compte.'
+                'Aucun profil étudiant associé à votre compte.'
             );
         }
 
-        // Récupération des réservations du profil
-        $reservations = $profil->getReservations();
+        // Récupération des réservations de l'étudiant
+        $reservations = $student->getReservations();
 
         // Regroupement effectué par le service
         $reservationsParFormation =
@@ -485,43 +159,9 @@ final class ReservationController extends AbstractController
         // Affichage du template Twig
         return $this->render(
             'reservation/index.html.twig',
->>>>>>> Stashed changes
             [
-                'id' => $formateur->getId(),
+                'reservationsParFormation' => $reservationsParFormation,
             ]
         );
     }
-
-
-
-    #[Route(
-    '/mes-reservations',
-    name: 'app_mes_reservations',
-    methods: ['GET']
-)]
-public function mesReservations(): Response
-{
-    $user = $this->getUser();
-
-    if (!$user) {
-        return $this->redirectToRoute('app_login');
-    }
-
-    $student = $user->getStudent();
-
-    if (!$student) {
-        throw $this->createNotFoundException(
-            'Aucun profil étudiant associé à votre compte.'
-        );
-    }
-
-    $reservations = $student->getReservations();
-
-    return $this->render(
-        'reservation/index.html.twig',
-        [
-            'reservations' => $reservations,
-        ]
-    );
-}
 }

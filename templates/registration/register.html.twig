@@ -1,78 +1,94 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Register{% endblock %}
+{# Le thème Bootstrap 5 ajoute is-invalid et place les erreurs sous chaque champ #}
+{% form_theme registrationForm 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Créer un compte - Mentor{% endblock %}
 
 {% block body %}
-    {% for flash_error in app.flashes('verify_email_error') %}
-        <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
-    {% endfor %}
-    <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
 
-            <div class="card shadow p-4">
-                <h2 class="text-center mb-4">Creer un compte</h2>
+<section class="auth-page">
 
-                {{ form_start(registrationForm) }}
+    <div class="auth-card auth-card-wide">
 
-                {{ form_errors(registrationForm) }}
+        <div class="auth-header">
 
-                <div class="mb-3">
-                    {{ form_label(registrationForm.email) }}
-                    {{ form_widget(registrationForm.email, {
-                        attr: { class: 'form-control', placeholder: 'Entrer votre Email' }
-                    }) }}
-                    {{ form_errors(registrationForm.email) }}
+            <span class="auth-icon" aria-hidden="true">
+                <i class="bi bi-person-plus"></i>
+            </span>
+
+            <h1>Créer un compte</h1>
+
+            <p>
+                Rejoignez Mentor et réservez vos premières séances.
+            </p>
+
+        </div>
+
+        {{ form_start(registrationForm, {attr: {novalidate: 'novalidate'}}) }}
+
+        {{ form_errors(registrationForm) }}
+
+        <div class="row g-3">
+
+            <div class="col-sm-6">
+                {{ form_label(registrationForm.prenomUtilisateur) }}
+                {{ form_widget(registrationForm.prenomUtilisateur, {
+                    attr: { placeholder: 'Prénom', autocomplete: 'given-name' }
+                }) }}
+                {{ form_errors(registrationForm.prenomUtilisateur) }}
+            </div>
+
+            <div class="col-sm-6">
+                {{ form_label(registrationForm.nomUtilisateur) }}
+                {{ form_widget(registrationForm.nomUtilisateur, {
+                    attr: { placeholder: 'Nom', autocomplete: 'family-name' }
+                }) }}
+                {{ form_errors(registrationForm.nomUtilisateur) }}
+            </div>
+
+            <div class="col-12">
+                {{ form_label(registrationForm.email) }}
+                {{ form_widget(registrationForm.email, {
+                    attr: { placeholder: 'vous@exemple.fr', autocomplete: 'email' }
+                }) }}
+                {{ form_errors(registrationForm.email) }}
+            </div>
+
+            <div class="col-12">
+                {{ form_label(registrationForm.plainPassword) }}
+                {{ form_widget(registrationForm.plainPassword, {
+                    attr: {
+                        autocomplete: 'new-password',
+                        'aria-describedby': 'aide-mot-de-passe'
+                    }
+                }) }}
+                <div id="aide-mot-de-passe" class="form-text">
+                    Au moins 8 caractères, avec une majuscule, une minuscule, un chiffre et un caractère spécial.
                 </div>
+                {{ form_errors(registrationForm.plainPassword) }}
+            </div>
 
-                <div class="mb-3">
-                    {{ form_label(registrationForm.nomUtilisateur) }}
-                    {{ form_widget(registrationForm.nomUtilisateur, {
-                        attr: { class: 'form-control', placeholder: 'Nom' }
-                    }) }}
-                </div>
-
-                <div class="mb-3">
-                    {{ form_label(registrationForm.prenomUtilisateur) }}
-                    {{ form_widget(registrationForm.prenomUtilisateur, {
-                        attr: { class: 'form-control', placeholder: 'Prenom' }
-                    }) }}
-                </div>
-
-                <div class="mb-3">
-                    {{ form_label(registrationForm.plainPassword) }}
-                    {{ form_widget(registrationForm.plainPassword, {
-                        attr: { class: 'form-control', placeholder: 'Password' }
-                    }) }}
-                    {{ form_errors(registrationForm.plainPassword) }}
-                </div>
-
-                <div class="form-check mb-3">
-                    {{ form_widget(registrationForm.agreeTerms, {
-                        attr: { class: 'form-check-input' }
-                    }) }}
-                    {{ form_label(registrationForm.agreeTerms, null, {
-                        label_attr: { class: 'form-check-label' }
-                    }) }}
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100">
-                    Valider
-                </button>
-
-                {{ form_end(registrationForm) }}
-
-                <p class="text-center mt-3">
-                    Vous n'avez pas de compte ?
-                    {# <a href="{{ path('app_login') }}">Login</a> #}
-                </p>
-
+            <div class="col-12">
+                {# Le thème rend la case, son libellé et ses erreurs ensemble #}
+                {{ form_row(registrationForm.agreeTerms) }}
             </div>
 
         </div>
+
+        <button type="submit" class="btn-mentor btn-mentor-primary w-100 mt-4">
+            Valider
+        </button>
+
+        {{ form_end(registrationForm) }}
+
+        <p class="auth-footer">
+            Vous avez déjà un compte ?
+            <a href="{{ path('app_login') }}">Se connecter</a>
+        </p>
+
     </div>
-</div>
 
-   
+</section>
+
 {% endblock %}
-

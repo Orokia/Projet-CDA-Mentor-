@@ -4,84 +4,122 @@
 
 {% block body %}
 
-<section class="formations-page">
+{# Liste des spécialités présentes dans le catalogue, sans doublon #}
+{% set categories = [] %}
+{% for formation in formations %}
+    {% if formation.specialite and (formation.specialite ~ '') not in categories %}
+        {% set categories = categories|merge([formation.specialite ~ '']) %}
+    {% endif %}
+{% endfor %}
 
-  <div class="container py-5">
+<section class="formations-page page-section">
 
-    <div class="text-center mb-5">
-        <span class="badge bg-primary mb-3">
-            Mentor
-        </span>
+    <div class="container-mentor">
 
-        <h1 class="display-5 fw-bold">
-            Découvrez nos formations
-        </h1>
+        <header class="catalog-header">
+            <h1>
+                Découvrez nos formations
+            </h1>
 
-        <p class="lead text-muted">
-            Développez vos compétences avec nos formations.
-        </p>
-    </div>
+            <p>
+                Développez vos compétences avec nos formations.
+            </p>
+        </header>
 
-    <div class="row g-4">
+        {% if formations|length > 0 %}
 
-        {% for formation in formations %}
+            <div data-controller="formation-search">
 
-            <div class="col-lg-4 col-md-6">
+                {# RECHERCHE ET FILTRES #}
+                <div class="catalog-toolbar">
 
-                <div class="card h-100 shadow-sm">
+                    <div class="catalog-search">
+                        <i class="bi bi-search" aria-hidden="true"></i>
 
-                    <img
-                        src="{{ asset('images/' ~ formation.image) }}"
-                        class="card-img-top"
-                        alt="{{ formation.titre }}"
-                    >
-
-                    <div class="card-body">
-
-                        {% if formation.specialite %}
-                            <span class="badge bg-primary">
-                                {{ formation.specialite }}
-                            </span>
-                        {% endif %}
-
-                        <h5 class="card-title mt-3">
-                            {{ formation.titre }}
-                        </h5>
-
-                        <p class="card-text text-muted">
-                            {{ formation.description|slice(0, 120) }}...
-                        </p>
-
+                        <input
+                            type="search"
+                            placeholder="Rechercher une formation"
+                            aria-label="Rechercher une formation"
+                            autocomplete="off"
+                            data-formation-search-target="input"
+                            data-action="input->formation-search#filter"
+                        >
                     </div>
 
-                    <div class="card-footer bg-white border-0">
+                    {% if categories is not empty %}
+                        <div class="catalog-categories" role="group" aria-label="Filtrer par spécialité">
+                            {% for categorie in categories %}
+                                <button
+                                    type="button"
+                                    class="catalog-chip"
+                                    aria-pressed="false"
+                                    data-categorie="{{ categorie }}"
+                                    data-formation-search-target="category"
+                                    data-action="formation-search#selectCategory"
+                                >
+                                    {{ categorie }}
+                                </button>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
 
-                        <div class="d-flex justify-content-between align-items-center">
+                </div>
 
-                            <strong>
-                                {{ formation.prix|number_format(2, ',', ' ') }} €
-                            </strong>
+                <p
+                    class="catalog-count"
+                    data-formation-search-target="count"
+                    aria-live="polite"
+                    hidden
+                ></p>
 
-                            <a
-                                href="{{ path('app_formation_show', {id: formation.id}) }}"
-                                class="btn btn-primary"
-                            >
-                                Découvrir
-                            </a>
+                <div class="row g-4">
+
+                    {% for formation in formations %}
+
+                        <div
+                            class="col-12 col-sm-6 col-md-4 col-lg-3"
+                            data-formation-search-target="item"
+                            data-categorie="{{ formation.specialite ? formation.specialite ~ '' }}"
+                            data-formation-search="{{ (formation.titre ~ ' ' ~ (formation.specialite ?? '') ~ ' ' ~ (formation.formateurs|join(' ')))|e('html_attr') }}"
+                        >
+
+                            {% include 'components/formation_card.html.twig' with {
+                                formation: formation
+                            } %}
 
                         </div>
 
-                    </div>
+                    {% endfor %}
 
+                </div>
+
+                <div class="empty-state mt-4" data-formation-search-target="empty" hidden>
+                    <span class="empty-state-icon" aria-hidden="true">
+                        <i class="bi bi-search"></i>
+                    </span>
+                    <h3>Aucun résultat</h3>
+                    <p>
+                        Essayez un autre mot-clé ou retirez le filtre de spécialité.
+                    </p>
                 </div>
 
             </div>
 
-        {% endfor %}
+        {% else %}
+
+            <div class="empty-state">
+                <span class="empty-state-icon" aria-hidden="true">
+                    <i class="bi bi-journal-x"></i>
+                </span>
+                <h3>Aucune formation disponible</h3>
+                <p>
+                    Aucune formation n'est actuellement disponible.
+                </p>
+            </div>
+
+        {% endif %}
 
     </div>
-
-</div>
 
 </section>
 

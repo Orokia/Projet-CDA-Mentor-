@@ -37,14 +37,17 @@ class FormationCrudController extends AbstractCrudController
             ->setBasePath("assets/images/formations")
             ->setUploadDir("public/assets/images/formations")
             ->setUploadedFileNamePattern('[randomhash].[extension]'),
-            MoneyField::new('prix')->setCurrency("EUR"),
+           MoneyField::new('prix', 'Prix')
+           ->setCurrency('EUR')
+           ->setStoredAsCents(false)
+           ->setNumDecimals(0),
              IntegerField::new('duree', 'Durée')
-    ->setRequired(true),
+           ->setRequired(true),
             AssociationField::new('specialite'),
             AssociationField::new('formateurs', 'Formateurs')
-    ->setFormTypeOptions([
-        'by_reference' => false,
-    ]),
+          ->setFormTypeOptions([
+           'by_reference' => false,
+           ]),
         ];
     }
     

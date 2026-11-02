@@ -1,3 +1,4 @@
+
 {% extends 'base.html.twig' %}
 
 {% block title %}
@@ -6,84 +7,94 @@
 
 {% block body %}
 
-<div class="container py-5">
+<div class="container-mentor page-section">
 
-    <div class="mb-5">
-        <span class="text-primary fw-semibold">
-            MON ESPACE
+    {# EN-TÊTE DE LA PAGE #}
+    <header class="page-header page-header-left">
+        <span class="page-eyebrow">
+            Mon espace
         </span>
 
-        <h1 class="mt-2">
+        <h1>
             Mes réservations
         </h1>
 
-        <p class="text-muted">
-            Retrouvez ici toutes vos séances de formation réservées.
+        <p>
+            Retrouvez toutes vos séances, regroupées par formation.
         </p>
-    </div>
+    </header>
 
+    {# VÉRIFICATION DES RÉSERVATIONS #}
+    {% if reservationsParFormation|length > 0 %}
 
-    {% if reservations|length > 0 %}
+        <div class="reservations-groups">
 
-        <div class="row g-4">
+            {# UNE CARTE PAR FORMATION #}
+            {% for groupe in reservationsParFormation %}
 
-            {% for reservation in reservations %}
+                <section class="reservation-group mb-4" aria-labelledby="formation-{{ loop.index }}">
 
-                <div class="col-12">
+                    {# EN-TÊTE DE LA FORMATION #}
+                    <div class="reservation-group-header">
 
-                    <div class="card border-0 shadow-sm">
+                        <div class="reservation-group-icon" aria-hidden="true">
+                            <i class="bi bi-mortarboard"></i>
+                        </div>
 
-                        <div class="card-body p-4">
+                        <div class="reservation-group-title">
+                            <small>Formation</small>
 
-                            <div class="row align-items-center">
+                            <h2 id="formation-{{ loop.index }}">
+                                {{ groupe.formation.titre }}
+                            </h2>
 
-                               
-                                {# FORMATION #}
-                               
+                            <p>
+                                {{ groupe.reservations|length }}
+                                séance(s) réservée(s)
+                            </p>
+                        </div>
 
-                                <div class="col-lg-4">
+                    </div>
 
-                                    <div class="d-flex align-items-start gap-3">
+                    {# LISTE DES SÉANCES DE CETTE FORMATION #}
+                    <div class="reservation-sessions">
 
-                                        <div
-                                            class="bg-primary bg-opacity-10 rounded p-3"
-                                        >
-                                            <i class="bi bi-mortarboard fs-4 text-primary"></i>
-                                        </div>
+                        {% for reservation in groupe.reservations %}
 
-                                        <div>
+                            <article class="reservation-session">
 
-                                            <small class="text-muted">
-                                                Formation
-                                            </small>
+                                {# DATE ET HORAIRES #}
+                                <div class="reservation-session-date">
 
-                                            <h5 class="mb-1">
-                                                {{ reservation.formation.titre }}
-                                            </h5>
+                                    <div class="reservation-date-icon" aria-hidden="true">
+                                        <i class="bi bi-calendar3"></i>
+                                    </div>
 
-                                            <span class="text-muted">
-                                                Formateur :
-                                                {{ reservation.formateur.nom }}
-                                                {{ reservation.formateur.prenom }}
-                                            </span>
+                                    <div>
+                                        <small class="reservation-label">
+                                            Date et heure
+                                        </small>
 
-                                        </div>
+                                        <strong>
+                                            <time datetime="{{ reservation.dateHeureDebut|date('Y-m-d') }}">
+                                                {{ reservation.dateHeureDebut|date('d/m/Y') }}
+                                            </time>
+                                        </strong>
 
+                                        <span>
+                                            {{ reservation.dateHeureDebut|date('H:i') }}
+                                            -
+                                            {{ reservation.dateHeureFin|date('H:i') }}
+                                        </span>
                                     </div>
 
                                 </div>
 
-<<<<<<< Updated upstream
-=======
-                                {# AUTRE PARTICIPANT : le formateur pour un étudiant, et inversement #}
-                                <div class="reservation-session-trainer">
->>>>>>> Stashed changes
 
                                
                                 {# DATE / HEURE #}
                                
 
-<<<<<<< Updated upstream
                                 <div class="col-lg-3 mt-4 mt-lg-0">
 
                                     <small class="text-muted d-block mb-1">
@@ -98,94 +109,81 @@
 
                                     </div>
 
-                                    <div class="text-muted">
-
-                                        <i class="bi bi-clock me-1"></i>
-
-                                        {{ reservation.dateHeureDebut|date('H:i') }}
-                                        -
-                                        {{ reservation.dateHeureFin|date('H:i') }}
-
-=======
                                     <div>
                                         <small class="reservation-label">
-                                            {{ app.user.student ? 'Formateur' : 'Étudiant' }}
+                                            Formateur
                                         </small>
 
+
                                         <span>
-                                            {% set participant = app.user.student ? reservation.formateur : reservation.student %}
-                                            {{ participant.prenom }}
-                                            {{ participant.nom }}
+                                            {{ reservation.formateur.prenom }}
+                                            {{ reservation.formateur.nom }}
                                         </span>
->>>>>>> Stashed changes
+
                                     </div>
 
                                 </div>
 
+                                {# STATUT : couleur + icône + texte, pour ne pas dépendre de la couleur seule #}
+                                <div class="reservation-session-status">
 
-                               
-                                {# STATUT #}
-                               
-
-                                <div class="col-lg-2 mt-4 mt-lg-0">
-
-                                    <small class="text-muted d-block mb-1">
+                                    <small class="reservation-label mb-2">
                                         Statut
                                     </small>
 
                                     {% if reservation.statut == 'confirmée' %}
 
-                                        <span class="badge bg-success">
+                                        <span class="reservation-status reservation-status-success">
+                                            <i class="bi bi-check-circle" aria-hidden="true"></i>
                                             Confirmée
                                         </span>
 
                                     {% elseif reservation.statut == 'annulée' %}
 
-                                        <span class="badge bg-danger">
+                                        <span class="reservation-status reservation-status-danger">
+                                            <i class="bi bi-x-circle" aria-hidden="true"></i>
                                             Annulée
                                         </span>
 
                                     {% else %}
 
-                                        <span class="badge bg-secondary">
-                                            {{ reservation.statut }}
+                                        <span class="reservation-status">
+                                            <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                                            {{ reservation.statut|capitalize }}
                                         </span>
 
                                     {% endif %}
 
                                 </div>
 
+                                {# VISIOCONFÉRENCE #}
+                                <div class="reservation-session-action">
 
-                               
-                                {# VISIO #}
-                               
-
-                                <div class="col-lg-3 mt-4 mt-lg-0 text-lg-end">
-
-                                    {% if reservation.lienVisio %}
+                                    {% if reservation.lienVisio
+                                        and reservation.statut == 'confirmée' %}
 
                                         <a
-<<<<<<< Updated upstream
                                             {# href="{{ path('app_reservation_visio', {
                                                 id: reservation.id
                                             }) }}" #}
                                             class="btn btn-primary"
-=======
-                                            href="{{ path('app_reservation_visio', {id: reservation.id}) }}"
+
+                                            href="{{ reservation.lienVisio }}"
                                             class="btn-mentor btn-mentor-primary"
->>>>>>> Stashed changes
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+
                                         >
-                                            <i class="bi bi-camera-video me-2"></i>
+                                            <i class="bi bi-camera-video" aria-hidden="true"></i>
                                             Rejoindre
-<<<<<<< Updated upstream
-=======
-                                            <span class="visually-hidden">la séance du {{ reservation.dateHeureDebut|date('d/m/Y') }}</span>
->>>>>>> Stashed changes
+
+                                            <span class="visually-hidden">la séance du {{ reservation.dateHeureDebut|date('d/m/Y') }} (nouvel onglet)</span>
+
                                         </a>
 
                                     {% else %}
 
-                                        <span class="text-muted">
+                                        <span class="reservation-label">
                                             Visioconférence indisponible
                                         </span>
 
@@ -193,13 +191,13 @@
 
                                 </div>
 
-                            </div>
+                            </article>
 
-                        </div>
+                        {% endfor %}
 
                     </div>
 
-                </div>
+                </section>
 
             {% endfor %}
 
@@ -207,23 +205,24 @@
 
     {% else %}
 
-        <div class="text-center py-5">
+        {# AUCUNE RÉSERVATION #}
+        <div class="empty-state">
 
-            <div class="mb-3">
-                <i class="bi bi-calendar-x display-4 text-muted"></i>
-            </div>
+            <span class="empty-state-icon" aria-hidden="true">
+                <i class="bi bi-calendar-x"></i>
+            </span>
 
             <h3>
                 Aucune réservation
             </h3>
 
-            <p class="text-muted">
+            <p>
                 Vous n'avez pas encore réservé de formation.
             </p>
 
             <a
                 href="{{ path('app_formation') }}"
-                class="btn btn-primary"
+                class="btn-mentor btn-mentor-primary"
             >
                 Découvrir les formations
             </a>

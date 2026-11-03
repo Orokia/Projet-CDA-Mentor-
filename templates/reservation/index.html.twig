@@ -90,36 +90,21 @@
 
                                 </div>
 
+                                {# AUTRE PARTICIPANT : le formateur pour un étudiant, et inversement #}
+                                <div class="reservation-session-trainer">
 
-                               
-                                {# DATE / HEURE #}
-                               
-
-                                <div class="col-lg-3 mt-4 mt-lg-0">
-
-                                    <small class="text-muted d-block mb-1">
-                                        Séance
-                                    </small>
-
-                                    <div class="fw-semibold">
-
-                                        <i class="bi bi-calendar3 me-1"></i>
-
-                                        {{ reservation.dateHeureDebut|date('d/m/Y') }}
-
-                                    </div>
+                                    <i class="bi bi-person" aria-hidden="true"></i>
 
                                     <div>
                                         <small class="reservation-label">
-                                            Formateur
+                                            {{ app.user.student ? 'Formateur' : 'Étudiant' }}
                                         </small>
 
-
                                         <span>
-                                            {{ reservation.formateur.prenom }}
-                                            {{ reservation.formateur.nom }}
+                                            {% set participant = app.user.student ? reservation.formateur : reservation.student %}
+                                            {{ participant.prenom }}
+                                            {{ participant.nom }}
                                         </span>
-
                                     </div>
 
                                 </div>
@@ -163,22 +148,12 @@
                                         and reservation.statut == 'confirmée' %}
 
                                         <a
-                                            {# href="{{ path('app_reservation_visio', {
-                                                id: reservation.id
-                                            }) }}" #}
-                                            class="btn btn-primary"
-
-                                            href="{{ reservation.lienVisio }}"
+                                            href="{{ path('app_reservation_visio', {id: reservation.id}) }}"
                                             class="btn-mentor btn-mentor-primary"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-
                                         >
                                             <i class="bi bi-camera-video" aria-hidden="true"></i>
                                             Rejoindre
-
-                                            <span class="visually-hidden">la séance du {{ reservation.dateHeureDebut|date('d/m/Y') }} (nouvel onglet)</span>
-
+                                            <span class="visually-hidden">la séance du {{ reservation.dateHeureDebut|date('d/m/Y') }}</span>
                                         </a>
 
                                     {% else %}

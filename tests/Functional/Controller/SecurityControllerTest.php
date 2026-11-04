@@ -117,6 +117,45 @@ final class SecurityControllerTest extends WebTestCase
         self::assertInputValueSame('email', 'inconnu@exemple.fr');
     }
 
+    public function testConnexionAvecUnJetonCsrfInvalideEstRefusee(): void
+    {
+        $this->creerCompte();
+
+        // Bon mot de passe, mais jeton falsifié : la connexion doit échouer
+        $this->client->request('POST', '/login', [
+            'email' => 'amadou@example.test',
+            'password' => self::MOT_DE_PASSE,
+            '_csrf_token' => 'jeton-falsifie',
+        ]);
+
+        self::assertResponseRedirects('/login');
+        $this->client->followRedirect();
+        self::assertSelectorExists('.alert-danger');
+        self::assertNull(static::getContainer()->get('security.token_storage')->getToken());
+    }
+
+    public function testConnexionAvecDesChampsVidesEstRefusee(): void
+    {
+        $this->creerCompte();
+
+        $this->seConnecter('');
+
+        self::assertResponseRedirects('/login');
+        $this->client->followRedirect();
+        self::assertSelectorExists('.alert-danger');
+    }
+
+    public function testMotDePasseAvecUneDifferenceDeCasseEstRefuse(): void
+    {
+        $this->creerCompte();
+
+        $this->seConnecter(mb_strtolower(self::MOT_DE_PASSE));
+
+        self::assertResponseRedirects('/login');
+        $this->client->followRedirect();
+        self::assertSelectorExists('.alert-danger');
+    }
+
     public function testDeconnexionFermeLaSession(): void
     {
         $this->client->loginUser($this->creerUtilisateur());

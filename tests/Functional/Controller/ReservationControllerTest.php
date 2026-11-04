@@ -125,6 +125,149 @@ final class ReservationControllerTest extends WebTestCase
         self::assertSame(0, $this->nombreDeReservations());
     }
 
+    /**
+     * Valeurs limites des paramètres : rejetées par le contrôleur
+     * ou par le service, sans réservation créée.
+     */
+    public function testCreationRefuseLesValeursLimitesDesParametres(): void
+    {
+        [$disponibilite, $token] = $this->preparerReservation();
+        $id = (string) $disponibilite->getId();
+
+        $cas = [
+            // Identifiant : zéro, négatif, décimal, notation scientifique, espaces
+            [['disponibilite' => '0', 'jour' => 'lundi'], 'Veuillez sélectionner une disponibilité valide.'],
+            [['disponibilite' => '-1', 'jour' => 'lundi'], 'Veuillez sélectionner une disponibilité valide.'],
+            [['disponibilite' => '1.5', 'jour' => 'lundi'], 'Veuillez sélectionner une disponibilité valide.'],
+            [['disponibilite' => '1e3', 'jour' => 'lundi'], 'Veuillez sélectionner une disponibilité valide.'],
+            [['disponibilite' => ' ' . $id, 'jour' => 'lundi'], 'Veuillez sélectionner une disponibilité valide.'],
+            [['jour' => 'lundi'], 'Veuillez sélectionner une disponibilité valide.'],
+            // Identifiant numérique au-delà de PHP_INT_MAX
+            [['disponibilite' => '99999999999999999999', 'jour' => 'lundi'], 'Disponibilité introuvable.'],
+            // Jour : « 0 » est vide pour PHP, jour inconnu, espaces seuls
+            [['disponibilite' => $id, 'jour' => '0'], 'Veuillez sélectionner un jour.'],
+            [['disponibilite' => $id, 'jour' => 'monday'], "Le jour choisi n'est pas disponible."],
+            [['disponibilite' => $id, 'jour' => '   '], "Le jour choisi n'est pas disponible."],
+        ];
+
+        foreach ($cas as [$parametres, $message]) {
+            $this->client->request(
+                'POST',
+                '/reservation/create',
+                ['_token' => $token] + $parametres
+            );
+
+            self::assertResponseRedirects('/formateurs');
+            $this->assertFlash('error', $message);
+        }
+
+        self::assertSame(0, $this->nombreDeReservations());
+    }
+
+    public function testCreationSansJetonCsrfEstRefusee(): void
+    {
+        [$disponibilite] = $this->preparerReservation();
+
+        $this->client->request('POST', '/reservation/create', [
+            'disponibilite' => $disponibilite->getId(),
+            'jour' => 'lundi',
+        ]);
+
+        self::assertResponseRedirects('/formateurs');
+        $this->assertFlash('error', 'La session a expiré. Veuillez réessayer.');
+        self::assertSame(0, $this->nombreDeReservations());
+    }
+
+    public function testCreationRefuseUnParametreTableauAvecUn400(): void
+    {
+        [$disponibilite, $token] = $this->preparerReservation();
+
+        $this->client->request('POST', '/reservation/create', [
+            '_token' => $token,
+            'disponibilite' => [$disponibilite->getId()],
+            'jour' => 'lundi',
+        ]);
+
+        self::assertResponseStatusCodeSame(400);
+        self::assertSame(0, $this->nombreDeReservations());
+    }
+
+    public function testCreationReserveUnAutreJourDeLaMemeDisponibilite(): void
+    {
+        // Le contrôle de doublon porte sur le créneau, pas sur la disponibilité
+        $disponibilite = $this->creerDisponibilite(
+            $this->creerFormateur(),
+            $this->creerFormation(),
+            ['lundi', 'mardi']
+        );
+        $this->client->loginUser($this->creerUtilisateur());
+        $token = $this->client
+            ->request('GET', '/formateur/' . $disponibilite->getFormateur()->getId())
+            ->filter('#btn-reserver')
+            ->attr('data-csrf-token');
+
+        foreach (['lundi', 'mardi'] as $jour) {
+            $this->client->request('POST', '/reservation/create', [
+                '_token' => $token,
+                'disponibilite' => $disponibilite->getId(),
+                'jour' => $jour,
+            ]);
+
+            self::assertResponseRedirects('/formateur/' . $disponibilite->getFormateur()->getId());
+        }
+
+        // Deux lundis et un mardi entre le 19 et le 26 octobre 2026
+        self::assertSame(3, $this->nombreDeReservations());
+    }
+
+    public function testVisioDUneReservationInexistanteRenvoie404(): void
+    {
+        $this->client->loginUser($this->creerUtilisateur());
+
+        $this->client->request('GET', '/reservation/999999/visio');
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testVisioAvecUnIdentifiantNonNumeriqueRenvoie404(): void
+    {
+        $this->client->loginUser($this->creerUtilisateur());
+
+        $this->client->request('GET', '/reservation/abc/visio');
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testVisioAvecUnIdentifiantHorsLimiteRenvoie404(): void
+    {
+        $this->client->loginUser($this->creerUtilisateur());
+
+        $this->client->request('GET', '/reservation/99999999999999999999/visio');
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testVisioEnPostRenvoie405(): void
+    {
+        $user = $this->creerUtilisateur();
+        $reservation = $this->creerReservation($user);
+        $this->client->loginUser($user);
+
+        $this->client->request('POST', '/reservation/' . $reservation->getId() . '/visio');
+
+        self::assertResponseStatusCodeSame(405);
+    }
+
+    public function testVisioRefuseUnAutreFormateur(): void
+    {
+        $reservation = $this->creerReservation();
+
+        $this->client->loginUser($this->creerCompteFormateur($this->creerFormateur('autre.formateur@example.test')));
+        $this->client->request('GET', '/reservation/' . $reservation->getId() . '/visio');
+
+        self::assertResponseStatusCodeSame(403);
+    }
+
     public function testMesReservationsSansProfilEtudiantRenvoie404(): void
     {
         $this->client->loginUser(

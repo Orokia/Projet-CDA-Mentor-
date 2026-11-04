@@ -52,7 +52,8 @@ class FormationController extends AbstractController
      *
      * @param int $id Identifiant de la formation
      */
-    #[Route('/formations/{id}', name: 'app_formation_show', requirements: ['id' => '\d+'], methods: ['GET'])]
+    // 18 chiffres au plus : un identifiant plus long dépasserait PHP_INT_MAX (erreur 500)
+    #[Route('/formations/{id}', name: 'app_formation_show', requirements: ['id' => '\d{1,18}'], methods: ['GET'])]
     public function show(int $id): Response
     {
         // Recherche de la formation à partir de son identifiant
@@ -84,7 +85,7 @@ class FormationController extends AbstractController
     #[Route(
         '/formations/{formationId}/choisir-formateur',
         name: 'app_formation_formateur',
-        requirements: ['formationId' => '\d+'],
+        requirements: ['formationId' => '\d{1,18}'],
         methods: ['POST']
     )]
     public function choisirFormateur(

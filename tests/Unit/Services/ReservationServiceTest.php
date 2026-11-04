@@ -477,6 +477,28 @@ class ReservationServiceTest extends TestCase
     }
 
     /**
+     * La disponibilité est recherchée une seule fois.
+     */
+    private function fournirDisponibilite(Disponibilite $disponibilite): void
+    {
+        $this->disponibiliteRepository
+            ->expects($this->once())
+            ->method('find')
+            ->with(12)
+            ->willReturn($disponibilite);
+    }
+
+    /**
+     * Un flush avant et un après la génération des liens.
+     */
+    private function attendreDeuxFlush(): void
+    {
+        $this->entityManager
+            ->expects($this->exactly(2))
+            ->method('flush');
+    }
+
+    /**
      * Simule l'identifiant attribué par la base au premier flush.
      */
     private function simulerIdentifiantsAuPersist(): void
@@ -645,5 +667,240 @@ class ReservationServiceTest extends TestCase
         );
 
         $this->assertCount(4, $service->creerReservations($student, 12, 'mercredi'));
+    }
+
+    // ------------------------------------------------------------------
+    // Cas non passants
+    // ------------------------------------------------------------------
+
+    public function testCreerReservationsRefuseUnePeriodeInversee(): void
+    {
+        $this->attendreAucuneEcriture();
+
+        // Date de fin antérieure à la date de début : aucune date à parcourir
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(
+            dateDebut: '2026-11-25',
+            dateFin: '2026-11-04'
+        ));
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Aucune séance ne correspond au jour choisi.');
+
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+    }
+
+    public function testCreerReservationsRefuseUneDisponibiliteSansJour(): void
+    {
+        $this->attendreAucuneEcriture();
+
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee([]));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Le jour choisi n'est pas disponible.");
+
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+    }
+
+    public function testCreerReservationsRefuseUnJourCompose(): void
+    {
+        $this->attendreAucuneEcriture();
+
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Le jour choisi n'est pas disponible.");
+
+        // Seule une égalité stricte après normalisation est acceptée
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi,jeudi');
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function joursNonReconnus(): iterable
+    {
+        yield 'chaîne vide' => [''];
+        yield 'espaces seuls' => ['   '];
+        yield 'jour en anglais' => ['wednesday'];
+        yield 'abréviation' => ['mer'];
+        yield 'jour avec faute' => ['mecredi'];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('joursNonReconnus')]
+    public function testCreerReservationsRefuseUnJourNonReconnu(string $jour): void
+    {
+        $this->attendreAucuneEcriture();
+
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Le jour choisi n'est pas disponible.");
+
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, $jour);
+    }
+
+    // ------------------------------------------------------------------
+    // Cas limites
+    // ------------------------------------------------------------------
+
+    /**
+     * Semaine du lundi 2 au dimanche 8 novembre 2026 :
+     * chaque jour, du premier (1) au dernier (7) numéro ISO, apparaît une fois.
+     *
+     * @return iterable<string, array{string, string}>
+     */
+    public static function joursDeLaSemaine(): iterable
+    {
+        yield 'lundi (ISO 1, borne basse)' => ['lundi', '2026-11-02'];
+        yield 'mardi' => ['mardi', '2026-11-03'];
+        yield 'mercredi' => ['mercredi', '2026-11-04'];
+        yield 'jeudi' => ['jeudi', '2026-11-05'];
+        yield 'vendredi' => ['vendredi', '2026-11-06'];
+        yield 'samedi' => ['samedi', '2026-11-07'];
+        yield 'dimanche (ISO 7, borne haute)' => ['dimanche', '2026-11-08'];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('joursDeLaSemaine')]
+    public function testCreerReservationsAssocieChaqueJourASaDate(string $jour, string $dateAttendue): void
+    {
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee([$jour], '2026-11-02', '2026-11-08'));
+        $this->attendreDeuxFlush();
+
+        $reservations = $this->reservationService->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            $jour
+        );
+
+        $this->assertCount(1, $reservations);
+        $this->assertSame($dateAttendue, $reservations[0]->getDateHeureDebut()->format('Y-m-d'));
+    }
+
+    public function testCreerReservationsInclutLesDeuxBornesDeLaPeriode(): void
+    {
+        // Du dimanche 1er au dimanche 8 novembre 2026 : les deux bornes sont des dimanches
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['dimanche'], '2026-11-01', '2026-11-08'));
+        $this->attendreDeuxFlush();
+
+        $reservations = $this->reservationService->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            'dimanche'
+        );
+
+        $this->assertCount(2, $reservations);
+        $this->assertSame('2026-11-01', $reservations[0]->getDateHeureDebut()->format('Y-m-d'));
+        $this->assertSame('2026-11-08', $reservations[1]->getDateHeureDebut()->format('Y-m-d'));
+    }
+
+    public function testCreerReservationsIgnoreLHeureEnregistreeDansLesDates(): void
+    {
+        // Une heure parasite dans la date de début ne doit pas exclure le premier jour
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(
+            dateDebut: '2026-11-04 23:59:59',
+            dateFin: '2026-11-04'
+        ));
+        $this->attendreDeuxFlush();
+
+        $reservations = $this->reservationService->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            'mercredi'
+        );
+
+        $this->assertCount(1, $reservations);
+        $this->assertSame('2026-11-04 14:00', $reservations[0]->getDateHeureDebut()->format('Y-m-d H:i'));
+    }
+
+    public function testCreerReservationsSurUneAnneeComplete(): void
+    {
+        // 2026 commence et finit un jeudi : 53 jeudis
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['jeudi'], '2026-01-01', '2026-12-31'));
+
+        $this->entityManager
+            ->expects($this->exactly(53))
+            ->method('persist');
+
+        $reservations = $this->reservationService->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            'jeudi'
+        );
+
+        $this->assertCount(53, $reservations);
+        $this->assertSame('2026-01-01', $reservations[0]->getDateHeureDebut()->format('Y-m-d'));
+        $this->assertSame('2026-12-31', $reservations[52]->getDateHeureDebut()->format('Y-m-d'));
+    }
+
+    public function testCreerReservationsAChevalSurDeuxAnnees(): void
+    {
+        // Du lundi 28 décembre 2026 au lundi 4 janvier 2027
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['lundi'], '2026-12-28', '2027-01-04'));
+        $this->attendreDeuxFlush();
+
+        $reservations = $this->reservationService->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            'lundi'
+        );
+
+        $this->assertCount(2, $reservations);
+        $this->assertSame('2026-12-28', $reservations[0]->getDateHeureDebut()->format('Y-m-d'));
+        $this->assertSame('2027-01-04', $reservations[1]->getDateHeureDebut()->format('Y-m-d'));
+    }
+
+    public function testCreerReservationsLe29FevrierDUneAnneeBissextile(): void
+    {
+        // Le 29 février 2028 est un mardi
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['mardi'], '2028-02-28', '2028-03-01'));
+        $this->attendreDeuxFlush();
+
+        $reservations = $this->reservationService->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            'mardi'
+        );
+
+        $this->assertCount(1, $reservations);
+        $this->assertSame('2028-02-29 14:00', $reservations[0]->getDateHeureDebut()->format('Y-m-d H:i'));
+    }
+
+    public function testCreerReservationsAccepteUnJourEntoureDeTabulations(): void
+    {
+        // trim() retire aussi tabulations et retours à la ligne
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['mercredi']));
+        $this->attendreDeuxFlush();
+
+        $reservations = $this->reservationService->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            "\tMERCREDI\n"
+        );
+
+        $this->assertCount(4, $reservations);
+    }
+
+    public function testCreerReservationsAuPassageALHeureDHiver(): void
+    {
+        // Le changement d'heure (25 octobre 2026) ne décale pas les séances
+        $fuseauInitial = date_default_timezone_get();
+        date_default_timezone_set('Europe/Paris');
+
+        try {
+            $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['samedi', 'lundi'], '2026-10-24', '2026-10-26'));
+            $this->attendreDeuxFlush();
+
+            $reservations = $this->reservationService->creerReservations(
+                $this->createStub(Student::class),
+                12,
+                'lundi'
+            );
+        } finally {
+            date_default_timezone_set($fuseauInitial);
+        }
+
+        $this->assertCount(1, $reservations);
+        $this->assertSame('2026-10-26 14:00', $reservations[0]->getDateHeureDebut()->format('Y-m-d H:i'));
+        $this->assertSame('2026-10-26 15:30', $reservations[0]->getDateHeureFin()->format('Y-m-d H:i'));
     }
 }

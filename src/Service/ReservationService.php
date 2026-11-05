@@ -7,6 +7,7 @@ use App\Entity\Reservation;
 use App\Entity\Student;
 use App\Repository\DisponibiliteRepository;
 use App\Repository\ReservationRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -25,6 +26,10 @@ class ReservationService
      * Crée les réservations pour chaque occurrence
      * du jour choisi dans la période de disponibilité.
      *
+     * Tout se fait dans une seule transaction : en cas d'erreur, à n'importe
+     * quelle étape, aucune réservation n'est enregistrée et le jour reste
+     * « disponible ».
+     *
      * @return Reservation[] Liste des réservations créées
      */
     public function creerReservations(
@@ -32,9 +37,38 @@ class ReservationService
         int $disponibiliteId,
         string $jourChoisi
     ): array {
-        // Recherche de la disponibilité demandée
+        $connexion = $this->entityManager->getConnection();
+        $connexion->beginTransaction();
+
+        try {
+            $reservations = $this->enregistrerReservations($student, $disponibiliteId, $jourChoisi);
+            $connexion->commit();
+        } catch (\Throwable $exception) {
+            // Annule aussi le premier flush (réservations + statut du jour)
+            if ($connexion->isTransactionActive()) {
+                $connexion->rollBack();
+            }
+
+            throw $exception;
+        }
+
+        return $reservations;
+    }
+
+    /**
+     * @return Reservation[]
+     */
+    private function enregistrerReservations(
+        Student $student,
+        int $disponibiliteId,
+        string $jourChoisi
+    ): array {
+        // Verrou d'écriture (SELECT … FOR UPDATE) jusqu'à la fin de la transaction.
+        // Deux étudiants qui réservent le même jour en même temps sont traités
+        // l'un après l'autre : le second lit le statut enregistré par le premier
+        // et reçoit « Ce jour n'est plus disponible. ».
         $disponibilite = $this->disponibiliteRepository
-            ->find($disponibiliteId);
+            ->find($disponibiliteId, LockMode::PESSIMISTIC_WRITE);
 
         if (!$disponibilite) {
             throw new \RuntimeException(

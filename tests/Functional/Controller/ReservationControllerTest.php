@@ -7,6 +7,7 @@ use App\Entity\Formateur;
 use App\Entity\Reservation;
 use App\Entity\User;
 use App\Service\JitsiService;
+use App\Service\ReservationService;
 use App\Tests\Support\EntitesDeTestTrait;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -248,6 +249,34 @@ final class ReservationControllerTest extends WebTestCase
         self::assertSelectorExists('.disponibilite-jour[data-jour="lundi"][disabled]');
         self::assertSelectorTextContains('.disponibilite-jour[data-jour="lundi"] .disponibilite-jour-action', 'Plus disponible');
         self::assertSelectorNotExists('.disponibilite-jour[data-jour="mardi"][disabled]');
+    }
+
+    public function testCreationAfficheUnMessageEnCasDErreurTechnique(): void
+    {
+        [$disponibilite, $token] = $this->preparerReservation();
+
+        // Garde le service remplacé ci-dessous pour la requête suivante
+        $this->client->disableReboot();
+
+        $service = $this->createStub(ReservationService::class);
+        $service
+            ->method('creerReservations')
+            ->willThrowException(new \Exception('SQLSTATE[HY000] panne simulée'));
+        static::getContainer()->set(ReservationService::class, $service);
+
+        $this->client->request('POST', '/reservation/create', [
+            '_token' => $token,
+            'disponibilite' => $disponibilite->getId(),
+            'jour' => 'lundi',
+        ]);
+
+        // Message lisible au lieu d'une page 500, sans détail technique
+        self::assertResponseRedirects('/formateurs');
+        $this->assertFlash(
+            'error',
+            "Une erreur technique est survenue, votre réservation n'a pas été enregistrée. Veuillez réessayer."
+        );
+        self::assertSame(0, $this->nombreDeReservations());
     }
 
     public function testCreationRefuseUnJourPlusDisponible(): void

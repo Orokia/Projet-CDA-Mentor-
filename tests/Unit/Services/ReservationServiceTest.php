@@ -10,12 +10,15 @@ use App\Entity\Student;
 use App\Repository\DisponibiliteRepository;
 use App\Repository\ReservationRepository;
 use App\Service\ReservationService;
+use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
 class ReservationServiceTest extends TestCase
 {
     private DisponibiliteRepository $disponibiliteRepository;
     private EntityManagerInterface $entityManager;
+    private Connection $connexion;
     private ReservationService $reservationService;
 
     protected function setUp(): void
@@ -29,6 +32,13 @@ class ReservationServiceTest extends TestCase
             EntityManagerInterface::class
         );
 
+        // Connexion utilisée pour la transaction. Un test peut la remplacer
+        // par un mock pour vérifier commit / rollBack.
+        $this->connexion = $this->createStub(Connection::class);
+        $this->entityManager
+            ->method('getConnection')
+            ->willReturnCallback(fn (): Connection => $this->connexion);
+
         // Injection des dépendances dans le service
         $this->reservationService = new ReservationService(
             $this->disponibiliteRepository,
@@ -38,12 +48,13 @@ class ReservationServiceTest extends TestCase
         );
     }
 
-    // Le service ne doit rien enregistrer en base.
+    // Le service ne doit rien enregistrer en base
+    // (getConnection reste autorisé : il ouvre la transaction).
     private function attendreAucuneEcriture(): void
     {
         $this->entityManager
             ->expects($this->never())
-            ->method($this->anything());
+            ->method($this->logicalNot($this->identicalTo('getConnection')));
     }
 
     // Le service ne doit pas interroger les disponibilités.
@@ -484,8 +495,32 @@ class ReservationServiceTest extends TestCase
         $this->disponibiliteRepository
             ->expects($this->once())
             ->method('find')
-            ->with(12)
+            ->with(12, LockMode::PESSIMISTIC_WRITE)
             ->willReturn($disponibilite);
+    }
+
+    /**
+     * Remplace la connexion par un mock qui note les appels de transaction.
+     *
+     * @param list<string> $journal
+     */
+    private function journaliserLaTransaction(array &$journal): Connection
+    {
+        // Stub : le journal, comparé dans chaque test, sert de vérification
+        $connexion = $this->createStub(Connection::class);
+        $connexion->method('isTransactionActive')->willReturn(true);
+
+        foreach (['beginTransaction', 'commit', 'rollBack'] as $methode) {
+            $connexion
+                ->method($methode)
+                ->willReturnCallback(static function () use (&$journal, $methode): void {
+                    $journal[] = $methode;
+                });
+        }
+
+        $this->connexion = $connexion;
+
+        return $connexion;
     }
 
     /**
@@ -872,6 +907,122 @@ class ReservationServiceTest extends TestCase
         }
 
         self::assertSame(['mercredi' => 'disponible'], $disponibilite->getJoursSemaine());
+    }
+
+    // ------------------------------------------------------------------
+    // Transaction et réservations simultanées
+    // ------------------------------------------------------------------
+
+    public function testCreerReservationsVerrouilleLaDisponibiliteDansUneTransaction(): void
+    {
+        $journal = [];
+        $this->journaliserLaTransaction($journal);
+
+        $this->disponibiliteRepository
+            ->expects($this->once())
+            ->method('find')
+            ->with(12, LockMode::PESSIMISTIC_WRITE)
+            ->willReturnCallback(function () use (&$journal): Disponibilite {
+                $journal[] = 'find (verrou)';
+
+                return $this->creerDisponibiliteSimulee();
+            });
+
+        $this->entityManager
+            ->expects($this->exactly(2))
+            ->method('flush')
+            ->willReturnCallback(static function () use (&$journal): void {
+                $journal[] = 'flush';
+            });
+
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+
+        // Le verrou est pris dans la transaction, qui est validée après les deux flush
+        self::assertSame(
+            ['beginTransaction', 'find (verrou)', 'flush', 'flush', 'commit'],
+            $journal
+        );
+    }
+
+    public function testCreerReservationsAnnuleLaTransactionSurUneErreurMetier(): void
+    {
+        $this->attendreAucuneEcriture();
+
+        $journal = [];
+        $this->journaliserLaTransaction($journal);
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['mercredi' => 'plus disponible']));
+
+        try {
+            $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+            self::fail('Un jour plus disponible aurait dû être refusé.');
+        } catch (\InvalidArgumentException $exception) {
+            self::assertSame("Ce jour n'est plus disponible.", $exception->getMessage());
+        }
+
+        self::assertSame(['beginTransaction', 'rollBack'], $journal);
+    }
+
+    /**
+     * @return iterable<string, array{int}>
+     */
+    public static function flushEnEchec(): iterable
+    {
+        yield 'premier flush (réservations + statut)' => [1];
+        yield 'second flush (liens visio)' => [2];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('flushEnEchec')]
+    public function testCreerReservationsAnnuleToutSiUnFlushEchoue(int $flushEnEchec): void
+    {
+        $journal = [];
+        $this->journaliserLaTransaction($journal);
+
+        $disponibilite = $this->creerDisponibiliteReelle(['mercredi' => 'disponible']);
+        $this->fournirDisponibilite($disponibilite);
+
+        $panne = new \Exception('SQLSTATE[HY000] panne simulée');
+        $numeroFlush = 0;
+
+        $this->entityManager
+            ->expects($this->exactly($flushEnEchec))
+            ->method('flush')
+            ->willReturnCallback(static function () use (&$numeroFlush, $flushEnEchec, $panne): void {
+                if (++$numeroFlush === $flushEnEchec) {
+                    throw $panne;
+                }
+            });
+
+        try {
+            $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+            self::fail('La panne aurait dû être propagée.');
+        } catch (\Exception $exception) {
+            // L'erreur d'origine est relancée telle quelle, pour le contrôleur et les logs
+            self::assertSame($panne, $exception);
+        }
+
+        // Rien n'est validé : la base annule les réservations et le statut du jour
+        self::assertSame(['beginTransaction', 'rollBack'], $journal);
+    }
+
+    public function testCreerReservationsNAnnulePasUneTransactionDejaTerminee(): void
+    {
+        $this->attendreAucuneEcriture();
+
+        // Par exemple après une connexion perdue : plus de transaction active
+        $connexion = $this->createMock(Connection::class);
+        $connexion->method('isTransactionActive')->willReturn(false);
+        $connexion->expects($this->never())->method('rollBack');
+        $this->connexion = $connexion;
+
+        $this->disponibiliteRepository
+            ->expects($this->once())
+            ->method('find')
+            ->willReturn(null);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Disponibilité introuvable.');
+
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
     }
 
     public function testCreerReservationsIgnoreLAncienFormatEnListe(): void

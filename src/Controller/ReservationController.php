@@ -6,6 +6,7 @@ use App\Entity\Reservation;
 use App\Entity\User;
 use App\Service\JitsiService;
 use App\Service\ReservationService;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +15,8 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ReservationController extends AbstractController
 {
     public function __construct(
-        private ReservationService $reservationService
+        private ReservationService $reservationService,
+        private LoggerInterface $logger
     ) {
     }
 
@@ -93,6 +95,21 @@ final class ReservationController extends AbstractController
             );
         } catch (\InvalidArgumentException | \RuntimeException $exception) {
             $this->addFlash('error', $exception->getMessage());
+
+            return $this->redirectToRoute('app_formateurs');
+        } catch (\Throwable $exception) {
+            // Erreur technique (base de données…) : la transaction a été annulée
+            // par le service. Le détail va dans les logs, pas à l'utilisateur.
+            $this->logger->error('Échec technique lors de la création d\'une réservation.', [
+                'exception' => $exception,
+                'disponibilite' => $disponibiliteId,
+                'jour' => $jourChoisi,
+            ]);
+
+            $this->addFlash(
+                'error',
+                'Une erreur technique est survenue, votre réservation n\'a pas été enregistrée. Veuillez réessayer.'
+            );
 
             return $this->redirectToRoute('app_formateurs');
         }

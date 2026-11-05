@@ -35,7 +35,8 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
         $reservations = $this->reservationService->creerReservations(
             $student,
             $disponibilite->getId(),
-            'lundi'
+            'lundi',
+            $this->paiementEffectue()
         );
 
         self::assertCount(2, $reservations);
@@ -75,11 +76,11 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
             $this->creerFormation()
         );
 
-        $this->reservationService->creerReservations($student, $disponibilite->getId(), 'lundi');
+        $this->reservationService->creerReservations($student, $disponibilite->getId(), 'lundi', $this->paiementEffectue());
 
         // La recherche du doublon (findOneBy sur un DateTime) doit fonctionner en vraie base
         try {
-            $this->reservationService->creerReservations($student, $disponibilite->getId(), 'lundi');
+            $this->reservationService->creerReservations($student, $disponibilite->getId(), 'lundi', $this->paiementEffectue());
             self::fail('Une deuxième réservation du même créneau aurait dû être refusée.');
         } catch (\RuntimeException $exception) {
             self::assertSame('Vous avez déjà réservé ce créneau.', $exception->getMessage());
@@ -102,7 +103,8 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
         $this->reservationService->creerReservations(
             $this->creerUtilisateur()->getStudent(),
             $disponibilite->getId(),
-            'lundi'
+            'lundi',
+            $this->paiementEffectue()
         );
 
         // On relit depuis la base : le statut a bien été écrit
@@ -125,14 +127,16 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
         $this->reservationService->creerReservations(
             $this->creerUtilisateur()->getStudent(),
             $disponibilite->getId(),
-            'lundi'
+            'lundi',
+            $this->paiementEffectue()
         );
 
         try {
             $this->reservationService->creerReservations(
                 $this->creerUtilisateur('autre.etudiant@example.test')->getStudent(),
                 $disponibilite->getId(),
-                'lundi'
+                'lundi',
+                $this->paiementEffectue()
             );
             self::fail('Un jour déjà réservé aurait dû être refusé à un autre étudiant.');
         } catch (\InvalidArgumentException $exception) {
@@ -173,7 +177,7 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
         );
 
         try {
-            $this->reservationService->creerReservations($student, $disponibilite->getId(), 'lundi');
+            $this->reservationService->creerReservations($student, $disponibilite->getId(), 'lundi', $this->paiementEffectue());
             self::fail('La panne aurait dû être propagée.');
         } catch (\Exception $exception) {
             self::assertSame('SQLSTATE[HY000] panne simulée', $exception->getMessage());
@@ -213,7 +217,7 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage("Ce jour n'est plus disponible.");
 
-        $this->reservationService->creerReservations($this->creerUtilisateur()->getStudent(), $id, 'lundi');
+        $this->reservationService->creerReservations($this->creerUtilisateur()->getStudent(), $id, 'lundi', $this->paiementEffectue());
     }
 
     public function testDisponibiliteIntrouvableDeclencheUneException(): void
@@ -223,7 +227,7 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Disponibilité introuvable.');
 
-        $this->reservationService->creerReservations($student, 999999, 'lundi');
+        $this->reservationService->creerReservations($student, 999999, 'lundi', $this->paiementEffectue());
     }
 
     public function testCreerReservationsAucuneDateCorrespondante(): void
@@ -245,7 +249,8 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
         $this->reservationService->creerReservations(
             $student,
             $disponibilite->getId(),
-            'lundi'
+            'lundi',
+            $this->paiementEffectue()
         );
     }
 }

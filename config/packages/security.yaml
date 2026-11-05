@@ -61,6 +61,9 @@ security:
          - { path: ^/formateur, roles: PUBLIC_ACCESS }
          - { path: ^/reservation, roles: ROLE_USER }
          - { path: ^/mes-reservations, roles: ROLE_USER }
+         # Retours de Stripe Checkout (navigateur de l'étudiant) : la session est conservée (cookie SameSite=Lax).
+         # Limité à /paiement/ : un vrai webhook Stripe (appel serveur, sans session) devra rester public.
+         - { path: ^/api/stripe/webhook/paiement/, roles: ROLE_USER }
          - { path: ^/login, roles: PUBLIC_ACCESS }
          - { path: ^/register, roles: PUBLIC_ACCESS }
         # - { path: ^/profile, roles: ROLE_USER }

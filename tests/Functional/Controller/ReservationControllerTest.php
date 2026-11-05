@@ -4,11 +4,12 @@ namespace App\Tests\Functional\Controller;
 
 use App\Entity\Disponibilite;
 use App\Entity\Formateur;
+use App\Entity\Paiement;
 use App\Entity\Reservation;
 use App\Entity\User;
 use App\Service\JitsiService;
-use App\Service\ReservationService;
 use App\Tests\Support\EntitesDeTestTrait;
+use App\Tests\Support\Paiement\PasserellePaiementMock;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
@@ -21,6 +22,33 @@ final class ReservationControllerTest extends WebTestCase
     protected function setUp(): void
     {
         $this->client = static::createClient();
+        PasserellePaiementMock::reinitialiser();
+    }
+
+    /**
+     * Tunnel complet : « Payer et réserver » → page Stripe (carte 4242…, date future,
+     * CVC 123) → retour sur Mentor. Renvoie la réponse du retour de Stripe.
+     */
+    private function reserverEtPayer(Disponibilite $disponibilite, string $token, string $jour = 'lundi'): void
+    {
+        $this->client->request('POST', '/reservation/create', [
+            '_token' => $token,
+            'disponibilite' => $disponibilite->getId(),
+            'jour' => $jour,
+        ]);
+
+        // Redirection vers la page de paiement hébergée
+        self::assertResponseStatusCodeSame(303);
+        $sessionId = PasserellePaiementMock::idDepuisUrl(
+            (string) $this->client->getResponse()->headers->get('Location')
+        );
+
+        $reponse = static::getContainer()->get(PasserellePaiementMock::class)
+            ->payer($sessionId, PasserellePaiementMock::carte('4242 4242 4242 4242', cvc: '123'));
+        self::assertTrue($reponse->isSuccessful());
+
+        // Stripe renvoie l'étudiant vers Mentor
+        $this->client->request('GET', PasserellePaiementMock::demande($sessionId)->urlSucces);
     }
 
     /**
@@ -59,9 +87,8 @@ final class ReservationControllerTest extends WebTestCase
         self::assertResponseRedirects('/login');
     }
 
-    public function testCreationReserveChaqueOccurrenceDuJour(): void
+    public function testCreationRedirigeVersLaPageDePaiementSansRienReserver(): void
     {
-        /** @var Disponibilite $disponibilite */
         [$disponibilite, $token] = $this->preparerReservation();
 
         $this->client->request('POST', '/reservation/create', [
@@ -70,11 +97,35 @@ final class ReservationControllerTest extends WebTestCase
             'jour' => 'lundi',
         ]);
 
-        self::assertResponseRedirects('/formateur/' . $disponibilite->getFormateur()->getId());
+        // 303 : le navigateur suit la redirection en GET vers Stripe Checkout
+        self::assertResponseStatusCodeSame(303);
+        self::assertStringStartsWith(
+            PasserellePaiementMock::URL_PAGE_PAIEMENT,
+            (string) $this->client->getResponse()->headers->get('Location')
+        );
+
+        // Rien n'est réservé tant que le paiement n'est pas vérifié
+        self::assertSame(0, $this->nombreDeReservations());
+        self::assertSame(
+            ['statut' => Paiement::STATUT_EN_ATTENTE, 'montant' => '199.99'],
+            (function (Paiement $paiement): array {
+                return ['statut' => $paiement->getStatut(), 'montant' => $paiement->getMontant()];
+            })($this->em()->getRepository(Paiement::class)->findOneBy([]))
+        );
+    }
+
+    public function testCreationReserveChaqueOccurrenceDuJour(): void
+    {
+        /** @var Disponibilite $disponibilite */
+        [$disponibilite, $token] = $this->preparerReservation();
+
+        $this->reserverEtPayer($disponibilite, $token);
+
+        self::assertResponseRedirects('/mes-reservations');
         self::assertSame(2, $this->nombreDeReservations());
 
         // Les réservations apparaissent dans « Mes réservations »
-        $this->client->request('GET', '/mes-reservations');
+        $this->client->followRedirect();
         self::assertResponseIsSuccessful();
         self::assertSelectorCount(1, '.reservation-group');
         self::assertSelectorCount(2, '.reservation-session');
@@ -208,13 +259,9 @@ final class ReservationControllerTest extends WebTestCase
             ->attr('data-csrf-token');
 
         foreach (['lundi', 'mardi'] as $jour) {
-            $this->client->request('POST', '/reservation/create', [
-                '_token' => $token,
-                'disponibilite' => $disponibilite->getId(),
-                'jour' => $jour,
-            ]);
+            $this->reserverEtPayer($disponibilite, $token, $jour);
 
-            self::assertResponseRedirects('/formateur/' . $disponibilite->getFormateur()->getId());
+            self::assertResponseRedirects('/mes-reservations');
         }
 
         // Deux lundis et un mardi entre le 19 et le 26 octobre 2026
@@ -236,12 +283,8 @@ final class ReservationControllerTest extends WebTestCase
             ->filter('#btn-reserver')
             ->attr('data-csrf-token');
 
-        $this->client->request('POST', '/reservation/create', [
-            '_token' => $token,
-            'disponibilite' => $disponibilite->getId(),
-            'jour' => 'lundi',
-        ]);
-        self::assertResponseRedirects($profil);
+        $this->reserverEtPayer($disponibilite, $token);
+        self::assertResponseRedirects('/mes-reservations');
 
         $this->client->request('GET', $profil);
 
@@ -255,14 +298,8 @@ final class ReservationControllerTest extends WebTestCase
     {
         [$disponibilite, $token] = $this->preparerReservation();
 
-        // Garde le service remplacé ci-dessous pour la requête suivante
-        $this->client->disableReboot();
-
-        $service = $this->createStub(ReservationService::class);
-        $service
-            ->method('creerReservations')
-            ->willThrowException(new \Exception('SQLSTATE[HY000] panne simulée'));
-        static::getContainer()->set(ReservationService::class, $service);
+        // Stripe injoignable à la création de la session de paiement
+        PasserellePaiementMock::simulerPanne();
 
         $this->client->request('POST', '/reservation/create', [
             '_token' => $token,
@@ -274,9 +311,10 @@ final class ReservationControllerTest extends WebTestCase
         self::assertResponseRedirects('/formateurs');
         $this->assertFlash(
             'error',
-            "Une erreur technique est survenue, votre réservation n'a pas été enregistrée. Veuillez réessayer."
+            "Le paiement n'a pas pu être lancé suite à une erreur technique. Aucun montant n'a été débité, veuillez réessayer."
         );
         self::assertSame(0, $this->nombreDeReservations());
+        self::assertSame(0, $this->em()->getRepository(Paiement::class)->count([]));
     }
 
     public function testCreationRefuseUnJourPlusDisponible(): void
@@ -374,37 +412,33 @@ final class ReservationControllerTest extends WebTestCase
     public function testCreationRefuseUnCreneauDejaReserve(): void
     {
         [$disponibilite, $token] = $this->preparerReservation();
-        $parametres = [
+
+        $this->reserverEtPayer($disponibilite, $token);
+        self::assertResponseRedirects('/mes-reservations');
+
+        // Nouvel envoi du même créneau (retour arrière) : refusé avant tout paiement
+        $this->client->request('POST', '/reservation/create', [
             '_token' => $token,
             'disponibilite' => $disponibilite->getId(),
             'jour' => 'lundi',
-        ];
-
-        $this->client->request('POST', '/reservation/create', $parametres);
-        self::assertResponseRedirects('/formateur/' . $disponibilite->getFormateur()->getId());
-
-        // Deuxième envoi du même créneau (double clic, retour arrière)
-        $this->client->request('POST', '/reservation/create', $parametres);
+        ]);
 
         self::assertResponseRedirects('/formateurs');
         $this->assertFlash('error', 'Vous avez déjà réservé ce créneau.');
         self::assertSame(2, $this->nombreDeReservations());
+        self::assertSame(1, $this->em()->getRepository(Paiement::class)->count([]));
     }
 
     public function testCreationConfirmeLeNombreDeSeances(): void
     {
         [$disponibilite, $token] = $this->preparerReservation();
 
-        $this->client->request('POST', '/reservation/create', [
-            '_token' => $token,
-            'disponibilite' => $disponibilite->getId(),
-            'jour' => ' LUNDI ',
-        ]);
+        $this->reserverEtPayer($disponibilite, $token, ' LUNDI ');
 
-        self::assertResponseRedirects();
+        self::assertResponseRedirects('/mes-reservations');
         $this->assertFlash(
             'success',
-            'Votre réservation a été créée. Vous êtes inscrit à 2 séance(s) chaque Lundi.'
+            'Paiement confirmé : votre réservation est enregistrée. Vous êtes inscrit à 2 séance(s) chaque Lundi.'
         );
     }
 
@@ -442,11 +476,7 @@ final class ReservationControllerTest extends WebTestCase
     {
         [$disponibilite, $token] = $this->preparerReservation();
 
-        $this->client->request('POST', '/reservation/create', [
-            '_token' => $token,
-            'disponibilite' => $disponibilite->getId(),
-            'jour' => 'lundi',
-        ]);
+        $this->reserverEtPayer($disponibilite, $token);
 
         $crawler = $this->client->request('GET', '/mes-reservations');
 

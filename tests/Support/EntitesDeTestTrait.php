@@ -5,6 +5,7 @@ namespace App\Tests\Support;
 use App\Entity\Disponibilite;
 use App\Entity\Formateur;
 use App\Entity\Formation;
+use App\Entity\Paiement;
 use App\Entity\Student;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,6 +21,22 @@ trait EntitesDeTestTrait
     private function em(): EntityManagerInterface
     {
         return static::getContainer()->get(EntityManagerInterface::class);
+    }
+
+    /**
+     * Paiement effectué (persisté) : une réservation n'est confirmée que sur un paiement payé.
+     */
+    private function paiementEffectue(): Paiement
+    {
+        $paiement = (new Paiement())
+            ->setMontant('100.00')
+            ->setMode(Paiement::MODE_STRIPE_CHECKOUT)
+            ->setStatut(Paiement::STATUT_PAYE)
+            ->setDatePaiement(new \DateTimeImmutable());
+
+        $this->em()->persist($paiement);
+
+        return $paiement;
     }
 
     private function creerFormation(string $titre = 'Symfony'): Formation

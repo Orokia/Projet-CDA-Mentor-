@@ -116,14 +116,14 @@
                                         Statut
                                     </small>
 
-                                    {% if reservation.statut == 'confirmée' %}
+                                    {% if reservation.estConfirmee %}
 
                                         <span class="reservation-status reservation-status-success">
                                             <i class="bi bi-check-circle" aria-hidden="true"></i>
                                             Confirmée
                                         </span>
 
-                                    {% elseif reservation.statut == 'annulée' %}
+                                    {% elseif reservation.statut == constant('App\\Entity\\Reservation::STATUT_ANNULEE') %}
 
                                         <span class="reservation-status reservation-status-danger">
                                             <i class="bi bi-x-circle" aria-hidden="true"></i>
@@ -145,7 +145,7 @@
                                 <div class="reservation-session-action">
 
                                     {% if reservation.lienVisio
-                                        and reservation.statut == 'confirmée' %}
+                                        and reservation.estConfirmee %}
 
                                         <a
                                             href="{{ path('app_reservation_visio', {id: reservation.id}) }}"

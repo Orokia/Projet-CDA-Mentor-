@@ -344,6 +344,14 @@
                                         {{ disponibilite.heureFin|date('H:i') }}
                                     </span>
 
+                                    {# Prix payé une fois pour toutes les séances du jour choisi #}
+                                    {% if disponibilite.formation %}
+                                        <span class="disponibilite-prix">
+                                            <i class="bi bi-credit-card" aria-hidden="true"></i>
+                                            {{ disponibilite.formation.prix|number_format(2, ',', ' ') }} €
+                                        </span>
+                                    {% endif %}
+
                                 </div>
 
                             </div>
@@ -459,9 +467,15 @@
                             data-reservation-target="submit"
                             data-action="reservation#reserver"
                         >
-                            <i class="bi bi-calendar-check me-2" aria-hidden="true"></i>
-                            Réserver
+                            <i class="bi bi-credit-card me-2" aria-hidden="true"></i>
+                            Payer et réserver
                         </button>
+
+                        <p class="reservation-paiement-info text-muted mb-0">
+                            <i class="bi bi-lock" aria-hidden="true"></i>
+                            Paiement sécurisé par Stripe : vous allez être redirigé vers la page de paiement.
+                            La réservation est confirmée dès le paiement validé.
+                        </p>
 
                     {% endif %}
 

@@ -5,6 +5,7 @@ namespace App\Tests\Unit\Services;
 use App\Entity\Disponibilite;
 use App\Entity\Formation;
 use App\Entity\Formateur;
+use App\Entity\Paiement;
 use App\Entity\Reservation;
 use App\Entity\Student;
 use App\Repository\DisponibiliteRepository;
@@ -81,7 +82,8 @@ class ReservationServiceTest extends TestCase
         $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             999,
-            'lundi'
+            'lundi',
+            $this->paiementEffectue()
         );
     }
 
@@ -113,7 +115,8 @@ class ReservationServiceTest extends TestCase
         $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             1,
-            'lundi'
+            'lundi',
+            $this->paiementEffectue()
         );
     }
 
@@ -148,7 +151,8 @@ class ReservationServiceTest extends TestCase
         $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             1,
-            'lundi'
+            'lundi',
+            $this->paiementEffectue()
         );
     }
 
@@ -181,7 +185,8 @@ class ReservationServiceTest extends TestCase
         $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             1,
-            'funday'
+            'funday',
+            $this->paiementEffectue()
         );
     }
 
@@ -225,7 +230,8 @@ class ReservationServiceTest extends TestCase
         $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             1,
-            'lundi'
+            'lundi',
+            $this->paiementEffectue()
         );
     }
 
@@ -294,7 +300,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $this->reservationService->creerReservations(
             $student,
             1,
-            ' LUNDI '
+            ' LUNDI ',
+            $this->paiementEffectue()
         );
 
         // Vérification du nombre de réservations
@@ -380,7 +387,8 @@ class ReservationServiceTest extends TestCase
         $service->creerReservations(
             $this->createStub(Student::class),
             1,
-            'lundi'
+            'lundi',
+            $this->paiementEffectue()
         );
     }
 
@@ -549,6 +557,71 @@ class ReservationServiceTest extends TestCase
             });
     }
 
+    /**
+     * Paiement effectué : seule condition pour confirmer une réservation.
+     */
+    private function paiementEffectue(): Paiement
+    {
+        return (new Paiement())->setStatut(Paiement::STATUT_PAYE);
+    }
+
+    /**
+     * Une réservation n'est confirmée que si le paiement est effectué :
+     * sans paiement payé, rien n'est enregistré et la transaction est annulée.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('paiementsNonEffectues')]
+    public function testCreerReservationsRefuseUnPaiementNonEffectue(string $statut): void
+    {
+        $journal = [];
+        $this->journaliserLaTransaction($journal);
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee());
+        $this->attendreAucuneEcriture();
+
+        $paiement = (new Paiement())->setStatut($statut);
+
+        try {
+            $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi', $paiement);
+            self::fail('Une réservation ne doit pas être confirmée sans paiement effectué.');
+        } catch (\LogicException $exception) {
+            self::assertSame('Une réservation ne peut être confirmée qu\'après le paiement.', $exception->getMessage());
+        }
+
+        self::assertSame(['beginTransaction', 'rollBack'], $journal);
+        self::assertCount(0, $paiement->getReservations());
+    }
+
+    public static function paiementsNonEffectues(): iterable
+    {
+        yield 'en attente' => [Paiement::STATUT_EN_ATTENTE];
+        yield 'annulé' => [Paiement::STATUT_ANNULE];
+        yield 'remboursé' => [Paiement::STATUT_REMBOURSE];
+    }
+
+    public function testCreerReservationsConfirmeChaqueSeanceSurLePaiementEffectue(): void
+    {
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee());
+        $this->simulerIdentifiantsAuPersist();
+        $this->attendreDeuxFlush();
+
+        $paiement = $this->paiementEffectue();
+
+        $reservations = $this->reservationService->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            'mercredi',
+            $paiement
+        );
+
+        // Quatre mercredis du 4 au 25 novembre 2026
+        self::assertCount(4, $reservations);
+        self::assertCount(4, $paiement->getReservations());
+
+        foreach ($reservations as $reservation) {
+            self::assertSame(Reservation::STATUT_CONFIRMEE, $reservation->getStatut());
+            self::assertSame($paiement, $reservation->getPaiement());
+        }
+    }
+
     public function testCreerReservationsGenereUnLienJitsiUniqueParSeance(): void
     {
         $this->disponibiliteRepository
@@ -569,7 +642,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $service->creerReservations(
             $this->createStub(Student::class),
             12,
-            'mercredi'
+            'mercredi',
+            $this->paiementEffectue()
         );
 
         $this->assertCount(4, $reservations);
@@ -607,7 +681,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $service->creerReservations(
             $this->createStub(Student::class),
             12,
-            'mercredi'
+            'mercredi',
+            $this->paiementEffectue()
         );
 
         $this->assertStringStartsWith(
@@ -631,7 +706,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             12,
-            'Mercredi'
+            'Mercredi',
+            $this->paiementEffectue()
         );
 
         $this->assertCount(4, $reservations);
@@ -655,7 +731,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             12,
-            'mercredi'
+            'mercredi',
+            $this->paiementEffectue()
         );
 
         $this->assertCount(1, $reservations);
@@ -701,7 +778,7 @@ class ReservationServiceTest extends TestCase
             'https://meet.jit.si'
         );
 
-        $this->assertCount(4, $service->creerReservations($student, 12, 'mercredi'));
+        $this->assertCount(4, $service->creerReservations($student, 12, 'mercredi', $this->paiementEffectue()));
     }
 
     // ------------------------------------------------------------------
@@ -721,7 +798,7 @@ class ReservationServiceTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Aucune séance ne correspond au jour choisi.');
 
-        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi', $this->paiementEffectue());
     }
 
     public function testCreerReservationsRefuseUneDisponibiliteSansJour(): void
@@ -733,7 +810,7 @@ class ReservationServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage("Le jour choisi n'est pas disponible.");
 
-        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi', $this->paiementEffectue());
     }
 
     public function testCreerReservationsRefuseUnJourCompose(): void
@@ -746,7 +823,7 @@ class ReservationServiceTest extends TestCase
         $this->expectExceptionMessage("Le jour choisi n'est pas disponible.");
 
         // Seule une égalité stricte après normalisation est acceptée
-        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi,jeudi');
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi,jeudi', $this->paiementEffectue());
     }
 
     /**
@@ -773,7 +850,7 @@ class ReservationServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage("Ce jour n'est plus disponible.");
 
-        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi', $this->paiementEffectue());
     }
 
     public function testCreerReservationsAccepteUnJourDisponibleAvecDAutresJoursPlusDisponibles(): void
@@ -787,7 +864,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             12,
-            'mercredi'
+            'mercredi',
+            $this->paiementEffectue()
         );
 
         $this->assertCount(4, $reservations);
@@ -828,7 +906,7 @@ class ReservationServiceTest extends TestCase
                 $statutsAuxFlush[] = $disponibilite->getJoursSemaine()['Mercredi '];
             });
 
-        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'MERCREDI');
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'MERCREDI', $this->paiementEffectue());
 
         self::assertSame(['plus disponible', 'plus disponible'], $statutsAuxFlush);
         self::assertSame(
@@ -855,7 +933,7 @@ class ReservationServiceTest extends TestCase
         );
 
         try {
-            $service->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+            $service->creerReservations($this->createStub(Student::class), 12, 'mercredi', $this->paiementEffectue());
             self::fail('Le doublon aurait dû être refusé.');
         } catch (\RuntimeException $exception) {
             // Le doublon est signalé avant le statut, même si le jour n'est plus disponible
@@ -886,7 +964,7 @@ class ReservationServiceTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Vous avez déjà réservé ce créneau.');
 
-        $service->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+        $service->creerReservations($this->createStub(Student::class), 12, 'mercredi', $this->paiementEffectue());
     }
 
     public function testCreerReservationsNeChangePasLeStatutSansSeance(): void
@@ -900,7 +978,7 @@ class ReservationServiceTest extends TestCase
         $this->fournirDisponibilite($disponibilite);
 
         try {
-            $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+            $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi', $this->paiementEffectue());
             self::fail('Une période sans séance aurait dû être refusée.');
         } catch (\RuntimeException $exception) {
             self::assertSame('Aucune séance ne correspond au jour choisi.', $exception->getMessage());
@@ -935,7 +1013,7 @@ class ReservationServiceTest extends TestCase
                 $journal[] = 'flush';
             });
 
-        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi', $this->paiementEffectue());
 
         // Le verrou est pris dans la transaction, qui est validée après les deux flush
         self::assertSame(
@@ -953,7 +1031,7 @@ class ReservationServiceTest extends TestCase
         $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['mercredi' => 'plus disponible']));
 
         try {
-            $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+            $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi', $this->paiementEffectue());
             self::fail('Un jour plus disponible aurait dû être refusé.');
         } catch (\InvalidArgumentException $exception) {
             self::assertSame("Ce jour n'est plus disponible.", $exception->getMessage());
@@ -993,7 +1071,7 @@ class ReservationServiceTest extends TestCase
             });
 
         try {
-            $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+            $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi', $this->paiementEffectue());
             self::fail('La panne aurait dû être propagée.');
         } catch (\Exception $exception) {
             // L'erreur d'origine est relancée telle quelle, pour le contrôleur et les logs
@@ -1022,7 +1100,7 @@ class ReservationServiceTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Disponibilité introuvable.');
 
-        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi', $this->paiementEffectue());
     }
 
     public function testCreerReservationsIgnoreLAncienFormatEnListe(): void
@@ -1035,7 +1113,7 @@ class ReservationServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage("Le jour choisi n'est pas disponible.");
 
-        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi', $this->paiementEffectue());
     }
 
     /**
@@ -1060,7 +1138,7 @@ class ReservationServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage("Le jour choisi n'est pas disponible.");
 
-        $this->reservationService->creerReservations($this->createStub(Student::class), 12, $jour);
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, $jour, $this->paiementEffectue());
     }
 
     // ------------------------------------------------------------------
@@ -1093,7 +1171,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             12,
-            $jour
+            $jour,
+            $this->paiementEffectue()
         );
 
         $this->assertCount(1, $reservations);
@@ -1109,7 +1188,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             12,
-            'dimanche'
+            'dimanche',
+            $this->paiementEffectue()
         );
 
         $this->assertCount(2, $reservations);
@@ -1129,7 +1209,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             12,
-            'mercredi'
+            'mercredi',
+            $this->paiementEffectue()
         );
 
         $this->assertCount(1, $reservations);
@@ -1148,7 +1229,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             12,
-            'jeudi'
+            'jeudi',
+            $this->paiementEffectue()
         );
 
         $this->assertCount(53, $reservations);
@@ -1165,7 +1247,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             12,
-            'lundi'
+            'lundi',
+            $this->paiementEffectue()
         );
 
         $this->assertCount(2, $reservations);
@@ -1182,7 +1265,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             12,
-            'mardi'
+            'mardi',
+            $this->paiementEffectue()
         );
 
         $this->assertCount(1, $reservations);
@@ -1198,7 +1282,8 @@ class ReservationServiceTest extends TestCase
         $reservations = $this->reservationService->creerReservations(
             $this->createStub(Student::class),
             12,
-            "\tMERCREDI\n"
+            "\tMERCREDI\n",
+            $this->paiementEffectue()
         );
 
         $this->assertCount(4, $reservations);
@@ -1217,7 +1302,8 @@ class ReservationServiceTest extends TestCase
             $reservations = $this->reservationService->creerReservations(
                 $this->createStub(Student::class),
                 12,
-                'lundi'
+                'lundi',
+                $this->paiementEffectue()
             );
         } finally {
             date_default_timezone_set($fuseauInitial);

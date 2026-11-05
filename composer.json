@@ -14,6 +14,7 @@
         "firebase/php-jwt": "^7.2",
         "phpdocumentor/reflection-docblock": "^6.0",
         "phpstan/phpdoc-parser": "^2.3",
+        "stripe/stripe-php": "^22.1",
         "symfony/asset": "7.4.*",
         "symfony/asset-mapper": "7.4.*",
         "symfony/console": "7.4.*",
@@ -56,7 +57,7 @@
     },
     "config": {
         "allow-plugins": {
-            "php-http/discovery": true,
+            "php-http/discovery": false,
             "symfony/flex": true,
             "symfony/runtime": true
         },
@@ -108,6 +109,7 @@
     "require-dev": {
         "dama/doctrine-test-bundle": "^8.7",
         "doctrine/doctrine-fixtures-bundle": "^4.3",
+        "omnipay/common": "^3.5",
         "phpunit/phpunit": "^12.5",
         "symfony/browser-kit": "7.4.*",
         "symfony/css-selector": "7.4.*",

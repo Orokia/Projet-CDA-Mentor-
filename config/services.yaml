@@ -21,3 +21,18 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # Passerelle de paiement : Stripe Checkout (STRIPE_SECRET_KEY, STRIPE_API_BASE)
+    App\Paiement\PasserellePaiementInterface: '@App\Paiement\StripeCheckoutPasserelle'
+
+# Tests : passerelle Omnipay « Mock », sans appel réseau (tests/Support/Paiement).
+# Publique pour que les tests simulent la saisie de la carte sur la page Stripe.
+when@test: &test_services
+    services:
+        App\Tests\Support\Paiement\PasserellePaiementMock:
+            public: true
+
+        App\Paiement\PasserellePaiementInterface: '@App\Tests\Support\Paiement\PasserellePaiementMock'
+
+# Environnement de la CI GitHub Actions : mêmes services que les tests
+when@ci: *test_services

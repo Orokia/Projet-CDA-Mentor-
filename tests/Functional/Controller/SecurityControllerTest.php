@@ -21,26 +21,78 @@ final class SecurityControllerTest extends WebTestCase
     protected function setUp(): void
     {
         $this->client = static::createClient();
+
+        // Les échecs de connexion (login_throttling) sont stockés dans le cache fichier :
+        // sans remise à zéro, ils s'accumuleraient d'un test et d'un lancement à l'autre
+        static::getContainer()->get('cache.rate_limiter')->clear();
     }
 
-    private function creerCompte(bool $verifie = true): void
+    private function creerCompte(bool $verifie = true, string $email = 'amadou@example.test'): void
     {
-        $user = $this->creerUtilisateur(verifie: $verifie);
+        $user = $this->creerUtilisateur($email, verifie: $verifie);
 
         $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
         $user->setPassword($hasher->hashPassword($user, self::MOT_DE_PASSE));
         $this->em()->flush();
     }
 
-    private function seConnecter(string $motDePasse): void
+    private function seConnecter(string $motDePasse, string $email = 'amadou@example.test'): void
     {
         $this->client->request('GET', '/login');
         self::assertResponseIsSuccessful();
 
         $this->client->submitForm('Se connecter', [
-            'email' => 'amadou@example.test',
+            'email' => $email,
             'password' => $motDePasse,
         ]);
+    }
+
+    private function echouerCinqFois(string $email = 'amadou@example.test'): void
+    {
+        for ($tentative = 1; $tentative <= 5; ++$tentative) {
+            $this->seConnecter('mauvais-mot-de-passe', $email);
+            self::assertResponseRedirects('/login');
+        }
+    }
+
+    public function testConnexionBloqueeApresCinqEchecs(): void
+    {
+        $this->creerCompte();
+        $this->echouerCinqFois();
+
+        // Même le bon mot de passe est refusé tant que la fenêtre de 15 minutes court
+        $this->seConnecter(self::MOT_DE_PASSE);
+
+        self::assertResponseRedirects('/login');
+        $this->client->followRedirect();
+        self::assertSelectorTextContains('.alert-danger', 'Too many failed login attempts');
+        self::assertNull(static::getContainer()->get('security.token_storage')->getToken());
+    }
+
+    public function testQuatreEchecsNeBloquentPasLaConnexion(): void
+    {
+        $this->creerCompte();
+
+        for ($tentative = 1; $tentative <= 4; ++$tentative) {
+            $this->seConnecter('mauvais-mot-de-passe');
+            self::assertResponseRedirects('/login');
+        }
+
+        $this->seConnecter(self::MOT_DE_PASSE);
+
+        self::assertResponseRedirects('/');
+    }
+
+    public function testLeBlocageNeConcernePasLesAutresComptes(): void
+    {
+        $this->creerCompte();
+        $this->creerCompte(email: 'aissata@example.test');
+        $this->echouerCinqFois();
+
+        // La limite porte sur le couple e-mail + IP
+        $this->seConnecter(self::MOT_DE_PASSE, 'aissata@example.test');
+
+        self::assertResponseRedirects('/');
     }
 
     public function testConnexionReussieRedirigeVersLAccueil(): void

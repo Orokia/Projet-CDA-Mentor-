@@ -26,6 +26,16 @@ security:
             provider: app_user_provider
             custom_authenticator: App\Security\AppCustomAuthenticator
             user_checker: App\Security\UserChecker
+
+            # Protection contre le brute force sur /login (symfony/rate-limiter) :
+            # 5 échecs par e-mail et par IP en 15 minutes, puis connexion bloquée
+            # jusqu'à la fin de la fenêtre. Symfony limite aussi chaque IP
+            # à 5 × max_attempts échecs, tous e-mails confondus.
+            # Une connexion réussie remet le compteur à zéro.
+            login_throttling:
+                max_attempts: 5
+                interval: '15 minutes'
+
             logout:
                 path: app_logout
                 # where to redirect after logout

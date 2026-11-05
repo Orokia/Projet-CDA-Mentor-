@@ -42,8 +42,8 @@ jobs:
           - check: build-test
             fetch-depth: 1
           # SonarQube a besoin de tout l'historique (blame, nouveau code)
-          # - check: sonarqube
-          #   fetch-depth: 0
+          - check: sonarqube
+            fetch-depth: 0
           # - check: checkmarx
           #   fetch-depth: 1
 
@@ -77,13 +77,15 @@ jobs:
           fi
           echo "PACKAGE_VERSION=$version" >> "$GITHUB_ENV"
 
+      # PHP et dépendances : aussi pour SonarQube, qui lance les tests avec couverture
       - name: Setup PHP
-        if: matrix.check == 'build-test'
+        if: matrix.check == 'build-test' || matrix.check == 'sonarqube'
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: ${{ env.PHP_VERSION }}
           extensions: pdo_sqlite, pdo_mysql, intl, mbstring, xml, ctype, iconv, zip
-          coverage: none
+          # PCOV seulement pour SonarQube : la couverture ralentit les tests
+          coverage: ${{ matrix.check == 'sonarqube' && 'pcov' || 'none' }}
           tools: composer:v2
 
       - name: Validate Composer files
@@ -91,12 +93,12 @@ jobs:
         run: composer validate --no-check-publish
 
       - name: Get Composer cache directory
-        if: matrix.check == 'build-test'
+        if: matrix.check == 'build-test' || matrix.check == 'sonarqube'
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
       - name: Cache Composer packages
-        if: matrix.check == 'build-test'
+        if: matrix.check == 'build-test' || matrix.check == 'sonarqube'
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
@@ -105,7 +107,7 @@ jobs:
 
       # Les auto-scripts lancent cache:clear, assets:install et importmap:install
       - name: Install dependencies
-        if: matrix.check == 'build-test'
+        if: matrix.check == 'build-test' || matrix.check == 'sonarqube'
         run: composer install --prefer-dist --no-interaction --no-progress
 
       - name: Validate Symfony container
@@ -192,13 +194,25 @@ jobs:
 
       # ---------- sonarqube : qualité du code ----------
 
+      # Rapports lus par SonarQube (chemins dans sonar-project.properties) :
+      # couverture Clover et résultats JUnit des trois suites.
+      # Le schéma SQLite est recréé par tests/bootstrap.php.
+      - name: Tests with coverage
+        if: matrix.check == 'sonarqube'
+        run: |
+          mkdir -p var/test-reports
+          php bin/phpunit \
+              --coverage-clover var/test-reports/coverage.xml \
+              --log-junit var/test-reports/junit.xml
+
       # sonar.qualitygate.wait : le job échoue si le Quality Gate n'est pas validé
       - name: SonarQube scan
         if: matrix.check == 'sonarqube'
         uses: SonarSource/sonarqube-scan-action@d209202bc7d53ff1cc128f7f907dac145c9d6ae9 # v8.3.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
+          # SonarQube Cloud par défaut ; la variable SONAR_HOST_URL permet un autre serveur
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
         with:
           args: >
             -Dsonar.qualitygate.wait=true

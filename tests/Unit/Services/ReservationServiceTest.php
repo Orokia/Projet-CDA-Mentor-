@@ -122,7 +122,7 @@ class ReservationServiceTest extends TestCase
 
         $disponibilite
             ->method('getJoursSemaine')
-            ->willReturn(['mardi']);
+            ->willReturn(['mardi' => 'disponible']);
 
         $this->disponibiliteRepository
             ->expects($this->once())
@@ -157,7 +157,7 @@ class ReservationServiceTest extends TestCase
 
         $disponibilite
             ->method('getJoursSemaine')
-            ->willReturn(['funday']);
+            ->willReturn(['funday' => 'disponible']);
 
         $this->disponibiliteRepository
             ->expects($this->once())
@@ -190,7 +190,7 @@ class ReservationServiceTest extends TestCase
 
         $disponibilite
             ->method('getJoursSemaine')
-            ->willReturn(['lundi']);
+            ->willReturn(['lundi' => 'disponible']);
 
         // Cette période ne contient aucun lundi
         $disponibilite
@@ -235,7 +235,7 @@ class ReservationServiceTest extends TestCase
 
         $disponibilite
             ->method('getJoursSemaine')
-            ->willReturn(['lundi']);
+            ->willReturn(['lundi' => 'disponible']);
 
         // Deux lundis sont présents dans cette période
         $disponibilite
@@ -336,7 +336,7 @@ class ReservationServiceTest extends TestCase
         $disponibilite = $this->createStub(Disponibilite::class);
         $disponibilite->method('getFormation')->willReturn($this->createStub(Formation::class));
         $disponibilite->method('getFormateur')->willReturn($this->createStub(Formateur::class));
-        $disponibilite->method('getJoursSemaine')->willReturn(['lundi']);
+        $disponibilite->method('getJoursSemaine')->willReturn(['lundi' => 'disponible']);
         $disponibilite->method('getDateDebut')->willReturn(new \DateTime('2026-10-19'));
         $disponibilite->method('getDateFin')->willReturn(new \DateTime('2026-10-26'));
         $disponibilite->method('getHeureDebut')->willReturn(new \DateTime('09:00:00'));
@@ -457,10 +457,10 @@ class ReservationServiceTest extends TestCase
      * Disponibilité simulée : mercredis de 14 h à 15 h 30
      * entre le 4 et le 25 novembre 2026 (quatre mercredis).
      *
-     * @param list<string> $jours
+     * @param array<string, string> $jours jour => statut
      */
     private function creerDisponibiliteSimulee(
-        array $jours = ['mercredi'],
+        array $jours = ['mercredi' => 'disponible'],
         string $dateDebut = '2026-11-04',
         string $dateFin = '2026-11-25'
     ): Disponibilite {
@@ -587,7 +587,7 @@ class ReservationServiceTest extends TestCase
             ->expects($this->once())
             ->method('find')
             ->with(12)
-            ->willReturn($this->creerDisponibiliteSimulee([' Lundi', 'MERCREDI ']));
+            ->willReturn($this->creerDisponibiliteSimulee([' Lundi' => 'disponible', 'MERCREDI ' => ' Disponible ']));
 
         $this->entityManager
             ->expects($this->exactly(4))
@@ -717,6 +717,179 @@ class ReservationServiceTest extends TestCase
     /**
      * @return iterable<string, array{string}>
      */
+    public static function statutsNonReservables(): iterable
+    {
+        yield 'plus disponible' => ['plus disponible'];
+        yield 'plus disponible avec majuscules et espaces' => [' Plus Disponible '];
+        yield 'statut inconnu' => ['complet'];
+        yield 'statut vide' => [''];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('statutsNonReservables')]
+    public function testCreerReservationsRefuseUnJourQuiNEstPlusDisponible(string $statut): void
+    {
+        $this->attendreAucuneEcriture();
+
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee([
+            'lundi' => 'disponible',
+            'mercredi' => $statut,
+        ]));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Ce jour n'est plus disponible.");
+
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+    }
+
+    public function testCreerReservationsAccepteUnJourDisponibleAvecDAutresJoursPlusDisponibles(): void
+    {
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee([
+            'lundi' => 'plus disponible',
+            'mercredi' => 'disponible',
+        ]));
+        $this->attendreDeuxFlush();
+
+        $reservations = $this->reservationService->creerReservations(
+            $this->createStub(Student::class),
+            12,
+            'mercredi'
+        );
+
+        $this->assertCount(4, $reservations);
+    }
+
+    /**
+     * Vraie entité (pas un stub) : permet de vérifier la mise à jour du statut.
+     *
+     * @param array<string, string> $jours jour => statut
+     */
+    private function creerDisponibiliteReelle(array $jours): Disponibilite
+    {
+        return (new Disponibilite())
+            ->setFormation($this->createStub(Formation::class))
+            ->setFormateur($this->createStub(Formateur::class))
+            ->setJoursSemaine($jours)
+            ->setDateDebut(new \DateTime('2026-11-04'))
+            ->setDateFin(new \DateTime('2026-11-25'))
+            ->setHeureDebut(new \DateTime('14:00:00'))
+            ->setHeureFin(new \DateTime('15:30:00'));
+    }
+
+    public function testCreerReservationsMarqueLeJourChoisiCommePlusDisponible(): void
+    {
+        // Clé enregistrée avec majuscule et espace : elle doit être conservée
+        $disponibilite = $this->creerDisponibiliteReelle([
+            'lundi' => 'disponible',
+            'Mercredi ' => 'disponible',
+        ]);
+        $this->fournirDisponibilite($disponibilite);
+
+        // Le statut doit déjà être changé au premier flush, avec les réservations
+        $statutsAuxFlush = [];
+        $this->entityManager
+            ->expects($this->exactly(2))
+            ->method('flush')
+            ->willReturnCallback(static function () use ($disponibilite, &$statutsAuxFlush): void {
+                $statutsAuxFlush[] = $disponibilite->getJoursSemaine()['Mercredi '];
+            });
+
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'MERCREDI');
+
+        self::assertSame(['plus disponible', 'plus disponible'], $statutsAuxFlush);
+        self::assertSame(
+            ['lundi' => 'disponible', 'Mercredi ' => 'plus disponible'],
+            $disponibilite->getJoursSemaine()
+        );
+    }
+
+    public function testCreerReservationsNeChangePasLeStatutSiLeCreneauEstDejaReserve(): void
+    {
+        $this->attendreAucuneEcriture();
+
+        $disponibilite = $this->creerDisponibiliteReelle(['mercredi' => 'disponible']);
+        $this->fournirDisponibilite($disponibilite);
+
+        $reservationRepository = $this->createStub(ReservationRepository::class);
+        $reservationRepository->method('findOneBy')->willReturn(new Reservation());
+
+        $service = new ReservationService(
+            $this->disponibiliteRepository,
+            $this->entityManager,
+            $reservationRepository,
+            'https://meet.jit.si'
+        );
+
+        try {
+            $service->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+            self::fail('Le doublon aurait dû être refusé.');
+        } catch (\RuntimeException $exception) {
+            // Le doublon est signalé avant le statut, même si le jour n'est plus disponible
+            self::assertSame('Vous avez déjà réservé ce créneau.', $exception->getMessage());
+        }
+
+        self::assertSame(['mercredi' => 'disponible'], $disponibilite->getJoursSemaine());
+    }
+
+    public function testCreerReservationsSignaleLeDoublonAvantLeStatutPlusDisponible(): void
+    {
+        $this->attendreAucuneEcriture();
+
+        // Cas du double clic : le jour vient d'être marqué « plus disponible »
+        // par la première réservation du même étudiant
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['mercredi' => 'plus disponible']));
+
+        $reservationRepository = $this->createStub(ReservationRepository::class);
+        $reservationRepository->method('findOneBy')->willReturn(new Reservation());
+
+        $service = new ReservationService(
+            $this->disponibiliteRepository,
+            $this->entityManager,
+            $reservationRepository,
+            'https://meet.jit.si'
+        );
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Vous avez déjà réservé ce créneau.');
+
+        $service->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+    }
+
+    public function testCreerReservationsNeChangePasLeStatutSansSeance(): void
+    {
+        $this->attendreAucuneEcriture();
+
+        // Aucun mercredi entre le jeudi 5 et le mardi 10 novembre 2026
+        $disponibilite = $this->creerDisponibiliteReelle(['mercredi' => 'disponible'])
+            ->setDateDebut(new \DateTime('2026-11-05'))
+            ->setDateFin(new \DateTime('2026-11-10'));
+        $this->fournirDisponibilite($disponibilite);
+
+        try {
+            $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+            self::fail('Une période sans séance aurait dû être refusée.');
+        } catch (\RuntimeException $exception) {
+            self::assertSame('Aucune séance ne correspond au jour choisi.', $exception->getMessage());
+        }
+
+        self::assertSame(['mercredi' => 'disponible'], $disponibilite->getJoursSemaine());
+    }
+
+    public function testCreerReservationsIgnoreLAncienFormatEnListe(): void
+    {
+        $this->attendreAucuneEcriture();
+
+        // Ancien format : liste de jours sans statut, les clés sont des entiers
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['mercredi']));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Le jour choisi n'est pas disponible.");
+
+        $this->reservationService->creerReservations($this->createStub(Student::class), 12, 'mercredi');
+    }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
     public static function joursNonReconnus(): iterable
     {
         yield 'chaîne vide' => [''];
@@ -763,7 +936,7 @@ class ReservationServiceTest extends TestCase
     #[\PHPUnit\Framework\Attributes\DataProvider('joursDeLaSemaine')]
     public function testCreerReservationsAssocieChaqueJourASaDate(string $jour, string $dateAttendue): void
     {
-        $this->fournirDisponibilite($this->creerDisponibiliteSimulee([$jour], '2026-11-02', '2026-11-08'));
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee([$jour => 'disponible'], '2026-11-02', '2026-11-08'));
         $this->attendreDeuxFlush();
 
         $reservations = $this->reservationService->creerReservations(
@@ -779,7 +952,7 @@ class ReservationServiceTest extends TestCase
     public function testCreerReservationsInclutLesDeuxBornesDeLaPeriode(): void
     {
         // Du dimanche 1er au dimanche 8 novembre 2026 : les deux bornes sont des dimanches
-        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['dimanche'], '2026-11-01', '2026-11-08'));
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['dimanche' => 'disponible'], '2026-11-01', '2026-11-08'));
         $this->attendreDeuxFlush();
 
         $reservations = $this->reservationService->creerReservations(
@@ -815,7 +988,7 @@ class ReservationServiceTest extends TestCase
     public function testCreerReservationsSurUneAnneeComplete(): void
     {
         // 2026 commence et finit un jeudi : 53 jeudis
-        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['jeudi'], '2026-01-01', '2026-12-31'));
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['jeudi' => 'disponible'], '2026-01-01', '2026-12-31'));
 
         $this->entityManager
             ->expects($this->exactly(53))
@@ -835,7 +1008,7 @@ class ReservationServiceTest extends TestCase
     public function testCreerReservationsAChevalSurDeuxAnnees(): void
     {
         // Du lundi 28 décembre 2026 au lundi 4 janvier 2027
-        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['lundi'], '2026-12-28', '2027-01-04'));
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['lundi' => 'disponible'], '2026-12-28', '2027-01-04'));
         $this->attendreDeuxFlush();
 
         $reservations = $this->reservationService->creerReservations(
@@ -852,7 +1025,7 @@ class ReservationServiceTest extends TestCase
     public function testCreerReservationsLe29FevrierDUneAnneeBissextile(): void
     {
         // Le 29 février 2028 est un mardi
-        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['mardi'], '2028-02-28', '2028-03-01'));
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['mardi' => 'disponible'], '2028-02-28', '2028-03-01'));
         $this->attendreDeuxFlush();
 
         $reservations = $this->reservationService->creerReservations(
@@ -868,7 +1041,7 @@ class ReservationServiceTest extends TestCase
     public function testCreerReservationsAccepteUnJourEntoureDeTabulations(): void
     {
         // trim() retire aussi tabulations et retours à la ligne
-        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['mercredi']));
+        $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['mercredi' => 'disponible']));
         $this->attendreDeuxFlush();
 
         $reservations = $this->reservationService->creerReservations(
@@ -887,7 +1060,7 @@ class ReservationServiceTest extends TestCase
         date_default_timezone_set('Europe/Paris');
 
         try {
-            $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['samedi', 'lundi'], '2026-10-24', '2026-10-26'));
+            $this->fournirDisponibilite($this->creerDisponibiliteSimulee(['samedi' => 'disponible', 'lundi' => 'disponible'], '2026-10-24', '2026-10-26'));
             $this->attendreDeuxFlush();
 
             $reservations = $this->reservationService->creerReservations(

@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Disponibilite;
 use App\Entity\Reservation;
 use App\Entity\Student;
 use App\Repository\DisponibiliteRepository;
@@ -54,13 +55,20 @@ class ReservationService
         // Normalisation du jour pour éviter les différences de casse
         $jourNormalise = mb_strtolower(trim($jourChoisi));
 
-        $joursDisponibles = array_map(
-            fn ($jour) => mb_strtolower(trim($jour)),
-            $disponibilite->getJoursSemaine()
-        );
+        // joursSemaine : clé = nom du jour, valeur = statut du jour.
+        // Les entrées mal formées (ancien format en liste) sont ignorées.
+        $statutsParJour = [];
 
-        // Vérification que le jour demandé est autorisé
-        if (!in_array($jourNormalise, $joursDisponibles, true)) {
+        foreach ($disponibilite->getJoursSemaine() as $jour => $statut) {
+            if (!is_string($jour) || !is_string($statut)) {
+                continue;
+            }
+
+            $statutsParJour[mb_strtolower(trim($jour))] = mb_strtolower(trim($statut));
+        }
+
+        // Vérification que le jour demandé est proposé
+        if (!isset($statutsParJour[$jourNormalise])) {
             throw new \InvalidArgumentException(
                 "Le jour choisi n'est pas disponible."
             );
@@ -128,6 +136,15 @@ class ReservationService
             );
         }
 
+        // Seuls les jours au statut « disponible » peuvent être réservés.
+        // Vérifié après le doublon : l'étudiant qui a déjà réservé ce jour
+        // reçoit le message qui le concerne.
+        if ($statutsParJour[$jourNormalise] !== Disponibilite::STATUT_DISPONIBLE) {
+            throw new \InvalidArgumentException(
+                "Ce jour n'est plus disponible."
+            );
+        }
+
         // Création d'une réservation pour chaque date trouvée
         $reservations = [];
 
@@ -162,6 +179,13 @@ class ReservationService
             $this->entityManager->persist($reservation);
             $reservations[] = $reservation;
         }
+
+        // La réservation est confirmée : le jour choisi n'est plus proposé.
+        // Enregistré dans le même flush que les réservations.
+        $disponibilite->changerStatutJour(
+            $jourNormalise,
+            Disponibilite::STATUT_PLUS_DISPONIBLE
+        );
 
         // Premier enregistrement pour obtenir les identifiants
         $this->entityManager->flush();

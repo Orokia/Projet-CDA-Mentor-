@@ -2,6 +2,7 @@
 
 namespace App\Tests\Integration\Services;
 
+use App\Entity\Disponibilite;
 use App\Entity\Reservation;
 use App\Repository\ReservationRepository;
 use App\Service\ReservationService;
@@ -89,6 +90,60 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
         );
     }
 
+    public function testCreerReservationsEnregistreLeJourCommePlusDisponible(): void
+    {
+        $disponibilite = $this->creerDisponibilite(
+            $this->creerFormateur(),
+            $this->creerFormation(),
+            ['lundi' => 'disponible', 'mardi' => 'disponible']
+        );
+
+        $this->reservationService->creerReservations(
+            $this->creerUtilisateur()->getStudent(),
+            $disponibilite->getId(),
+            'lundi'
+        );
+
+        // On relit depuis la base : le statut a bien été écrit
+        $this->em()->clear();
+        $enBase = $this->em()->find(Disponibilite::class, $disponibilite->getId());
+
+        self::assertSame(
+            ['lundi' => 'plus disponible', 'mardi' => 'disponible'],
+            $enBase->getJoursSemaine()
+        );
+    }
+
+    public function testCreerReservationsRefuseLeJourAUnAutreEtudiant(): void
+    {
+        $disponibilite = $this->creerDisponibilite(
+            $this->creerFormateur(),
+            $this->creerFormation()
+        );
+
+        $this->reservationService->creerReservations(
+            $this->creerUtilisateur()->getStudent(),
+            $disponibilite->getId(),
+            'lundi'
+        );
+
+        try {
+            $this->reservationService->creerReservations(
+                $this->creerUtilisateur('autre.etudiant@example.test')->getStudent(),
+                $disponibilite->getId(),
+                'lundi'
+            );
+            self::fail('Un jour déjà réservé aurait dû être refusé à un autre étudiant.');
+        } catch (\InvalidArgumentException $exception) {
+            self::assertSame("Ce jour n'est plus disponible.", $exception->getMessage());
+        }
+
+        self::assertSame(
+            2,
+            $this->em()->getRepository(Reservation::class)->count([])
+        );
+    }
+
     public function testDisponibiliteIntrouvableDeclencheUneException(): void
     {
         $student = $this->creerUtilisateur()->getStudent();
@@ -107,7 +162,7 @@ final class ReservationServiceIntegrationTest extends KernelTestCase
         $disponibilite = $this->creerDisponibilite(
             $this->creerFormateur(),
             $this->creerFormation(),
-            ['lundi', 'mardi'],
+            ['lundi' => 'disponible', 'mardi' => 'disponible'],
             '2026-10-20',
             '2026-10-25'
         );

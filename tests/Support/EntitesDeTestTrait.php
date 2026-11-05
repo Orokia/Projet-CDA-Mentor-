@@ -59,12 +59,12 @@ trait EntitesDeTestTrait
      * Disponibilité par défaut : du lundi 19 au lundi 26 octobre 2026,
      * soit deux lundis.
      *
-     * @param list<string> $jours
+     * @param array<string, string> $jours jour => statut
      */
     private function creerDisponibilite(
         Formateur $formateur,
         Formation $formation,
-        array $jours = ['lundi'],
+        array $jours = ['lundi' => Disponibilite::STATUT_DISPONIBLE],
         string $dateDebut = '2026-10-19',
         string $dateFin = '2026-10-26'
     ): Disponibilite {

@@ -198,7 +198,7 @@ final class ReservationControllerTest extends WebTestCase
         $disponibilite = $this->creerDisponibilite(
             $this->creerFormateur(),
             $this->creerFormation(),
-            ['lundi', 'mardi']
+            ['lundi' => 'disponible', 'mardi' => 'disponible']
         );
         $this->client->loginUser($this->creerUtilisateur());
         $token = $this->client
@@ -218,6 +218,61 @@ final class ReservationControllerTest extends WebTestCase
 
         // Deux lundis et un mardi entre le 19 et le 26 octobre 2026
         self::assertSame(3, $this->nombreDeReservations());
+    }
+
+    public function testCreationDesactiveLeJourReserveSurLeProfil(): void
+    {
+        $disponibilite = $this->creerDisponibilite(
+            $this->creerFormateur(),
+            $this->creerFormation(),
+            ['lundi' => 'disponible', 'mardi' => 'disponible']
+        );
+        $profil = '/formateur/' . $disponibilite->getFormateur()->getId();
+
+        $this->client->loginUser($this->creerUtilisateur());
+        $token = $this->client
+            ->request('GET', $profil)
+            ->filter('#btn-reserver')
+            ->attr('data-csrf-token');
+
+        $this->client->request('POST', '/reservation/create', [
+            '_token' => $token,
+            'disponibilite' => $disponibilite->getId(),
+            'jour' => 'lundi',
+        ]);
+        self::assertResponseRedirects($profil);
+
+        $this->client->request('GET', $profil);
+
+        // Le jour réservé n'est plus sélectionnable, l'autre l'est toujours
+        self::assertSelectorExists('.disponibilite-jour[data-jour="lundi"][disabled]');
+        self::assertSelectorTextContains('.disponibilite-jour[data-jour="lundi"] .disponibilite-jour-action', 'Plus disponible');
+        self::assertSelectorNotExists('.disponibilite-jour[data-jour="mardi"][disabled]');
+    }
+
+    public function testCreationRefuseUnJourPlusDisponible(): void
+    {
+        // Le bouton est désactivé sur la page, mais le POST doit aussi être refusé
+        $disponibilite = $this->creerDisponibilite(
+            $this->creerFormateur(),
+            $this->creerFormation(),
+            ['lundi' => 'disponible', 'mardi' => 'plus disponible']
+        );
+        $this->client->loginUser($this->creerUtilisateur());
+        $token = $this->client
+            ->request('GET', '/formateur/' . $disponibilite->getFormateur()->getId())
+            ->filter('#btn-reserver')
+            ->attr('data-csrf-token');
+
+        $this->client->request('POST', '/reservation/create', [
+            '_token' => $token,
+            'disponibilite' => $disponibilite->getId(),
+            'jour' => 'mardi',
+        ]);
+
+        self::assertResponseRedirects('/formateurs');
+        $this->assertFlash('error', "Ce jour n'est plus disponible.");
+        self::assertSame(0, $this->nombreDeReservations());
     }
 
     public function testVisioDUneReservationInexistanteRenvoie404(): void

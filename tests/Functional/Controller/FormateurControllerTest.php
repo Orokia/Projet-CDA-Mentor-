@@ -32,6 +32,58 @@ final class FormateurControllerTest extends WebTestCase
         self::assertSelectorExists('.disponibilite-jour[data-jour="lundi"]');
     }
 
+    public function testProfilAfficheLeNomDesJoursEtDesactiveLesJoursPlusDisponibles(): void
+    {
+        $client = static::createClient();
+        $formateur = $this->creerFormateur();
+        $this->creerDisponibilite($formateur, $this->creerFormation(), [
+            'lundi' => 'disponible',
+            'mardi' => 'plus disponible',
+        ]);
+
+        $client->request('GET', '/formateur/' . $formateur->getId());
+
+        self::assertResponseIsSuccessful();
+
+        // Le nom du jour est affiché, pas son statut
+        self::assertSelectorTextContains('.disponibilite-jour[data-jour="lundi"] .disponibilite-jour-name', 'Lundi');
+        self::assertSelectorTextContains('.disponibilite-jour[data-jour="mardi"] .disponibilite-jour-name', 'Mardi');
+
+        // Jour disponible : sélectionnable
+        self::assertSelectorNotExists('.disponibilite-jour[data-jour="lundi"][disabled]');
+        self::assertSelectorExists('.disponibilite-jour[data-jour="lundi"][data-action="reservation#choisir"]');
+        self::assertSelectorTextContains('.disponibilite-jour[data-jour="lundi"] .disponibilite-jour-action', 'Choisir');
+
+        // Jour plus disponible : désactivé et non relié au contrôleur Stimulus
+        self::assertSelectorExists('.disponibilite-jour[data-jour="mardi"][disabled]');
+        self::assertSelectorNotExists('.disponibilite-jour[data-jour="mardi"][data-action]');
+        self::assertSelectorTextContains('.disponibilite-jour[data-jour="mardi"] .disponibilite-jour-action', 'Plus disponible');
+    }
+
+    public function testProfilAfficheLesJoursDeLundiADimanche(): void
+    {
+        $client = static::createClient();
+        $formateur = $this->creerFormateur();
+
+        // Enregistrés dans le désordre, comme les renvoie MySQL
+        $this->creerDisponibilite($formateur, $this->creerFormation(), [
+            'jeudi' => 'disponible',
+            'lundi' => 'disponible',
+            'dimanche' => 'plus disponible',
+            'mercredi' => 'disponible',
+        ]);
+
+        $crawler = $client->request('GET', '/formateur/' . $formateur->getId());
+
+        self::assertResponseIsSuccessful();
+        self::assertSame(
+            ['lundi', 'mercredi', 'jeudi', 'dimanche'],
+            $crawler->filter('.disponibilite-jour')->each(
+                static fn ($bouton): string => $bouton->attr('data-jour')
+            )
+        );
+    }
+
     public function testProfilInexistantRenvoie404(): void
     {
         $client = static::createClient();

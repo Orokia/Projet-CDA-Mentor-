@@ -21,6 +21,8 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  * 2. confirmerPaiement() : au retour de Stripe, relit la session auprès de Stripe,
  *    puis crée les réservations (avec liens Jitsi) et marque le paiement « payé ».
  * 3. annulerPaiement() : retour par le lien « annuler » de Stripe.
+ * 4. confirmerDepuisStripe() / expirerDepuisStripe() : webhook Stripe, pour l'étudiant
+ *    qui a payé puis fermé l'onglet sans revenir sur Mentor.
  *
  * Les messages des \InvalidArgumentException / \RuntimeException sont affichés à l'étudiant.
  */
@@ -118,8 +120,56 @@ class PaiementService
      */
     public function confirmerPaiement(Student $student, int $paiementId): Paiement
     {
-        $paiement = $this->paiementDeLEtudiant($student, $paiementId);
+        return $this->confirmer($this->paiementDeLEtudiant($student, $paiementId));
+    }
 
+    /**
+     * Webhook Stripe (checkout.session.completed) : confirme le paiement même si
+     * l'étudiant a fermé l'onglet avant de revenir sur Mentor.
+     *
+     * @return Paiement|null null si la session ne correspond à aucun paiement Mentor
+     *
+     * @throws \RuntimeException paiement non validé ou créneau pris (remboursé) : rien à réessayer
+     */
+    public function confirmerDepuisStripe(string $sessionId): ?Paiement
+    {
+        $paiement = $this->paiementRepository->findOneBy(['sessionCheckoutId' => $sessionId]);
+
+        if (null === $paiement) {
+            $this->logger->warning('Webhook Stripe : session inconnue de Mentor.', ['session' => $sessionId]);
+
+            return null;
+        }
+
+        // Déjà traité (retour du navigateur ou événement renvoyé par Stripe)
+        if (Paiement::STATUT_REMBOURSE === $paiement->getStatut()) {
+            return $paiement;
+        }
+
+        return $this->confirmer($paiement);
+    }
+
+    /**
+     * Webhook Stripe (checkout.session.expired) : la session n'a pas été payée à temps.
+     * Le jour redevient réservable par les autres étudiants.
+     */
+    public function expirerDepuisStripe(string $sessionId): ?Paiement
+    {
+        $paiement = $this->paiementRepository->findOneBy(['sessionCheckoutId' => $sessionId]);
+
+        if (null !== $paiement && Paiement::STATUT_EN_ATTENTE === $paiement->getStatut()) {
+            $paiement->setStatut(Paiement::STATUT_ANNULE);
+            $this->entityManager->flush();
+        }
+
+        return $paiement;
+    }
+
+    /**
+     * Confirmation commune au retour du navigateur et au webhook.
+     */
+    private function confirmer(Paiement $paiement): Paiement
+    {
         if ($paiement->estPaye()) {
             return $paiement;
         }
@@ -175,6 +225,10 @@ class PaiementService
                 ->setDatePaiement(new \DateTimeImmutable());
 
             try {
+                // Compte supprimé pendant le paiement : traité comme un créneau perdu (remboursement)
+                $student = $paiement->getStudent()
+                    ?? throw new \RuntimeException('Le compte étudiant associé à ce paiement n\'existe plus.');
+
                 $this->reservationService->creerReservations(
                     $student,
                     (int) $paiement->getDisponibilite()?->getId(),
@@ -219,7 +273,7 @@ class PaiementService
 
         if (null !== $paiement->getSessionCheckoutId()) {
             if ($this->passerelle->recupererSession($paiement->getSessionCheckoutId())->paye) {
-                return $this->confirmerPaiement($student, $paiementId);
+                return $this->confirmer($paiement);
             }
 
             $this->passerelle->expirerSession($paiement->getSessionCheckoutId());

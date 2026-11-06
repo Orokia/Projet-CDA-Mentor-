@@ -8,6 +8,8 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     jt_domain: '%env(JT_DOMAINE)%'
+    # Expéditeur des e-mails « mot de passe oublié »
+    mailer_expediteur: 'coulibaliorokia7@gmail.com'
 services:
     # default configuration for services in *this* file
     _defaults:

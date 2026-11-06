@@ -1,0 +1,29 @@
+<h1>Réinitialisation de votre mot de passe</h1>
+
+<p>
+    Bonjour{% if prenom %} {{ prenom }}{% endif %},
+</p>
+
+<p>
+    Vous avez demandé à changer le mot de passe de votre compte Mentor.
+    Cliquez sur le lien ci-dessous pour en choisir un nouveau :
+</p>
+
+<p>
+    <a href="{{ url('app_reinitialiser_mot_de_passe_lien', {jeton: jeton.token}) }}">
+        Choisir un nouveau mot de passe
+    </a>
+</p>
+
+<p>
+    Ce lien ne peut servir qu'une fois et expire dans {{ dureeMinutes }} minutes.
+</p>
+
+<p>
+    Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail :
+    votre mot de passe actuel reste valable.
+</p>
+
+<p>
+    L'équipe Mentor
+</p>

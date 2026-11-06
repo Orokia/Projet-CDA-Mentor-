@@ -47,6 +47,7 @@
         "symfony/validator": "7.4.*",
         "symfony/web-link": "7.4.*",
         "symfony/yaml": "7.4.*",
+        "symfonycasts/reset-password-bundle": "^1.26",
         "symfonycasts/verify-email-bundle": "^1.18",
         "twbs/bootstrap": "^5.3",
         "twig/cssinliner-extra": "^3.26",

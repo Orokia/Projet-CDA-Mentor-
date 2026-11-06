@@ -1,0 +1,60 @@
+
+{# Toute la carte est cliquable : le lien du titre s'étend sur la carte (stretched-link) #}
+<article class="formation-card">
+
+    <div class="formation-image">
+        {% if formation.image %}
+            <img
+                src="{{ asset('assets/images/formations/' ~ formation.image) }}"
+                alt=""
+                loading="lazy"
+                decoding="async"
+            >
+        {% else %}
+            <div class="formation-image-placeholder">
+                <i class="bi bi-image" aria-hidden="true"></i>
+                Image indisponible
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="formation-content">
+
+        <h2 class="formation-title">
+            <a
+                href="{{ path('app_formation_show', {id: formation.id}) }}"
+                class="formation-discover stretched-link"
+            >
+                {{ formation.titre }}
+            </a>
+        </h2>
+
+        {% if formation.formateurs|length > 0 %}
+            <p class="formation-trainers">
+                {{ formation.formateurs|slice(0, 2)|join(', ') }}{% if formation.formateurs|length > 2 %} et {{ formation.formateurs|length - 2 }} autre{{ formation.formateurs|length > 3 ? 's' }}{% endif %}
+            </p>
+        {% endif %}
+
+        <div class="formation-meta">
+            <span>{{ formation.duree }} heures</span>
+            <span aria-hidden="true">·</span>
+            <span>En ligne</span>
+        </div>
+
+        <div class="formation-footer">
+
+            <strong class="formation-price">
+                {{ formation.prix|number_format(2, ',', ' ') }} €
+            </strong>
+
+            {% if formation.specialite %}
+                <span class="formation-category">
+                    {{ formation.specialite }}
+                </span>
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</article>

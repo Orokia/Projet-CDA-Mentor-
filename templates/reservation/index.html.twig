@@ -1,0 +1,211 @@
+
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Mes réservations - Mentor
+{% endblock %}
+
+{% block body %}
+
+<div class="container-mentor page-section">
+
+    {# EN-TÊTE DE LA PAGE #}
+    <header class="page-header page-header-left">
+        <span class="page-eyebrow">
+            Mon espace
+        </span>
+
+        <h1>
+            Mes réservations
+        </h1>
+
+        <p>
+            Retrouvez toutes vos séances, regroupées par formation.
+        </p>
+    </header>
+
+    {# VÉRIFICATION DES RÉSERVATIONS #}
+    {% if reservationsParFormation|length > 0 %}
+
+        <div class="reservations-groups">
+
+            {# UNE CARTE PAR FORMATION #}
+            {% for groupe in reservationsParFormation %}
+
+                <section class="reservation-group mb-4" aria-labelledby="formation-{{ loop.index }}">
+
+                    {# EN-TÊTE DE LA FORMATION #}
+                    <div class="reservation-group-header">
+
+                        <div class="reservation-group-icon" aria-hidden="true">
+                            <i class="bi bi-mortarboard"></i>
+                        </div>
+
+                        <div class="reservation-group-title">
+                            <small>Formation</small>
+
+                            <h2 id="formation-{{ loop.index }}">
+                                {{ groupe.formation.titre }}
+                            </h2>
+
+                            <p>
+                                {{ groupe.reservations|length }}
+                                séance(s) réservée(s)
+                            </p>
+                        </div>
+
+                    </div>
+
+                    {# LISTE DES SÉANCES DE CETTE FORMATION #}
+                    <div class="reservation-sessions">
+
+                        {% for reservation in groupe.reservations %}
+
+                            <article class="reservation-session">
+
+                                {# DATE ET HORAIRES #}
+                                <div class="reservation-session-date">
+
+                                    <div class="reservation-date-icon" aria-hidden="true">
+                                        <i class="bi bi-calendar3"></i>
+                                    </div>
+
+                                    <div>
+                                        <small class="reservation-label">
+                                            Date et heure
+                                        </small>
+
+                                        <strong>
+                                            <time datetime="{{ reservation.dateHeureDebut|date('Y-m-d') }}">
+                                                {{ reservation.dateHeureDebut|date('d/m/Y') }}
+                                            </time>
+                                        </strong>
+
+                                        <span>
+                                            {{ reservation.dateHeureDebut|date('H:i') }}
+                                            -
+                                            {{ reservation.dateHeureFin|date('H:i') }}
+                                        </span>
+                                    </div>
+
+                                </div>
+
+                                {# AUTRE PARTICIPANT : le formateur pour un étudiant, et inversement #}
+                                <div class="reservation-session-trainer">
+
+                                    <i class="bi bi-person" aria-hidden="true"></i>
+
+                                    <div>
+                                        <small class="reservation-label">
+                                            {{ app.user.student ? 'Formateur' : 'Étudiant' }}
+                                        </small>
+
+                                        <span>
+                                            {% set participant = app.user.student ? reservation.formateur : reservation.student %}
+                                            {{ participant.prenom }}
+                                            {{ participant.nom }}
+                                        </span>
+                                    </div>
+
+                                </div>
+
+                                {# STATUT : couleur + icône + texte, pour ne pas dépendre de la couleur seule #}
+                                <div class="reservation-session-status">
+
+                                    <small class="reservation-label mb-2">
+                                        Statut
+                                    </small>
+
+                                    {% if reservation.estConfirmee %}
+
+                                        <span class="reservation-status reservation-status-success">
+                                            <i class="bi bi-check-circle" aria-hidden="true"></i>
+                                            Confirmée
+                                        </span>
+
+                                    {% elseif reservation.statut == constant('App\\Entity\\Reservation::STATUT_ANNULEE') %}
+
+                                        <span class="reservation-status reservation-status-danger">
+                                            <i class="bi bi-x-circle" aria-hidden="true"></i>
+                                            Annulée
+                                        </span>
+
+                                    {% else %}
+
+                                        <span class="reservation-status">
+                                            <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+                                            {{ reservation.statut|capitalize }}
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                                {# VISIOCONFÉRENCE #}
+                                <div class="reservation-session-action">
+
+                                    {% if reservation.lienVisio
+                                        and reservation.estConfirmee %}
+
+                                        <a
+                                            href="{{ path('app_reservation_visio', {id: reservation.id}) }}"
+                                            class="btn-mentor btn-mentor-primary"
+                                        >
+                                            <i class="bi bi-camera-video" aria-hidden="true"></i>
+                                            Rejoindre
+                                            <span class="visually-hidden">la séance du {{ reservation.dateHeureDebut|date('d/m/Y') }}</span>
+                                        </a>
+
+                                    {% else %}
+
+                                        <span class="reservation-label">
+                                            Visioconférence indisponible
+                                        </span>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </article>
+
+                        {% endfor %}
+
+                    </div>
+
+                </section>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        {# AUCUNE RÉSERVATION #}
+        <div class="empty-state">
+
+            <span class="empty-state-icon" aria-hidden="true">
+                <i class="bi bi-calendar-x"></i>
+            </span>
+
+            <h3>
+                Aucune réservation
+            </h3>
+
+            <p>
+                Vous n'avez pas encore réservé de formation.
+            </p>
+
+            <a
+                href="{{ path('app_formation') }}"
+                class="btn-mentor btn-mentor-primary"
+            >
+                Découvrir les formations
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

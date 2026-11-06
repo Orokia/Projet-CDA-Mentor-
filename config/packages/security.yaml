@@ -5,8 +5,17 @@ security:
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        # used to reload user from session & other features (e.g. switch_user)
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+        # used to reload user from session & other features (e.g. switch_user)
+    role_hierarchy:
+        ROLE_FORMATEUR: ROLE_USER
+        ROLE_ADMIN: ROLE_FORMATEUR
 
+        
     firewalls:
         dev:
             # Ensure dev tools and static assets are always allowed
@@ -14,9 +23,33 @@ security:
             security: false
         main:
             lazy: true
-            provider: users_in_memory
+            provider: app_user_provider
+            custom_authenticator: App\Security\AppCustomAuthenticator
+            user_checker: App\Security\UserChecker
 
-            # Activate different ways to authenticate:
+            # Protection contre le brute force sur /login (symfony/rate-limiter) :
+            # 5 échecs par e-mail et par IP en 15 minutes, puis connexion bloquée
+            # jusqu'à la fin de la fenêtre. Symfony limite aussi chaque IP
+            # à 5 × max_attempts échecs, tous e-mails confondus.
+            # Une connexion réussie remet le compteur à zéro.
+            login_throttling:
+                max_attempts: 5
+                interval: '15 minutes'
+
+            logout:
+                path: app_logout
+                # where to redirect after logout
+                # target: app_any_route
+
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                path: /
+                # by default, the feature is enabled by checking a checkbox in the
+                # login form, uncomment the following line to always enable it.
+                #always_remember_me: true
+
+            # Activate different ways to au    thenticate:
             # https://symfony.com/doc/current/security.html#the-firewall
 
             # https://symfony.com/doc/current/security/impersonating_user.html
@@ -24,10 +57,21 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
+         - { path: ^/admin, roles: ROLE_ADMIN }
+         - { path: ^/formateur, roles: PUBLIC_ACCESS }
+         - { path: ^/reservation, roles: ROLE_USER }
+         - { path: ^/mes-reservations, roles: ROLE_USER }
+         # Retours de Stripe Checkout (navigateur de l'étudiant) : la session est conservée (cookie SameSite=Lax).
+         # Limité à /paiement/ : un vrai webhook Stripe (appel serveur, sans session) devra rester public.
+         - { path: ^/api/stripe/webhook/paiement/, roles: ROLE_USER }
+         # Webhook Stripe : appel serveur à serveur, authentifié par sa signature
+         - { path: ^/api/stripe/webhook$, roles: PUBLIC_ACCESS }
+         - { path: ^/mot-de-passe-oublie, roles: PUBLIC_ACCESS }
+         - { path: ^/login, roles: PUBLIC_ACCESS }
+         - { path: ^/register, roles: PUBLIC_ACCESS }
         # - { path: ^/profile, roles: ROLE_USER }
 
-when@test:
+when@test: &test_config
     security:
         password_hashers:
             # Password hashers are resource-intensive by design to ensure security.
@@ -37,3 +81,6 @@ when@test:
                 cost: 4 # Lowest possible value for bcrypt
                 time_cost: 3 # Lowest possible value for argon
                 memory_cost: 10 # Lowest possible value for argon
+
+# Environnement de la CI GitHub Actions : même configuration que les tests
+when@ci: *test_config

@@ -1,222 +1,256 @@
-{# {% extends 'base.html.twig' %}
-
-{% block title %}Hello HomeController!{% endblock %}
-
-{% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/COULIBALI ROKIA/Desktop/Mentor/src/Controller/HomeController.php</code></li>
-        <li>Your template at <code>C:/Users/COULIBALI ROKIA/Desktop/Mentor/templates/home/index.html.twig</code></li>
-    </ul>
-</div>
-{% endblock %} #}
-
-
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello HomeController!
-{% endblock %}
+{% block title %}Mentor - Plateforme de formation{% endblock %}
 
 {% block body %}
 
+    {# Spécialités présentes dans les formations affichées, sans doublon #}
+    {% set categories = [] %}
+    {% for formation in formations %}
+        {% if formation.specialite and (formation.specialite ~ '') not in categories %}
+            {% set categories = categories|merge([formation.specialite ~ '']) %}
+        {% endif %}
+    {% endfor %}
 
-	<!-- HERO -->
+    {# =========================
+       HERO : bannière + encart
+    ========================== #}
 
-	<section class="hero">
+    <section class="hero">
 
-		<div class="container">
+        <div class="container-mentor">
 
-			<div class="row align-items-center">
+            <div class="hero-banner">
 
-				<div class="col-lg-6">
+                <div class="hero-image">
 
-					<span class="badge bg-primary mb-3">
-						Plateforme de formation
-					</span>
+                    <img
+                        src="{{ asset('assets/images/Acceuil2.png' ) }}"
+                        alt="Formation en ligne avec Mentor"
+                        fetchpriority="high"
+                    >
 
-					<h1 class="display-4 fw-bold">
+                </div>
 
-						Apprenez avec les meilleurs formateurs.
+                <div class="hero-text">
 
-					</h1>
+                    <h1>
+                        Apprenez avec les meilleurs formateurs.
+                    </h1>
 
-					<p class="text-muted mt-4">
+                    <p>
+                        Réservez une formation avec des professionnels qualifiés.
+                    </p>
 
-						Réservez une session de formation individuelle
-						ou en groupe avec des professionnels qualifiés.
+                    <div class="hero-actions">
 
-					</p>
+                        <a
+                            href="{{ path('app_formation') }}"
+                            class="btn-mentor btn-mentor-primary"
+                        >
+                            Découvrir les formations
+                        </a>
 
-					<div class="mt-4">
+                        <a
+                            href="{{ path('app_formateurs') }}"
+                            class="btn-mentor btn-mentor-outline"
+                        >
+                            Trouver un formateur
+                        </a>
 
-						<a href="#" class="btn btn-primary btn-lg me-2">
-							Découvrir les formations
-						</a>
+                    </div>
 
-						<a href="#" class="btn btn-outline-primary btn-lg">
-							Trouver un formateur
-						</a>
+                </div>
 
-					</div>
+            </div>
 
-				</div>
+        </div>
 
-				<div class="col-lg-6 text-center">
+    </section>
 
-					<img src="{{ asset('images/hero.png') }}" class="img-fluid" alt="Hero">
 
-				</div>
+    {# =========================
+       ATOUTS
+    ========================== #}
 
-			</div>
+    <section class="home-features" aria-label="Pourquoi choisir Mentor">
 
-		</div>
+        <div class="container-mentor">
 
-	</section>
+            <ul class="home-features-list">
 
-	<!-- FORMATIONS -->
+                <li>
+                    <i class="bi bi-camera-video" aria-hidden="true"></i>
+                    <div>
+                        <strong>Sessions en ligne</strong>
+                        <span>En visio, où que vous soyez</span>
+                    </div>
+                </li>
 
-	<section class="py-5">
+                <li>
+                    <i class="bi bi-person-check" aria-hidden="true"></i>
+                    <div>
+                        <strong>Formateurs experts</strong>
+                        <span>Des professionnels de leur domaine</span>
+                    </div>
+                </li>
 
-		<div class="container">
+                <li>
+                    <i class="bi bi-calendar-week" aria-hidden="true"></i>
+                    <div>
+                        <strong>Planning flexible</strong>
+                        <span>Choisissez vos jours de séance</span>
+                    </div>
+                </li>
 
-			<div class="text-center mb-5">
+            </ul>
 
-				<h2 class="fw-bold">
-					Nos formations
-				</h2>
+        </div>
 
-				<p class="text-muted">
-					Choisissez la formation adaptée à vos besoins.
-				</p>
+    </section>
 
-			</div>
 
-			<div class="row">
+    {# =========================
+       FORMATIONS
+    ========================== #}
 
-				{% for i in 1..6 %}
+    <section class="formations-section">
 
-					<div class="col-md-4 mb-4">
+        <div class="container-mentor">
 
-						<div class="card border-0 shadow-sm formation-card">
+            <div class="section-heading">
 
-							<img src="{{ asset('images/formation1.jpg') }}" class="card-img-top">
+                <h2>
+                    Développez vos compétences
+                </h2>
 
-							<div class="card-body">
+                <p>
+                    Choisissez la formation adaptée à vos besoins
+                    et progressez avec un formateur qualifié.
+                </p>
 
-								<span class="badge bg-success mb-2">
+            </div>
 
-									Développement Web
+            {% if categories is not empty %}
 
-								</span>
+                <nav class="home-categories" aria-label="Spécialités">
+                    {% for categorie in categories %}
+                        <a href="{{ path('app_formation', {q: categorie}) }}" class="catalog-chip">
+                            {{ categorie }}
+                        </a>
+                    {% endfor %}
+                </nav>
 
-								<h5 class="fw-bold">
+            {% endif %}
 
-									Symfony 7
+           {% if formations|length > 0 %}
 
-								</h5>
+            <div class="row g-4">
 
-								<p class="text-muted">
+                {% for formation in formations %}
 
-									Apprenez à créer des applications professionnelles avec Symfony.
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3">
 
-								</p>
+                        {% include 'components/formation_card.html.twig' with {
+                            formation: formation
+                        } %}
 
-								<div class="d-flex justify-content-between">
+                    </div>
 
-									<strong>250 €</strong>
+                {% endfor %}
 
-									<a href="#" class="btn btn-primary btn-sm">
+            </div>
 
-										Voir
+            <div class="section-more">
+                <a href="{{ path('app_formation') }}" class="btn-mentor btn-mentor-outline">
+                    Voir tout le catalogue
+                </a>
+            </div>
 
-									</a>
+        {% else %}
 
-								</div>
+                <div class="formation-empty">
 
-							</div>
+                    <i class="bi bi-journal-x" aria-hidden="true"></i>
 
-						</div>
+                    <h3>
+                        Aucune formation disponible
+                    </h3>
 
-					</div>
+                    <p>
+                        Aucune formation n'est actuellement disponible.
+                    </p>
 
-				{% endfor %}
+                </div>
 
-			</div>
+            {% endif %}
 
-		</div>
+        </div>
 
-	</section>
+    </section>
 
-	<!-- FORMATEURS -->
 
-	<section class="bg-light py-5">
+    {# =========================
+       FORMATEURS
+    ========================== #}
 
-		<div class="container">
+    <section class="formateurs-section">
 
-			<div class="row align-items-center">
+        <div class="container-mentor">
 
-				<div class="col-lg-5">
+            <div class="section-heading">
 
-					<img src="{{ asset('images/instructor.jpg') }}" class="img-fluid rounded">
+                <h2>
+                    Apprenez auprès de professionnels expérimentés
+                </h2>
 
-				</div>
+                <p>
+                    Des experts dans leur domaine, disponibles
+                    pour vous accompagner en ligne.
+                </p>
 
-				<div class="col-lg-7">
+            </div>
 
-					<h2 class="fw-bold">
+            {% if formateurs|length > 0 %}
 
-						Nos formateurs
+                <div class="row g-4">
 
-					</h2>
+                    {% for formateur in formateurs|slice(0, 4) %}
 
-					<p class="text-muted">
+                        <div class="col-12 col-sm-6 col-lg-3">
 
-						Des experts dans leur domaine,
-						disponibles pour des formations personnalisées.
+                            {% include 'components/formateur_card.html.twig' with {
+                                formateur: formateur
+                            } %}
 
-					</p>
+                        </div>
 
-					<ul class="list-group list-group-flush">
+                    {% endfor %}
 
-						<li class="list-group-item bg-light">
-							✔ Plus de 50 formateurs
-						</li>
+                </div>
 
-						<li class="list-group-item bg-light">
-							✔ Sessions en ligne
-						</li>
+                <div class="section-more">
+                    <a href="{{ path('app_formateurs') }}" class="btn-mentor btn-mentor-outline">
+                        Voir tous les formateurs
+                    </a>
+                </div>
 
-						<li class="list-group-item bg-light">
-							✔ Planning flexible
-						</li>
+            {% else %}
 
-						<li class="list-group-item bg-light">
-							✔ Avis vérifiés
-						</li>
+                <div class="empty-state">
+                    <span class="empty-state-icon" aria-hidden="true">
+                        <i class="bi bi-person-x"></i>
+                    </span>
+                    <h3>Aucun formateur disponible</h3>
+                    <p>
+                        Aucun formateur n'est actuellement disponible.
+                    </p>
+                </div>
 
-					</ul>
+            {% endif %}
 
-					<a href="#" class="btn btn-primary mt-4">
+        </div>
 
-						Voir tous les formateurs
-
-					</a>
-
-				</div>
-
-			</div>
-
-		</div>
-
-	</section>
-
+    </section>
 
 {% endblock %}

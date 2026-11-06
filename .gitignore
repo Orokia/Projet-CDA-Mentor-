@@ -18,3 +18,26 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+# Archives locales
+*.zip
+
+# Sauvegardes de bases de données
+*.sql
+*.png
+*.pdf
+*.drawio
+
+*.bkp
+*.dtmp
+
+# Fichiers temporaires et rapports
+
+/analyse_projet.txt
+
+# Clé privée JaaS (visioconférence)
+/config/jaas/
+
+
+
+# Ancienne copie du .env (à supprimer)
+.env1.md

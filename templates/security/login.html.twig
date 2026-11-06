@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Connexion - Mentor{% endblock %}
+
+{% block body %}
+
+<section class="auth-page">
+
+    <div class="auth-card">
+
+        <div class="auth-header">
+
+            <span class="auth-icon" aria-hidden="true">
+                <i class="bi bi-box-arrow-in-right"></i>
+            </span>
+
+            <h1>Connexion</h1>
+
+            <p>
+                Accédez à vos formations et à vos réservations.
+            </p>
+
+        </div>
+
+        <form method="post" novalidate>
+
+            {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
+
+            {% if app.user %}
+                <div class="alert alert-info">
+                    Connecté en tant que {{ app.user.userIdentifier }}.
+                    <a href="{{ path('app_logout') }}">Se déconnecter</a>
+                </div>
+            {% endif %}
+
+            <div class="mb-3">
+                <label for="inputEmail" class="form-label">Adresse e-mail</label>
+                <input type="email" value="{{ last_username }}" name="email" id="inputEmail"
+                       class="form-control" placeholder="vous@exemple.fr"
+                       autocomplete="email" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="inputPassword" class="form-label">Mot de passe</label>
+                <input type="password" name="password" id="inputPassword"
+                       class="form-control" autocomplete="current-password" required>
+                <div class="form-text text-end">
+                    <a href="{{ path('app_mot_de_passe_oublie') }}">Mot de passe oublié ?</a>
+                </div>
+            </div>
+
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <div class="form-check mb-4">
+                <input type="checkbox" name="_remember_me" class="form-check-input" id="remember">
+                <label class="form-check-label" for="remember">
+                    Se souvenir de moi
+                </label>
+            </div>
+
+            <button class="btn-mentor btn-mentor-primary w-100" type="submit">
+                Se connecter
+            </button>
+
+        </form>
+
+        <p class="auth-footer">
+            Pas encore de compte ?
+            <a href="{{ path('app_register') }}">Créer un compte</a>
+        </p>
+
+    </div>
+
+</section>
+
+{% endblock %}

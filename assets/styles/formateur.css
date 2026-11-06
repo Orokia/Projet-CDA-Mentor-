@@ -1,0 +1,726 @@
+/* =========================================================
+   PAGE FORMATEURS
+   L'en-tête, la recherche et l'état vide
+   reprennent les classes du catalogue (theme.css / app.css).
+   ========================================================= */
+
+.formateurs-page {
+    background: #FFFFFF;
+}
+
+/* Bouton d'effacement dans le champ de recherche */
+.formateurs-search-clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    width: 32px;
+    height: 32px;
+    padding: 0;
+
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--mentor-text-muted);
+
+    cursor: pointer;
+    transition: background-color var(--mentor-transition), color var(--mentor-transition);
+}
+
+.formateurs-search-clear:hover {
+    background: var(--mentor-primary-soft);
+    color: var(--mentor-primary);
+}
+
+.formateurs-search-clear[hidden] {
+    display: none;
+}
+
+
+/* =========================================================
+   LABEL (utilisé sur les pages profil et détail formation)
+   ========================================================= */
+
+.formation-section-label {
+    display: inline-block;
+    margin-bottom: 8px;
+
+    color: var(--mentor-primary);
+
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+
+/* =========================================================
+   CARTE FORMATEUR
+   ========================================================= */
+
+.formateur-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    height: 100%;
+    padding: 24px 20px;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius);
+    background: var(--mentor-surface);
+
+    text-align: center;
+
+    transition: box-shadow var(--mentor-transition);
+}
+
+.formateur-card:hover {
+    box-shadow: var(--mentor-shadow);
+}
+
+.formateur-card-photo {
+    width: 88px;
+    height: 88px;
+    margin-bottom: 14px;
+    overflow: hidden;
+
+    border-radius: 50%;
+    background: var(--mentor-primary-soft);
+}
+
+.formateur-card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.formateur-card-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    color: var(--mentor-primary);
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.formateur-card-name {
+    margin: 0 0 4px;
+
+    color: var(--mentor-text);
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.formateur-card-subtitle {
+    margin: 0 0 6px;
+
+    color: var(--mentor-text-muted);
+    font-size: 14px;
+}
+
+.formateur-card-location {
+    margin: 0;
+
+    color: var(--mentor-text-muted);
+    font-size: 13px;
+}
+
+.formateur-card-button {
+    width: 100%;
+    margin-top: auto;
+}
+
+/* Espace entre le texte et le bouton (poussé en bas de la carte) */
+.formateur-card > p:last-of-type {
+    margin-bottom: 18px;
+}
+
+/* =========================================================
+   AUCUN FORMATEUR (utilisé aussi sur la page profil)
+   ========================================================= */
+
+.formateurs-empty {
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius);
+    background: #F8F9FC;
+}
+
+.formateurs-empty h3 {
+    margin-bottom: 8px;
+
+    color: var(--mentor-text);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.formateurs-empty p {
+    margin: 0;
+
+    color: var(--mentor-text-muted);
+    font-size: 14px;
+}
+
+/* =========================================================
+   PROFIL FORMATEUR
+   Mise en page classique sur une colonne :
+   vidéo, en-tête centré, informations, formations, disponibilités
+   ========================================================= */
+
+.formateur-profile {
+    background: #F7F9FA;
+}
+
+.formateur-profile > .container {
+    max-width: 1080px;
+}
+
+.formateur-profile section {
+    margin-bottom: 32px;
+}
+
+/* Fil d'Ariane */
+.formateur-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+
+    margin-bottom: 20px;
+
+    color: var(--mentor-text-muted);
+    font-size: 14px;
+}
+
+.formateur-breadcrumb a {
+    color: var(--mentor-primary);
+    font-weight: 600;
+}
+
+.formateur-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.formateur-breadcrumb i {
+    font-size: 11px;
+}
+
+/* En-tête des sections : label, titre, texte */
+.formateur-section-header {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+
+    border-bottom: 1px solid var(--mentor-border);
+}
+
+.formateur-section-header h2 {
+    margin: 0;
+
+    color: var(--mentor-text);
+    font-family: var(--mentor-font-display);
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.formateur-section-header p {
+    margin: 8px 0 0;
+
+    color: var(--mentor-text-muted);
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   VIDÉO
+   ========================================================= */
+
+.formateur-video {
+    overflow: hidden;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius-sm);
+    background: var(--mentor-dark);
+}
+
+.formateur-video video {
+    display: block;
+
+    width: 100%;
+    max-height: 480px;
+}
+
+.formateur-video-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 200px;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius-sm);
+    background: var(--mentor-surface);
+
+    color: var(--mentor-text-muted);
+}
+
+.formateur-video-empty i {
+    margin-bottom: 8px;
+
+    font-size: 34px;
+}
+
+.formateur-video-empty p {
+    margin: 0;
+}
+
+
+/* =========================================================
+   EN-TÊTE : photo, nom, rôle, boutons
+   ========================================================= */
+
+.formateur-profile-header {
+    padding: 32px 24px;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius-sm);
+    background: var(--mentor-surface);
+
+    text-align: center;
+}
+
+.formateur-profile-photo {
+    width: 140px;
+    height: 140px;
+    margin: 0 auto 16px;
+
+    overflow: hidden;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: 50%;
+    background: var(--mentor-primary-soft);
+}
+
+.formateur-profile-photo img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.formateur-profile-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    height: 100%;
+
+    background: var(--mentor-primary);
+
+    color: #FFFFFF;
+    font-family: var(--mentor-font-display);
+    font-size: 44px;
+    font-weight: 700;
+}
+
+.formateur-profile-header h1 {
+    margin: 0 0 4px;
+
+    color: var(--mentor-text);
+    font-family: var(--mentor-font-display);
+    font-size: clamp(26px, 3.4vw, 34px);
+    font-weight: 700;
+}
+
+.formateur-profile-role {
+    margin: 0 0 20px;
+
+    color: var(--mentor-text-muted);
+    font-size: 15px;
+}
+
+.formateur-profile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+}
+
+.formateur-profile-actions .btn {
+    min-width: 200px;
+    padding: 10px 20px;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   INFORMATIONS
+   ========================================================= */
+
+.formateur-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+
+    height: 100%;
+    padding: 18px 20px;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius-sm);
+    background: var(--mentor-surface);
+}
+
+.formateur-info-item i {
+    flex-shrink: 0;
+
+    color: var(--mentor-primary);
+    font-size: 22px;
+    line-height: 1.2;
+}
+
+.formateur-info-item div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    min-width: 0;
+}
+
+.formateur-info-item span {
+    color: var(--mentor-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.formateur-info-item strong {
+    color: var(--mentor-text);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   FORMATIONS ANIMÉES
+   ========================================================= */
+
+.formateur-formation-card {
+    display: flex;
+    flex-direction: column;
+
+    height: 100%;
+    overflow: hidden;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius-sm);
+    background: var(--mentor-surface);
+
+    transition: box-shadow var(--mentor-transition);
+}
+
+.formateur-formation-card:hover {
+    box-shadow: var(--mentor-shadow);
+}
+
+.formateur-formation-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    aspect-ratio: 16 / 9;
+
+    border-bottom: 1px solid var(--mentor-border);
+    background: var(--mentor-primary-soft);
+
+    color: var(--mentor-primary);
+    font-size: 32px;
+}
+
+.formateur-formation-image img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.formateur-formation-body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    padding: 16px;
+}
+
+.formateur-formation-body h3 {
+    margin: 0 0 8px;
+
+    color: var(--mentor-text);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.formateur-formation-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+
+    margin: 0 0 14px;
+
+    color: var(--mentor-text-muted);
+    font-size: 14px;
+}
+
+.formateur-formation-meta span:last-child {
+    color: var(--mentor-text);
+    font-weight: 700;
+}
+
+/* Bouton poussé en bas de la carte */
+.formateur-formation-body .btn {
+    margin-top: auto;
+}
+
+
+/* =========================================================
+   DISPONIBILITÉS
+   ========================================================= */
+
+.formateur-disponibilites-section {
+    padding: 28px;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius-sm);
+    background: var(--mentor-surface);
+
+    /* Laisse la place à la navbar lors d'un saut d'ancre */
+    scroll-margin-top: 100px;
+}
+
+.disponibilites-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.disponibilite-block {
+    padding: 18px 20px;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius-sm);
+    background: #F7F9FA;
+}
+
+.disponibilite-header {
+    margin-bottom: 14px;
+}
+
+.disponibilite-formation {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: var(--mentor-text);
+    font-size: 16px;
+}
+
+.disponibilite-infos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 24px;
+
+    color: var(--mentor-text-soft);
+    font-size: 14px;
+}
+
+.disponibilite-infos i {
+    margin-right: 4px;
+
+    color: var(--mentor-primary);
+}
+
+.disponibilite-jours {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.disponibilite-jour {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+
+    width: 100%;
+    padding: 14px 12px;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: var(--mentor-radius-sm);
+    background: var(--mentor-surface);
+
+    cursor: pointer;
+    text-align: center;
+
+    transition:
+        border-color var(--mentor-transition),
+        background-color var(--mentor-transition);
+}
+
+.disponibilite-jour:hover {
+    border-color: var(--mentor-text);
+}
+
+.disponibilite-jour:focus-visible {
+    outline: 2px solid var(--mentor-primary);
+    outline-offset: 2px;
+}
+
+.disponibilite-jour-name {
+    color: var(--mentor-text);
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.disponibilite-jour-horaire {
+    color: var(--mentor-text-muted);
+    font-size: 13px;
+}
+
+.disponibilite-jour-action {
+    margin-top: 8px;
+
+    color: var(--mentor-primary);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* Jour choisi (classe ajoutée par le contrôleur Stimulus) */
+.disponibilite-jour.selected {
+    border-color: var(--mentor-primary);
+    background: var(--mentor-primary);
+}
+
+/* Jour au statut « plus disponible » : non sélectionnable */
+.disponibilite-jour:disabled {
+    cursor: not-allowed;
+    border-style: dashed;
+    background: var(--mentor-surface);
+    opacity: 0.55;
+}
+
+.disponibilite-jour:disabled:hover {
+    border-color: var(--mentor-border);
+}
+
+.disponibilite-jour:disabled .disponibilite-jour-action {
+    color: var(--mentor-text-muted);
+}
+
+.disponibilite-jour.selected .disponibilite-jour-name,
+.disponibilite-jour.selected .disponibilite-jour-horaire,
+.disponibilite-jour.selected .disponibilite-jour-action {
+    color: #FFFFFF;
+}
+
+
+/* Récapitulatif et bouton Réserver */
+
+.disponibilite-selection {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin-top: 22px;
+    padding: 14px 18px;
+
+    border: 1px solid #BBF7D0;
+    border-left: 4px solid #16A34A;
+    border-radius: var(--mentor-radius-sm);
+    background: #F0FDF4;
+}
+
+.disponibilite-selection > i {
+    color: #16A34A;
+    font-size: 22px;
+}
+
+.disponibilite-selection div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.disponibilite-selection strong {
+    color: #166534;
+    font-size: 14px;
+}
+
+.disponibilite-selection span {
+    color: var(--mentor-text);
+    font-size: 15px;
+    text-transform: capitalize;
+}
+
+.reservation-action {
+    margin-top: 18px;
+}
+
+.reservation-action .btn {
+    min-width: 200px;
+    padding: 10px 20px;
+
+    font-weight: 700;
+}
+
+.formateur-disponibilites-section .formateurs-empty {
+    padding: 36px 20px;
+}
+
+.formateur-disponibilites-section .formateurs-empty > i {
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: var(--mentor-text-muted);
+    font-size: 34px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 575px) {
+
+    .formateur-profile-header {
+        padding: 24px 16px;
+    }
+
+    .formateur-profile-photo {
+        width: 112px;
+        height: 112px;
+    }
+
+    .formateur-profile-actions .btn,
+    .reservation-action .btn {
+        width: 100%;
+    }
+
+    .formateur-disponibilites-section {
+        padding: 20px 16px;
+    }
+
+    .disponibilite-jours {
+        grid-template-columns: 1fr 1fr;
+    }
+
+}

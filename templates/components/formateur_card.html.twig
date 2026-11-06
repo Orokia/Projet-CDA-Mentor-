@@ -1,0 +1,43 @@
+<article class="formateur-card">
+
+    {# PHOTO OU INITIALES #}
+    <div class="formateur-card-photo">
+        {% if formateur.image %}
+            <img
+                src="{{ asset('assets/images/utilisateurs/' ~ formateur.image) }}"
+                alt=""
+                loading="lazy"
+                decoding="async"
+            >
+        {% else %}
+            <span class="formateur-card-avatar" aria-hidden="true">
+                {{ formateur.prenom|first|upper }}{{ formateur.nom|first|upper }}
+            </span>
+        {% endif %}
+    </div>
+
+    {# NOM ET SPÉCIALITÉS #}
+    <h2 class="formateur-card-name">
+        {{ formateur.prenom }} {{ formateur.nom }}
+    </h2>
+
+    <p class="formateur-card-subtitle">
+        {{ formateur.specialites|slice(0, 2)|join(' · ') ?: 'Formateur' }}
+    </p>
+
+    {% if formateur.localisation %}
+        <p class="formateur-card-location">
+            <i class="bi bi-geo-alt" aria-hidden="true"></i>
+            {{ formateur.localisation }}
+        </p>
+    {% endif %}
+
+    {# BOUTON #}
+    <a
+        href="{{ path('app_formateur_profil', {id: formateur.id}) }}"
+        class="btn btn-outline-primary formateur-card-button"
+    >
+        Voir le profil<span class="visually-hidden"> de {{ formateur.prenom }} {{ formateur.nom }}</span>
+    </a>
+
+</article>

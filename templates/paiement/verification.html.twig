@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Vérification du paiement - Mentor
+{% endblock %}
+
+{% block body %}
+
+<div class="container-mentor page-section">
+
+    <header class="page-header page-header-left">
+        <span class="page-eyebrow">
+            Paiement
+        </span>
+
+        <h1>
+            Vérification du paiement en cours
+        </h1>
+    </header>
+
+    <div class="alert alert-warning" role="alert">
+        <p class="mb-2">
+            Nous n'avons pas pu vérifier votre paiement auprès de Stripe pour le moment.
+        </p>
+
+        <p class="mb-0">
+            Votre réservation sera confirmée dès que la vérification aboutira.
+            Vous ne serez pas débité une seconde fois en réessayant.
+        </p>
+    </div>
+
+    <a href="{{ path('app_paiement_succes', { id: paiementId }) }}" class="btn btn-primary">
+        <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>
+        Vérifier à nouveau
+    </a>
+
+    <a href="{{ path('app_mes_reservations') }}" class="btn btn-outline-primary ms-2">
+        Mes réservations
+    </a>
+
+</div>
+
+{% endblock %}

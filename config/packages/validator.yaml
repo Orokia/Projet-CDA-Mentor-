@@ -5,7 +5,10 @@ framework:
         #auto_mapping:
         #    App\Entity\: []
 
-when@test:
+when@test: &test_config
     framework:
         validation:
             not_compromised_password: false
+
+# Environnement de la CI GitHub Actions : même configuration que les tests
+when@ci: *test_config

@@ -1,0 +1,658 @@
+/* =========================================================
+   PAGE DÉTAIL FORMATION
+   Le hero, les cartes et les sections communes sont dans app.css
+   ========================================================= */
+
+.formation-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+   ========================================================= */
+
+.formation-description-text {
+    color: #4B5563;
+    font-size: 16px;
+    line-height: 1.8;
+
+    overflow-wrap: break-word;
+}
+
+
+/* =========================================================
+   INFORMATIONS PRATIQUES
+   ========================================================= */
+
+.detail-facts {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+
+    margin-top: 8px;
+}
+
+.detail-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    padding: 18px;
+
+    border-radius: 12px;
+    background: var(--mentor-bg);
+}
+
+.detail-fact i {
+    margin-bottom: 6px;
+
+    color: var(--mentor-primary);
+    font-size: 22px;
+}
+
+.detail-fact span {
+    color: var(--mentor-text-muted);
+
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.detail-fact strong {
+    color: var(--mentor-text);
+    font-size: 16px;
+}
+
+
+/* =========================================================
+   CARTE PRIX
+   ========================================================= */
+
+.formation-preview {
+    height: 210px;
+
+    overflow: hidden;
+
+    background: var(--mentor-primary-soft);
+}
+
+.formation-preview img {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+/* Affiché quand la formation n'a pas d'image */
+.formation-image-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    height: 100%;
+
+    color: #6366F1;
+    font-size: 14px;
+}
+
+.formation-image-placeholder i {
+    font-size: 34px;
+}
+
+.formation-purchase-body {
+    padding: 24px;
+}
+
+.formation-price-info {
+    margin: 0 0 4px;
+
+    color: var(--mentor-text-muted);
+    font-size: 13px;
+}
+
+.formation-price {
+    margin-bottom: 20px;
+
+    color: var(--mentor-text);
+
+    font-size: 34px;
+    font-weight: 800;
+}
+
+.formation-reservation-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    min-height: 52px;
+
+    border-radius: 10px;
+
+    font-weight: 700;
+}
+
+.detail-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    margin: 22px 0 0;
+    padding: 20px 0 0;
+
+    border-top: 1px solid var(--mentor-border);
+
+    list-style: none;
+
+    color: var(--mentor-text-soft);
+    font-size: 14px;
+}
+
+.detail-checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.detail-checklist i {
+    color: #16A34A;
+    font-size: 17px;
+}
+
+
+/* =========================================================
+   ÉTAPES DE RÉSERVATION
+   ========================================================= */
+
+.detail-steps {
+    display: flex;
+    gap: 10px;
+
+    margin: 0 0 24px;
+    padding: 0;
+
+    list-style: none;
+}
+
+.detail-steps li {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 10px;
+
+    padding: 12px 14px;
+
+    border: 1px solid var(--mentor-border);
+    border-radius: 12px;
+    background: var(--mentor-surface);
+
+    color: var(--mentor-text-muted);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.detail-steps span {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+
+    width: 28px;
+    height: 28px;
+
+    border-radius: 50%;
+    background: var(--mentor-bg);
+
+    font-size: 13px;
+}
+
+.detail-steps li.is-current {
+    border-color: #C7D2FE;
+    background: var(--mentor-primary-soft);
+
+    color: var(--mentor-primary);
+}
+
+.detail-steps li.is-current span {
+    background: var(--mentor-primary);
+    color: #FFFFFF;
+}
+
+
+/* =========================================================
+   CHOIX DU FORMATEUR
+   ========================================================= */
+
+.formation-trainer-card {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    height: 100%;
+    padding: 16px;
+
+    border: 2px solid var(--mentor-border);
+    border-radius: 14px;
+    background: var(--mentor-surface);
+
+    cursor: pointer;
+
+    transition:
+        border-color var(--mentor-transition),
+        box-shadow var(--mentor-transition),
+        transform var(--mentor-transition);
+}
+
+.formation-trainer-card:hover {
+    border-color: #C7D2FE;
+
+    transform: translateY(-2px);
+
+    box-shadow: var(--mentor-shadow);
+}
+
+/* Le vrai bouton radio reste utilisable au clavier mais invisible */
+.formation-trainer-card input {
+    position: absolute;
+
+    opacity: 0;
+
+    pointer-events: none;
+}
+
+.formation-trainer-card:has(input:focus-visible) {
+    outline: 3px solid rgba(79, 70, 229, 0.35);
+    outline-offset: 2px;
+}
+
+.formation-trainer-card:has(input:checked) {
+    border-color: var(--mentor-primary);
+    background: #F8F9FF;
+
+    box-shadow: 0 8px 25px rgba(79, 70, 229, 0.14);
+}
+
+.formation-trainer-avatar {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+
+    width: 58px;
+    height: 58px;
+
+    overflow: hidden;
+
+    border-radius: 50%;
+    background: var(--mentor-primary);
+
+    color: #FFFFFF;
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.formation-trainer-avatar img {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.formation-trainer-info {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 6px;
+
+    min-width: 0;
+}
+
+.formation-trainer-info strong {
+    color: var(--mentor-text);
+    font-size: 16px;
+}
+
+.formation-trainer-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+
+    color: var(--mentor-text-muted);
+    font-size: 13px;
+}
+
+.formation-trainer-details i {
+    color: var(--mentor-primary);
+}
+
+.formation-radio {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+
+    width: 26px;
+    height: 26px;
+
+    border: 2px solid #D1D5DB;
+    border-radius: 50%;
+
+    color: transparent;
+    font-size: 14px;
+
+    transition: all var(--mentor-transition);
+}
+
+.formation-trainer-card:has(input:checked) .formation-radio {
+    border-color: var(--mentor-primary);
+    background: var(--mentor-primary);
+
+    color: #FFFFFF;
+}
+
+.formation-trainer-action {
+    margin-top: 24px;
+
+    text-align: right;
+}
+
+.formation-trainer-action .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    padding: 12px 26px;
+
+    border-radius: 10px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   AUCUN FORMATEUR / AUCUNE FORMATION
+   ========================================================= */
+
+.formation-empty {
+    padding: 32px 20px;
+
+    border: 1px dashed #D1D5DB;
+    border-radius: 14px;
+    background: var(--mentor-bg);
+
+    text-align: center;
+}
+
+.formation-empty > i {
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: var(--mentor-primary);
+    font-size: 32px;
+}
+
+.formation-empty h3 {
+    margin-bottom: 6px;
+
+    color: var(--mentor-text);
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.formation-empty p {
+    margin: 0;
+    color: #6B7280;
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 767px) {
+
+    .detail-facts {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-steps {
+        flex-direction: column;
+    }
+
+    .formation-trainer-action .btn {
+        justify-content: center;
+        width: 100%;
+    }
+
+}
+
+/* =========================================================
+   CARTES DE FORMATION - ACCUEIL
+   ========================================================= */
+
+.formations-section {
+    width: 100%;
+    padding: 70px 0;
+    background: #F8F9FC;
+}
+
+.formations-section .container-mentor {
+    width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 30px;
+}
+
+.formations-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 22px;
+    width: 100%;
+    margin-top: 32px;
+}
+
+.formation-item {
+    display: flex;
+    min-width: 0;
+}
+
+/* Carte */
+
+.formation-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+}
+
+.formation-card .formation-image {
+    height: 145px;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: #F3F4F6;
+}
+
+.formation-card .formation-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Contenu */
+
+.formation-card .formation-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    padding: 14px;
+    box-sizing: border-box;
+}
+
+.formation-card .formation-category {
+    align-self: flex-start;
+    margin-bottom: 8px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    background: #EEF2FF;
+    color: #4F46E5;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+/* Titre : 2 lignes maximum */
+
+.formation-card .formation-title {
+    display: -webkit-box;
+    height: 42px;
+    margin: 0 0 8px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    color: #1F2937;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 21px;
+    overflow-wrap: anywhere;
+}
+
+/* Description : 3 lignes maximum */
+
+.formation-card .formation-description {
+    display: -webkit-box;
+    height: 54px;
+    margin: 0 0 12px;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    color: #6B7280;
+    font-size: 13px;
+    line-height: 18px;
+    overflow-wrap: anywhere;
+}
+
+/* Durée */
+
+.formation-card .formation-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    margin-bottom: 12px;
+    color: #6B7280;
+    font-size: 12px;
+}
+
+/* Prix et bouton */
+
+.formation-card .formation-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding-top: 12px;
+    border-top: 1px solid #F0F0F0;
+}
+
+.formation-card .formation-footer strong {
+    min-width: 0;
+    color: #1F2937;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.formation-card .formation-footer .btn-mentor,
+.formation-card .formation-discover {
+    flex-shrink: 0;
+    padding: 7px 9px;
+    border-radius: 6px;
+    background: #4F46E5;
+    color: #fff;
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* Tablette */
+
+@media (max-width: 1100px) {
+    .formations-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+    }
+}
+
+/* Mobile */
+
+@media (max-width: 575px) {
+    .formations-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .formation-card .formation-image {
+        height: 180px;
+    }
+}
+
+/* Survol, focus et zone tactile de la carte */
+
+.formation-card {
+    transition:
+        box-shadow var(--mentor-transition),
+        transform var(--mentor-transition),
+        border-color var(--mentor-transition);
+}
+
+.formation-card:hover,
+.formation-card:focus-within {
+    border-color: #C7D2FE;
+    box-shadow: var(--mentor-shadow);
+    transform: translateY(-2px);
+}
+
+.formation-card .formation-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.formation-card .formation-discover {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 8px 14px;
+    border-radius: var(--mentor-radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    transition: background-color var(--mentor-transition);
+}
+
+.formation-card .formation-discover:hover {
+    background: var(--mentor-primary-hover);
+    color: #FFFFFF;
+}

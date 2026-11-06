@@ -2,14 +2,21 @@
 framework:
     secret: '%env(APP_SECRET)%'
 
+    csrf_protection: true
+
+    
+
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
     #esi: true
     #fragments: true
 
-when@test:
+when@test: &test_config
     framework:
         test: true
         session:
             storage_factory_id: session.storage.factory.mock_file
+
+# Environnement de la CI GitHub Actions : même configuration que les tests
+when@ci: *test_config

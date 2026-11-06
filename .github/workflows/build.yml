@@ -1,0 +1,345 @@
+name: Build
+
+# Chaîne complète : tests + paquet, SonarQube et Checkmarx en parallèle,
+# puis image Docker scannée par Trivy et publiée sur Docker Hub.
+# Lancé à chaque push de branche, et réutilisé par release.yml avant toute release.
+on:
+  push:
+    branches:
+      - "**"
+  workflow_call:
+
+# Aucun droit par défaut : chaque job déclare le minimum nécessaire
+permissions: {}
+
+concurrency:
+  group: build-${{ github.ref }}
+  # Un nouveau push annule le build en cours de la même branche, jamais celui d'un tag
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+env:
+  PHP_VERSION: "8.4"
+  COMPOSER_ALLOW_SUPERUSER: "1"
+  IMAGE_NAME: ${{ vars.DOCKERHUB_USERNAME }}/mentor
+
+jobs:
+  # ==========================================
+  # Contrôles : tests + paquet, SonarQube, Checkmarx
+  # Matrice fail-fast : le premier contrôle en échec annule les autres
+  # et le run se termine en "Failure".
+  # ==========================================
+  checks:
+    name: ${{ matrix.check }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - check: build-test
+            fetch-depth: 1
+          # SonarQube a besoin de tout l'historique (blame, nouveau code)
+          - check: sonarqube
+            fetch-depth: 0
+          # - check: checkmarx
+          #   fetch-depth: 1
+
+    env:
+      # Variables fournies par .env.ci (DATABASE_URL SQLite, MAILER_DSN, APP_SECRET)
+      APP_ENV: ci
+      APP_DEBUG: "1"
+      # Lu par tests/bootstrap.php pour lancer PHPUnit dans l'environnement "ci"
+      TEST_APP_ENV: ci
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: ${{ matrix.fetch-depth }}
+          persist-credentials: false
+
+      # ---------- build-test : validations, tests, paquet de production ----------
+
+      - name: Compute package version
+        if: matrix.check == 'build-test'
+        run: |
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-][A-Za-z0-9.-]+)?$ ]]; then
+              echo "::error::Tag invalide : $GITHUB_REF_NAME (format attendu : v1.2.3 ou v1.2.3-rc.1)"
+              exit 1
+            fi
+            version="$GITHUB_REF_NAME"
+          else
+            version="sha-${GITHUB_SHA::7}"
+          fi
+          echo "PACKAGE_VERSION=$version" >> "$GITHUB_ENV"
+
+      # PHP et dépendances : aussi pour SonarQube, qui lance les tests avec couverture
+      - name: Setup PHP
+        if: matrix.check == 'build-test' || matrix.check == 'sonarqube'
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo_sqlite, pdo_mysql, intl, mbstring, xml, ctype, iconv, zip
+          # PCOV seulement pour SonarQube : la couverture ralentit les tests
+          coverage: ${{ matrix.check == 'sonarqube' && 'pcov' || 'none' }}
+          tools: composer:v2
+
+      - name: Validate Composer files
+        if: matrix.check == 'build-test'
+        run: composer validate --no-check-publish
+
+      - name: Get Composer cache directory
+        if: matrix.check == 'build-test' || matrix.check == 'sonarqube'
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer packages
+        if: matrix.check == 'build-test' || matrix.check == 'sonarqube'
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      # Les auto-scripts lancent cache:clear, assets:install et importmap:install
+      - name: Install dependencies
+        if: matrix.check == 'build-test' || matrix.check == 'sonarqube'
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Validate Symfony container
+        if: matrix.check == 'build-test'
+        run: php bin/console lint:container --env=ci
+
+      - name: Validate Doctrine mappings
+        if: matrix.check == 'build-test'
+        run: php bin/console doctrine:schema:validate --skip-sync --env=ci
+
+      - name: Prepare test reports
+        if: matrix.check == 'build-test'
+        run: mkdir -p var/test-reports
+
+      # Le schéma SQLite (var/ci.db) est recréé par
+      # tests/bootstrap.php au lancement de chaque suite PHPUnit.
+      # La première suite en échec arrête le job.
+
+      - name: Unit tests
+        if: matrix.check == 'build-test'
+        run: php bin/phpunit tests/Unit --log-junit var/test-reports/unit.xml
+
+      - name: Integration tests
+        if: matrix.check == 'build-test'
+        run: php bin/phpunit tests/Integration --log-junit var/test-reports/integration.xml
+
+      - name: Functional tests
+        if: matrix.check == 'build-test'
+        run: php bin/phpunit tests/Functional --log-junit var/test-reports/functional.xml
+
+      - name: Upload test reports
+        if: always() && matrix.check == 'build-test'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-reports-${{ github.run_id }}-${{ github.run_attempt }}
+          path: var/test-reports/
+          if-no-files-found: warn
+          retention-days: 14
+
+      # construit seulement si tous les tests passent
+      - name: Install production dependencies
+        if: matrix.check == 'build-test'
+        env:
+          APP_ENV: prod
+          APP_DEBUG: "0"
+          # Valeurs factices, utilisées seulement pendant le build (aucune connexion :
+          # serverVersion est fourni). Les vraies valeurs sont fournies à l'exécution.
+          APP_SECRET: build-placeholder
+          DATABASE_URL: "mysql://build:build@127.0.0.1:3306/app?serverVersion=8.0.0&charset=utf8mb4"
+        run: composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Validate container and compile assets
+        if: matrix.check == 'build-test'
+        env:
+          APP_ENV: prod
+          APP_DEBUG: "0"
+          APP_SECRET: build-placeholder
+          DATABASE_URL: "mysql://build:build@127.0.0.1:3306/app?serverVersion=8.0.0&charset=utf8mb4"
+        run: |
+          php bin/console lint:container --env=${APP_ENV}
+          php bin/console asset-map:compile --env=${APP_ENV}
+
+      # Seuls les fichiers nécessaires à l'exécution sont archivés (ni tests, ni var/, ni .env de dev/test/ci)
+      - name: Build archive
+        if: matrix.check == 'build-test'
+        run: |
+          mkdir -p build
+          tar -czf "build/app-${PACKAGE_VERSION}.tar.gz" \
+              .env \
+              assets bin config migrations public src templates translations vendor \
+              composer.json composer.lock importmap.php symfony.lock
+          cd build
+          sha256sum "app-${PACKAGE_VERSION}.tar.gz" > "app-${PACKAGE_VERSION}.tar.gz.sha256"
+
+      - name: Upload package
+        if: matrix.check == 'build-test'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: app-package
+          path: build/
+          if-no-files-found: error
+          retention-days: 7
+          overwrite: true
+
+      # ---------- sonarqube : qualité du code ----------
+
+      # Rapports lus par SonarQube (chemins dans sonar-project.properties) :
+      # couverture Clover et résultats JUnit des trois suites.
+      # Le schéma SQLite est recréé par tests/bootstrap.php.
+      - name: Tests with coverage
+        if: matrix.check == 'sonarqube'
+        run: |
+          mkdir -p var/test-reports
+          php bin/phpunit \
+              --coverage-clover var/test-reports/coverage.xml \
+              --log-junit var/test-reports/junit.xml
+
+      # sonar.qualitygate.wait : le job échoue si le Quality Gate n'est pas validé
+      - name: SonarQube scan
+        if: matrix.check == 'sonarqube'
+        uses: SonarSource/sonarqube-scan-action@d209202bc7d53ff1cc128f7f907dac145c9d6ae9 # v8.3.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          # SonarQube Cloud par défaut ; la variable SONAR_HOST_URL permet un autre serveur
+          SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL || 'https://sonarcloud.io' }}
+        with:
+          args: >
+            -Dsonar.qualitygate.wait=true
+
+      # ---------- checkmarx : SAST ----------
+
+      # --threshold : le job échoue dès la première vulnérabilité SAST de sévérité haute
+      - name: Checkmarx SAST scan
+        if: matrix.check == 'checkmarx'
+        uses: Checkmarx/ast-github-action@7006afa846f6d23e3e9d351a001b9d8e59c3fb8c # 2.3.46
+        with:
+          base_uri: ${{ vars.CX_BASE_URI }}
+          cx_tenant: ${{ vars.CX_TENANT }}
+          cx_client_id: ${{ secrets.CX_CLIENT_ID }}
+          cx_client_secret: ${{ secrets.CX_CLIENT_SECRET }}
+          scan_params: --scan-types sast --threshold "sast-high=1"
+
+  # ==========================================
+  # Image Docker : build, scan Trivy, publication Docker Hub
+  # Ne démarre que si tous les contrôles ont réussi.
+  # ==========================================
+  docker:
+    name: Image Docker
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      # Seulement pour docker/prod/Dockerfile : l'application vient de l'artefact
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Download package
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: app-package
+          path: dist
+
+      - name: Verify and extract package
+        working-directory: dist
+        run: |
+          sha256sum --check ./*.tar.gz.sha256
+          mkdir app
+          tar -xzf ./*.tar.gz -C app
+
+      # Sans la variable de dépôt DOCKERHUB_USERNAME, le nom d'image devient "/mentor"
+      # et buildx échoue avec "invalid reference format" : on s'arrête avant, avec un message clair
+      - name: Check Docker Hub configuration
+        env:
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+        run: |
+          if [[ -z "$DOCKERHUB_USERNAME" ]]; then
+            echo "::error::Variable de dépôt DOCKERHUB_USERNAME absente. À définir dans Settings > Secrets and variables > Actions > onglet Variables (et non dans Secrets)."
+            exit 1
+          fi
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      # Chargée en local (sans push) pour être scannée avant toute publication
+      - name: Build image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: dist/app
+          file: docker/prod/Dockerfile
+          load: true
+          # La publication se fait plus bas, après le login, par l'étape "Push image to Docker Hub"
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Bloque sur toute faille CRITICAL ou HIGH pour laquelle un correctif existe
+      # (paquets Alpine, dépendances Composer) et sur tout secret laissé dans l'image.
+      # Exécuté avant le login et le push : une image refusée n'est jamais publiée.
+      # SHA vérifié : commit signé de la version immuable v0.36.0 (Trivy 0.70.0).
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          # scan-type: fs
+          image-ref: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          scanners: vuln,secret
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          vuln-type: os,library
+          format: sarif
+          # format: table
+          output: trivy-results.sarif
+          exit-code: "1"
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        if: always() && hashFiles('trivy-results.sarif') != ''
+        with:
+          sarif_file: trivy-results.sarif
+
+      # Publication à chaque push, sauf un push direct sur main ou develop
+      - name: Login to Docker Hub
+        if: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')) }}
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Pousse l'image qui vient d'être scannée, sans la reconstruire
+      - name: Push image to Docker Hub
+        if: ${{ !(github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')) }}
+        env:
+          TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          while IFS= read -r tag; do
+            [[ -n "$tag" ]] && docker push "$tag"
+          done <<< "$TAGS"

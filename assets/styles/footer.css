@@ -1,0 +1,153 @@
+.mentor-footer {
+    position: relative;
+
+    margin-top: 80px;
+
+    padding: 64px 0 25px;
+
+    overflow: hidden;
+
+    background-color: var(--mentor-dark);
+
+    color: #FFFFFF;
+}
+
+/* Léger halo indigo en haut du footer */
+.mentor-footer::before {
+    content: "";
+
+    position: absolute;
+    top: -160px;
+    left: 50%;
+
+    width: 640px;
+    height: 320px;
+
+    transform: translateX(-50%);
+
+    background: radial-gradient(closest-side, rgba(79, 70, 229, 0.28), transparent);
+
+    pointer-events: none;
+}
+
+.mentor-footer .container-mentor {
+    position: relative;
+}
+
+.mentor-footer-grid {
+    display: grid;
+
+    grid-template-columns:
+        2fr
+        1fr
+        1fr
+        1.5fr;
+
+    gap: 50px;
+}
+
+
+/* MARQUE */
+
+.mentor-footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    margin-bottom: 14px;
+
+    color: #FFFFFF;
+}
+
+.mentor-footer-logo:hover {
+    color: #FFFFFF;
+}
+
+.mentor-footer-logo strong {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.mentor-footer-brand p {
+    max-width: 280px;
+
+    color: #9CA3AF;
+
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+
+/* COLONNES */
+
+.mentor-footer-column .mentor-footer-title {
+    margin: 0 0 18px;
+
+    color: #FFFFFF;
+
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.mentor-footer-column a {
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: #9CA3AF;
+
+    font-size: 14px;
+
+    transition:
+        color var(--mentor-transition),
+        transform var(--mentor-transition);
+}
+
+.mentor-footer-column a:hover {
+    color: #FFFFFF;
+    transform: translateX(3px);
+}
+
+
+/* BAS DU FOOTER */
+
+.mentor-footer-bottom {
+    margin-top: 50px;
+
+    padding-top: 20px;
+
+    border-top: 1px solid #374151;
+
+    text-align: center;
+}
+
+.mentor-footer-bottom p {
+    margin: 0;
+
+    color: #9CA3AF;
+
+    font-size: 12px;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+
+    .mentor-footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 35px;
+    }
+
+}
+
+@media (max-width: 500px) {
+
+    .mentor-footer-grid {
+        grid-template-columns: 1fr;
+    }
+
+}

@@ -1,25 +1,89 @@
 
 services:
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mentor_app
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
-    healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
-      timeout: 5s
-      retries: 5
-      start_period: 60s
+      # APP_ENV: ${APP_ENV:-dev}
+      APP_ENV: dev
+      DATABASE_URL: "mysql://mentor:mentor_dev_password@database:3306/mentor?serverVersion=8.0.0&charset=utf8mb4"
+      MAILER_DSN: "smtp://mailer:1025"
+      APP_DEBUG: ${APP_DEBUG:-1}
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+      - .:/var/www/html
+      - mentor_vendor:/var/www/html/vendor
+      # Cache et logs hors du montage Windows : l'accès disque via WSL2 est très lent
+      # et la reconstruction du cache dépassait le délai de Nginx (erreur 504).
+      - mentor_var:/var/www/html/var
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - mentor
+
+  nginx:
+    image: nginx:alpine
+    container_name: mentor_nginx
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html:ro
+      - mentor_vendor:/var/www/html/vendor:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - mentor
+
+  database:
+    image: mysql:8.0
+    container_name: mentor_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: mentor
+      MYSQL_USER: mentor
+      MYSQL_PASSWORD: mentor_dev_password
+      MYSQL_ROOT_PASSWORD: mentor_root_dev_password
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysqladmin ping -h localhost -uroot -p"$${MYSQL_ROOT_PASSWORD}" --silent
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    volumes:
+      - mentor_mysql_data:/var/lib/mysql
+    networks:
+      - mentor
+
+  mailer:
+    image: axllent/mailpit
+    container_name: mentor_mailer
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+    networks:
+      - mentor
 
 volumes:
-###> doctrine/doctrine-bundle ###
-  database_data:
-###< doctrine/doctrine-bundle ###
+  mentor_mysql_data:
+    name: mentor_mentor_mysql_data
+  mentor_vendor:
+  mentor_var:
+
+networks:
+  mentor:
+    driver: bridge
+

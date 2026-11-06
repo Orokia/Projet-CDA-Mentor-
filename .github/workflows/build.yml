@@ -241,6 +241,7 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
+      security-events: write
 
     steps:
       # Seulement pour docker/prod/Dockerfile : l'application vient de l'artefact
@@ -309,17 +310,22 @@ jobs:
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: image
+          # scan-type: fs
           image-ref: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
           scanners: vuln,secret
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           vuln-type: os,library
-          format: table
+          scan-ref: .
+          format: sarif
+          # format: table
+          output: trivy-results.sarif
           exit-code: "1"
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
+        if: always() && hashFiles('trivy-results.sarif') != ''
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: trivy-results.sarif
 
       # Publication à chaque push, sauf un push direct sur main ou develop
       - name: Login to Docker Hub

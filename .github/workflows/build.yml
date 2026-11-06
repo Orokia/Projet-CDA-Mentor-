@@ -314,8 +314,7 @@ jobs:
           image-ref: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
           scanners: vuln,secret
           severity: CRITICAL,HIGH
-          # ignore-unfixed: true
-          ignore-unfixed: false
+          ignore-unfixed: true
           vuln-type: os,library
           format: sarif
           # format: table

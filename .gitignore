@@ -23,6 +23,11 @@
 
 # Sauvegardes de bases de données
 *.sql
+*.png
+*.pdf
+*.drawio
+*.bkp
+*.dtmp
 
 # Fichiers temporaires et rapports
 

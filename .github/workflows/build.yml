@@ -316,6 +316,10 @@ jobs:
           vuln-type: os,library
           format: table
           exit-code: "1"
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
 
       # Publication à chaque push, sauf un push direct sur main ou develop
       - name: Login to Docker Hub

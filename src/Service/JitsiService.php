@@ -43,7 +43,7 @@ class JitsiService
      */
     public function peutRejoindre(Reservation $reservation, User $user): bool
     {
-        return $reservation->getStatut() === 'confirmée'
+        return $reservation->estConfirmee()
             && $reservation->getLienVisio()
             && ($this->estEtudiant($reservation, $user) || $this->estFormateur($reservation, $user));
     }

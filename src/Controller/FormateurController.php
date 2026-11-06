@@ -30,7 +30,8 @@ final class FormateurController extends AbstractController
     /**
      * Affiche le profil d'un formateur.
      */
-    #[Route('/formateur/{id}', name: 'app_formateur_profil', requirements: ['id' => '\d+'], methods: ['GET'])]
+    // 18 chiffres au plus : un identifiant plus long dépasserait PHP_INT_MAX (erreur 500)
+    #[Route('/formateur/{id}', name: 'app_formateur_profil', requirements: ['id' => '\d{1,18}'], methods: ['GET'])]
     public function profil(int $id): Response
     {
         $formateur = $this->formateurService->getFormateurById($id);

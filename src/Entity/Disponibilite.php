@@ -12,6 +12,13 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: DisponibiliteRepository::class)]
 class Disponibilite
 {
+    // Statuts possibles d'un jour dans joursSemaine
+    public const STATUT_DISPONIBLE = 'disponible';
+    public const STATUT_PLUS_DISPONIBLE = 'plus disponible';
+
+    // Ordre des jours, de lundi à dimanche
+    public const JOURS = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -29,6 +36,12 @@ class Disponibilite
     #[ORM\Column(type: Types::TIME_MUTABLE)]
     private ?\DateTimeInterface $heureFin = null;
 
+    /**
+     * Clé : nom du jour (« lundi »…), valeur : statut du jour
+     * (self::STATUT_DISPONIBLE ou self::STATUT_PLUS_DISPONIBLE).
+     *
+     * @var array<string, string>
+     */
     #[ORM\Column(type: Types::JSON)]
     private array $joursSemaine = [];
 
@@ -114,9 +127,30 @@ public function __construct()
         return $this;
     }
 
+    /**
+     * Jours triés de lundi à dimanche.
+     *
+     * MySQL réordonne les clés d'un objet JSON (par longueur) :
+     * l'ordre d'enregistrement n'est donc pas conservé en base.
+     * Les clés non reconnues sont placées à la fin, dans leur ordre d'origine.
+     *
+     * @return array<string, string>
+     */
     public function getJoursSemaine(): array
     {
-        return $this->joursSemaine;
+        $jours = $this->joursSemaine;
+        $rangs = array_flip(self::JOURS);
+
+        $rang = static function (int|string $jour) use ($rangs): int {
+            $cle = is_string($jour) ? mb_strtolower(trim($jour)) : null;
+
+            return null !== $cle && isset($rangs[$cle]) ? $rangs[$cle] : \count($rangs);
+        };
+
+        // uksort est stable depuis PHP 8 : les clés de même rang gardent leur ordre
+        uksort($jours, static fn (int|string $a, int|string $b): int => $rang($a) <=> $rang($b));
+
+        return $jours;
     }
 
     public function setJoursSemaine(array $joursSemaine): static
@@ -124,6 +158,29 @@ public function __construct()
         $this->joursSemaine = $joursSemaine;
 
         return $this;
+    }
+
+    /**
+     * Change le statut d'un jour déjà présent dans joursSemaine.
+     * La comparaison ignore la casse et les espaces ; la clé enregistrée est conservée.
+     *
+     * @throws \InvalidArgumentException si le jour n'est pas proposé
+     */
+    public function changerStatutJour(string $jour, string $statut): void
+    {
+        $jourNormalise = mb_strtolower(trim($jour));
+
+        foreach ($this->joursSemaine as $jourEnregistre => $statutActuel) {
+            if (is_string($jourEnregistre) && mb_strtolower(trim($jourEnregistre)) === $jourNormalise) {
+                $this->joursSemaine[$jourEnregistre] = $statut;
+
+                return;
+            }
+        }
+
+        throw new \InvalidArgumentException(
+            "Le jour choisi n'est pas disponible."
+        );
     }
 
     public function getFormateur(): ?Formateur

@@ -4,10 +4,26 @@ namespace App\Entity;
 
 use App\Repository\ReservationRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ReservationRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Reservation
 {
+    public const STATUT_EN_ATTENTE = 'en attente';
+    public const STATUT_CONFIRMEE = 'confirmée';
+    public const STATUT_ANNULEE = 'annulée';
+    public const STATUT_TERMINEE = 'terminée';
+
+    /** Libellés affichés (back-office) => statuts enregistrés */
+    public const STATUTS = [
+        'En attente' => self::STATUT_EN_ATTENTE,
+        'Confirmée' => self::STATUT_CONFIRMEE,
+        'Annulée' => self::STATUT_ANNULEE,
+        'Terminée' => self::STATUT_TERMINEE,
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -40,12 +56,62 @@ class Reservation
     #[ORM\JoinColumn(nullable: false)]
     private ?Formation $formation = null;
 
-    #[ORM\OneToOne(inversedBy: 'reservation', cascade: ['persist', 'remove'])]
+    // Un même paiement couvre toutes les séances réservées pour le jour choisi
+    #[ORM\ManyToOne(inversedBy: 'reservations')]
     private ?Paiement $paiement = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Disponibilite $disponibilite = null;
+
+    // Statut lu en base (non enregistré) : les réservations confirmées avant
+    // le paiement en ligne restent valides tant que leur statut ne change pas
+    private ?string $statutCharge = null;
+
+    #[ORM\PostLoad]
+    public function memoriserStatutCharge(): void
+    {
+        $this->statutCharge = $this->statut;
+    }
+
+    /**
+     * Seul moyen, côté application, de confirmer une réservation :
+     * le paiement doit avoir été effectué.
+     *
+     * @throws \LogicException si le paiement n'est pas effectué
+     */
+    public function confirmer(Paiement $paiement): static
+    {
+        if (!$paiement->estPaye()) {
+            throw new \LogicException('Une réservation ne peut être confirmée qu\'après le paiement.');
+        }
+
+        $paiement->addReservation($this);
+        $this->statut = self::STATUT_CONFIRMEE;
+
+        return $this;
+    }
+
+    public function estConfirmee(): bool
+    {
+        return self::STATUT_CONFIRMEE === $this->statut;
+    }
+
+    /**
+     * Back-office : passer une réservation à « confirmée » exige un paiement effectué.
+     */
+    #[Assert\Callback]
+    public function validerStatut(ExecutionContextInterface $context): void
+    {
+        $devientConfirmee = self::STATUT_CONFIRMEE === $this->statut
+            && self::STATUT_CONFIRMEE !== $this->statutCharge;
+
+        if ($devientConfirmee && true !== $this->paiement?->estPaye()) {
+            $context->buildViolation('Une réservation ne peut être confirmée que si son paiement est effectué.')
+                ->atPath('statut')
+                ->addViolation();
+        }
+    }
 
     public function getId(): ?int
     {

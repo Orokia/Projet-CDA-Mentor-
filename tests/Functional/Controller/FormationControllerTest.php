@@ -170,6 +170,69 @@ final class FormationControllerTest extends WebTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function identifiantsLimites(): iterable
+    {
+        yield 'zéro' => ['0'];
+        yield 'PHP_INT_MAX' => [(string) PHP_INT_MAX];
+        yield 'au-delà de PHP_INT_MAX' => ['99999999999999999999'];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('identifiantsLimites')]
+    public function testDetailAvecUnIdentifiantLimiteRenvoie404(string $id): void
+    {
+        $this->client->request('GET', '/formations/' . $id);
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testChoisirLeFormateurZeroAfficheUneErreur(): void
+    {
+        // « 0 » est un identifiant numérique, mais vide pour PHP
+        $formation = $this->creerFormationAvecFormateur();
+
+        $this->client->request(
+            'POST',
+            sprintf('/formations/%d/choisir-formateur', $formation->getId()),
+            ['formateur' => '0']
+        );
+
+        self::assertResponseRedirects('/formations/' . $formation->getId());
+        $this->assertFlash('error', 'Veuillez sélectionner un formateur.');
+    }
+
+    public function testChoisirUnFormateurAvecUnIdentifiantHorsLimiteRenvoie404(): void
+    {
+        $formation = $this->creerFormationAvecFormateur();
+
+        $this->client->request(
+            'POST',
+            sprintf('/formations/%d/choisir-formateur', $formation->getId()),
+            ['formateur' => '99999999999999999999']
+        );
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testChoisirPourUneFormationHorsLimiteRenvoie404(): void
+    {
+        $this->client->request('POST', '/formations/99999999999999999999/choisir-formateur', ['formateur' => '1']);
+
+        self::assertResponseStatusCodeSame(404);
+    }
+
+    public function testChoisirUnFormateurSansParametreAfficheUneErreur(): void
+    {
+        $formation = $this->creerFormationAvecFormateur();
+
+        $this->client->request('POST', sprintf('/formations/%d/choisir-formateur', $formation->getId()));
+
+        self::assertResponseRedirects('/formations/' . $formation->getId());
+        $this->assertFlash('error', 'Veuillez sélectionner un formateur.');
+    }
+
     public function testChoisirUnFormateurEnGetRenvoie405(): void
     {
         $formation = $this->creerFormationAvecFormateur();

@@ -172,6 +172,68 @@ final class JitsiServiceTest extends TestCase
         self::assertSame('true', $this->decoderJeton($jetonFormateur)->context->user->moderator);
     }
 
+    public function testEstConfigureRefuseUnIdentifiantDeCleVide(): void
+    {
+        self::assertFalse((new JitsiService(self::APP_ID, '', $this->cheminCle))->estConfigure());
+    }
+
+    public function testPeutRejoindreExigeLeStatutExact(): void
+    {
+        [$reservation, $compteEtudiant] = $this->reservationConfirmee();
+
+        // La comparaison est stricte : casse et accent comptent
+        foreach (['Confirmée', 'confirmee', 'confirmée ', 'en attente', ''] as $statut) {
+            $reservation->setStatut($statut);
+
+            self::assertFalse(
+                $this->service()->peutRejoindre($reservation, $compteEtudiant),
+                sprintf('Le statut « %s » ne doit pas ouvrir la salle.', $statut)
+            );
+        }
+    }
+
+    public function testPeutRejoindreRefuseUnLienVide(): void
+    {
+        [$reservation, $compteEtudiant] = $this->reservationConfirmee();
+
+        $reservation->setLienVisio('');
+
+        self::assertFalse($this->service()->peutRejoindre($reservation, $compteEtudiant));
+    }
+
+    public function testPeutRejoindreRefuseUneReservationSansParticipant(): void
+    {
+        // Ni étudiant ni formateur : un compte sans profil ne doit pas
+        // être confondu avec une réservation sans profil (null === null)
+        $reservation = (new Reservation())
+            ->setStatut('confirmée')
+            ->setLienVisio('https://meet.jit.si/' . self::SALLE);
+
+        self::assertFalse($this->service()->peutRejoindre($reservation, new User()));
+    }
+
+    public function testPreparerSalleTolereUneBarreObliqueFinale(): void
+    {
+        [$reservation, $compteEtudiant] = $this->reservationConfirmee();
+
+        $reservation->setLienVisio('https://meet.jit.si/' . self::SALLE . '/');
+
+        self::assertSame(
+            self::APP_ID . '/' . self::SALLE,
+            $this->service()->preparerSalle($reservation, $compteEtudiant)['salle']
+        );
+    }
+
+    public function testUneCleIllisibleDonneUnMessageLisible(): void
+    {
+        [$reservation, $compteEtudiant] = $this->reservationConfirmee();
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('La visioconférence est momentanément indisponible.');
+
+        $this->service(cheminCle: $this->cheminCle . '.absent')->preparerSalle($reservation, $compteEtudiant);
+    }
+
     public function testUneCleInvalideDonneUnMessageLisible(): void
     {
         [$reservation, $compteEtudiant] = $this->reservationConfirmee();

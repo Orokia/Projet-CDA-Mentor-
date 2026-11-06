@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme formulaire 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Mot de passe oublié - Mentor{% endblock %}
+
+{% block body %}
+
+<section class="auth-page">
+
+    <div class="auth-card">
+
+        <div class="auth-header">
+
+            <span class="auth-icon" aria-hidden="true">
+                <i class="bi bi-key"></i>
+            </span>
+
+            <h1>Mot de passe oublié</h1>
+
+            <p>
+                Saisissez l'adresse e-mail de votre compte : nous vous enverrons
+                un lien pour choisir un nouveau mot de passe.
+            </p>
+
+        </div>
+
+        {{ form_start(formulaire, {attr: {novalidate: 'novalidate'}}) }}
+
+            {{ form_row(formulaire.email) }}
+
+            <button class="btn-mentor btn-mentor-primary w-100 mt-2" type="submit">
+                Envoyer le lien
+            </button>
+
+        {{ form_end(formulaire) }}
+
+        <p class="auth-footer">
+            <a href="{{ path('app_login') }}">Retour à la connexion</a>
+        </p>
+
+    </div>
+
+</section>
+
+{% endblock %}

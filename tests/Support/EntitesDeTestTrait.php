@@ -5,6 +5,7 @@ namespace App\Tests\Support;
 use App\Entity\Disponibilite;
 use App\Entity\Formateur;
 use App\Entity\Formation;
+use App\Entity\Paiement;
 use App\Entity\Student;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -20,6 +21,22 @@ trait EntitesDeTestTrait
     private function em(): EntityManagerInterface
     {
         return static::getContainer()->get(EntityManagerInterface::class);
+    }
+
+    /**
+     * Paiement effectué (persisté) : une réservation n'est confirmée que sur un paiement payé.
+     */
+    private function paiementEffectue(): Paiement
+    {
+        $paiement = (new Paiement())
+            ->setMontant('100.00')
+            ->setMode(Paiement::MODE_STRIPE_CHECKOUT)
+            ->setStatut(Paiement::STATUT_PAYE)
+            ->setDatePaiement(new \DateTimeImmutable());
+
+        $this->em()->persist($paiement);
+
+        return $paiement;
     }
 
     private function creerFormation(string $titre = 'Symfony'): Formation
@@ -59,12 +76,12 @@ trait EntitesDeTestTrait
      * Disponibilité par défaut : du lundi 19 au lundi 26 octobre 2026,
      * soit deux lundis.
      *
-     * @param list<string> $jours
+     * @param array<string, string> $jours jour => statut
      */
     private function creerDisponibilite(
         Formateur $formateur,
         Formation $formation,
-        array $jours = ['lundi'],
+        array $jours = ['lundi' => Disponibilite::STATUT_DISPONIBLE],
         string $dateDebut = '2026-10-19',
         string $dateFin = '2026-10-26'
     ): Disponibilite {

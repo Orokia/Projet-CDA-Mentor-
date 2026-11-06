@@ -4,8 +4,11 @@
 # Nginx reste un conteneur séparé (voir docker/nginx).
 FROM php:8.4-fpm-alpine
 
+# Correctifs de sécurité Alpine publiés depuis la construction de l'image de base
+# (sinon Trivy bloque la CI sur des failles CRITICAL/HIGH déjà corrigées).
 # Bibliothèques d'exécution conservées, outils de compilation supprimés après usage
-RUN apk add --no-cache icu-libs libzip \
+RUN apk upgrade --no-cache \
+    && apk add --no-cache icu-libs libzip \
     && apk add --no-cache --virtual .build-deps icu-dev libzip-dev $PHPIZE_DEPS \
     && docker-php-ext-install pdo_mysql intl zip opcache \
     && apk del .build-deps

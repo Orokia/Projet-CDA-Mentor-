@@ -126,6 +126,91 @@ final class RegistrationControllerTest extends WebTestCase
             ['registration_form[agreeTerms]' => false],
             'Vous devez accepter les conditions générales.',
         ];
+
+        // Cas non passants complémentaires et valeurs juste hors limites
+        yield 'nom composé uniquement d\'espaces' => [
+            ['registration_form[nomUtilisateur]' => '   '],
+            'Veuillez renseigner votre nom.',
+        ];
+        yield 'prénom vide' => [
+            ['registration_form[prenomUtilisateur]' => ''],
+            'Veuillez renseigner votre prénom.',
+        ];
+        yield 'nom d\'une lettre (limite basse - 1)' => [
+            ['registration_form[nomUtilisateur]' => 'O'],
+            'Le nom doit contenir au moins 2 caractères.',
+        ];
+        yield 'nom de 256 caractères (limite haute + 1)' => [
+            ['registration_form[nomUtilisateur]' => str_repeat('a', 256)],
+            'Le nom ne peut pas dépasser 255 caractères.',
+        ];
+        yield 'prénom de 256 caractères (limite haute + 1)' => [
+            ['registration_form[prenomUtilisateur]' => str_repeat('a', 256)],
+            'Le prénom ne peut pas dépasser 255 caractères.',
+        ];
+        yield 'e-mail vide' => [
+            ['registration_form[email]' => ''],
+            'Veuillez renseigner votre adresse e-mail.',
+        ];
+        yield 'e-mail sans arobase' => [
+            ['registration_form[email]' => 'salimata.exemple.fr'],
+            'Veuillez saisir une adresse e-mail valide.',
+        ];
+        yield 'mot de passe vide' => [
+            ['registration_form[plainPassword]' => ''],
+            'Veuillez saisir un mot de passe.',
+        ];
+        yield 'mot de passe de 7 caractères (limite basse - 1)' => [
+            ['registration_form[plainPassword]' => 'Harm26!'],
+            'Le mot de passe doit contenir au moins 8 caractères.',
+        ];
+        yield 'mot de passe sans minuscule' => [
+            ['registration_form[plainPassword]' => 'HARMATTAN2026!'],
+            'Le mot de passe doit contenir au moins une lettre minuscule.',
+        ];
+    }
+
+    /**
+     * Valeurs exactement sur les limites : elles doivent être acceptées.
+     *
+     * @param array<string, string> $champsModifies
+     */
+    #[DataProvider('saisiesAuxLimitesAcceptees')]
+    public function testInscriptionAuxLimitesEstAcceptee(array $champsModifies): void
+    {
+        $this->client->request('GET', '/register');
+
+        $this->client->submitForm('Valider', $champsModifies + [
+            'registration_form[nomUtilisateur]' => 'Ouattara',
+            'registration_form[prenomUtilisateur]' => 'Salimata',
+            'registration_form[email]' => 'salimata.ouattara@exemple.fr',
+            'registration_form[plainPassword]' => 'Harmattan2026!',
+            'registration_form[agreeTerms]' => true,
+        ]);
+
+        self::assertResponseRedirects('/');
+        self::assertSame(1, static::getContainer()->get(UserRepository::class)->count([]));
+    }
+
+    public static function saisiesAuxLimitesAcceptees(): iterable
+    {
+        yield 'nom et prénom de 2 caractères (limite basse)' => [[
+            'registration_form[nomUtilisateur]' => 'Ba',
+            'registration_form[prenomUtilisateur]' => 'Al',
+        ]];
+        yield 'nom et prénom de 255 caractères (limite haute)' => [[
+            'registration_form[nomUtilisateur]' => str_repeat('a', 255),
+            'registration_form[prenomUtilisateur]' => str_repeat('b', 255),
+        ]];
+        yield 'nom accentué de 2 caractères multioctets' => [[
+            'registration_form[nomUtilisateur]' => 'Éé',
+        ]];
+        yield 'mot de passe de 8 caractères (limite basse)' => [[
+            'registration_form[plainPassword]' => 'Harma26!',
+        ]];
+        yield 'mot de passe dont le caractère spécial est une espace' => [[
+            'registration_form[plainPassword]' => 'Harmattan 2026',
+        ]];
     }
 
     public function testInscriptionAvecUnEmailDejaUtiliseEstRefusee(): void

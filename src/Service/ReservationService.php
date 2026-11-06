@@ -2,10 +2,13 @@
 
 namespace App\Service;
 
+use App\Entity\Disponibilite;
+use App\Entity\Paiement;
 use App\Entity\Reservation;
 use App\Entity\Student;
 use App\Repository\DisponibiliteRepository;
 use App\Repository\ReservationRepository;
+use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -24,16 +27,156 @@ class ReservationService
      * Crée les réservations pour chaque occurrence
      * du jour choisi dans la période de disponibilité.
      *
+     * Tout se fait dans une seule transaction : en cas d'erreur, à n'importe
+     * quelle étape, aucune réservation n'est enregistrée et le jour reste
+     * « disponible ».
+     *
+     * Une réservation n'est confirmée que si son paiement est effectué :
+     * le paiement doit déjà être au statut « payé ».
+     *
+     * @param Paiement $paiement Paiement Stripe vérifié et payé, rattaché à chaque réservation
+     *
+     * @throws \LogicException si le paiement n'est pas effectué
+     *
      * @return Reservation[] Liste des réservations créées
      */
     public function creerReservations(
         Student $student,
         int $disponibiliteId,
+        string $jourChoisi,
+        Paiement $paiement
+    ): array {
+        $connexion = $this->entityManager->getConnection();
+        $connexion->beginTransaction();
+
+        try {
+            $reservations = $this->enregistrerReservations($student, $disponibiliteId, $jourChoisi, $paiement);
+            $connexion->commit();
+        } catch (\Throwable $exception) {
+            // Annule aussi le premier flush (réservations + statut du jour)
+            if ($connexion->isTransactionActive()) {
+                $connexion->rollBack();
+            }
+
+            throw $exception;
+        }
+
+        return $reservations;
+    }
+
+    /**
+     * Vérifie, sans rien enregistrer, que l'étudiant peut réserver ce jour :
+     * appelé avant de l'envoyer payer sur Stripe.
+     *
+     * Pose un verrou d'écriture sur la disponibilité : à appeler dans une
+     * transaction ouverte par l'appelant.
+     *
+     * @throws \InvalidArgumentException|\RuntimeException message affichable à l'étudiant
+     */
+    public function verifierCreneauReservable(
+        Student $student,
+        int $disponibiliteId,
+        string $jourChoisi
+    ): Disponibilite {
+        return $this->validerCreneau($student, $disponibiliteId, $jourChoisi)['disponibilite'];
+    }
+
+    /**
+     * @return Reservation[]
+     */
+    private function enregistrerReservations(
+        Student $student,
+        int $disponibiliteId,
+        string $jourChoisi,
+        Paiement $paiement
+    ): array {
+        [
+            'disponibilite' => $disponibilite,
+            'jour' => $jourNormalise,
+            'dates' => $datesSeances,
+        ] = $this->validerCreneau($student, $disponibiliteId, $jourChoisi);
+
+        $formation = $disponibilite->getFormation();
+        $formateur = $disponibilite->getFormateur();
+
+        // Création d'une réservation pour chaque date trouvée
+        $reservations = [];
+
+        foreach ($datesSeances as $dateSeance) {
+            // Combinaison de la date et de l'heure de début
+            $dateHeureDebut = new \DateTime(
+                $dateSeance->format('Y-m-d') . ' ' .
+                $disponibilite->getHeureDebut()->format('H:i:s')
+            );
+
+            // Combinaison de la date et de l'heure de fin
+            $dateHeureFin = new \DateTime(
+                $dateSeance->format('Y-m-d') . ' ' .
+                $disponibilite->getHeureFin()->format('H:i:s')
+            );
+
+            // Création et association de la réservation
+            $reservation = new Reservation();
+            $reservation->setDateReservation(new \DateTime());
+            $reservation->setDateHeureDebut($dateHeureDebut);
+            $reservation->setDateHeureFin($dateHeureFin);
+            $reservation->confirmer($paiement);
+            $reservation->setStudent($student);
+            $reservation->setFormation($formation);
+            $reservation->setFormateur($formateur);
+            $reservation->setDisponibilite($disponibilite);
+
+            // Le lien sera ajouté après l'obtention de l'identifiant
+            $reservation->setLienVisio(null);
+
+            // Préparation de l'enregistrement en base
+            $this->entityManager->persist($reservation);
+            $reservations[] = $reservation;
+        }
+
+        // La réservation est confirmée : le jour choisi n'est plus proposé.
+        // Enregistré dans le même flush que les réservations.
+        $disponibilite->changerStatutJour(
+            $jourNormalise,
+            Disponibilite::STATUT_PLUS_DISPONIBLE
+        );
+
+        // Premier enregistrement pour obtenir les identifiants
+        $this->entityManager->flush();
+
+        // Génération du lien Jitsi pour chaque réservation.
+        // Le suffixe aléatoire empêche de deviner l'URL d'une salle.
+        foreach ($reservations as $reservation) {
+            $roomName = 'Mentor-Reservation-' . $reservation->getId()
+                . '-' . bin2hex(random_bytes(8));
+
+            $reservation->setLienVisio(
+                rtrim($this->jitsiDomain, '/') . '/' . $roomName
+            );
+        }
+
+        // Deuxième enregistrement pour sauvegarder les liens
+        $this->entityManager->flush();
+
+        return $reservations;
+    }
+
+    /**
+     * Contrôles communs à la vérification avant paiement et à la création.
+     *
+     * @return array{disponibilite: Disponibilite, jour: string, dates: list<\DateTime>}
+     */
+    private function validerCreneau(
+        Student $student,
+        int $disponibiliteId,
         string $jourChoisi
     ): array {
-        // Recherche de la disponibilité demandée
+        // Verrou d'écriture (SELECT … FOR UPDATE) jusqu'à la fin de la transaction.
+        // Deux étudiants qui réservent le même jour en même temps sont traités
+        // l'un après l'autre : le second lit le statut enregistré par le premier
+        // et reçoit « Ce jour n'est plus disponible. ».
         $disponibilite = $this->disponibiliteRepository
-            ->find($disponibiliteId);
+            ->find($disponibiliteId, LockMode::PESSIMISTIC_WRITE);
 
         if (!$disponibilite) {
             throw new \RuntimeException(
@@ -54,13 +197,20 @@ class ReservationService
         // Normalisation du jour pour éviter les différences de casse
         $jourNormalise = mb_strtolower(trim($jourChoisi));
 
-        $joursDisponibles = array_map(
-            fn ($jour) => mb_strtolower(trim($jour)),
-            $disponibilite->getJoursSemaine()
-        );
+        // joursSemaine : clé = nom du jour, valeur = statut du jour.
+        // Les entrées mal formées (ancien format en liste) sont ignorées.
+        $statutsParJour = [];
 
-        // Vérification que le jour demandé est autorisé
-        if (!in_array($jourNormalise, $joursDisponibles, true)) {
+        foreach ($disponibilite->getJoursSemaine() as $jour => $statut) {
+            if (!is_string($jour) || !is_string($statut)) {
+                continue;
+            }
+
+            $statutsParJour[mb_strtolower(trim($jour))] = mb_strtolower(trim($statut));
+        }
+
+        // Vérification que le jour demandé est proposé
+        if (!isset($statutsParJour[$jourNormalise])) {
             throw new \InvalidArgumentException(
                 "Le jour choisi n'est pas disponible."
             );
@@ -128,59 +278,20 @@ class ReservationService
             );
         }
 
-        // Création d'une réservation pour chaque date trouvée
-        $reservations = [];
-
-        foreach ($datesSeances as $dateSeance) {
-            // Combinaison de la date et de l'heure de début
-            $dateHeureDebut = new \DateTime(
-                $dateSeance->format('Y-m-d') . ' ' .
-                $disponibilite->getHeureDebut()->format('H:i:s')
-            );
-
-            // Combinaison de la date et de l'heure de fin
-            $dateHeureFin = new \DateTime(
-                $dateSeance->format('Y-m-d') . ' ' .
-                $disponibilite->getHeureFin()->format('H:i:s')
-            );
-
-            // Création et association de la réservation
-            $reservation = new Reservation();
-            $reservation->setDateReservation(new \DateTime());
-            $reservation->setDateHeureDebut($dateHeureDebut);
-            $reservation->setDateHeureFin($dateHeureFin);
-            $reservation->setStatut('confirmée');
-            $reservation->setStudent($student);
-            $reservation->setFormation($formation);
-            $reservation->setFormateur($formateur);
-            $reservation->setDisponibilite($disponibilite);
-
-            // Le lien sera ajouté après l'obtention de l'identifiant
-            $reservation->setLienVisio(null);
-
-            // Préparation de l'enregistrement en base
-            $this->entityManager->persist($reservation);
-            $reservations[] = $reservation;
-        }
-
-        // Premier enregistrement pour obtenir les identifiants
-        $this->entityManager->flush();
-
-        // Génération du lien Jitsi pour chaque réservation.
-        // Le suffixe aléatoire empêche de deviner l'URL d'une salle.
-        foreach ($reservations as $reservation) {
-            $roomName = 'Mentor-Reservation-' . $reservation->getId()
-                . '-' . bin2hex(random_bytes(8));
-
-            $reservation->setLienVisio(
-                rtrim($this->jitsiDomain, '/') . '/' . $roomName
+        // Seuls les jours au statut « disponible » peuvent être réservés.
+        // Vérifié après le doublon : l'étudiant qui a déjà réservé ce jour
+        // reçoit le message qui le concerne.
+        if ($statutsParJour[$jourNormalise] !== Disponibilite::STATUT_DISPONIBLE) {
+            throw new \InvalidArgumentException(
+                "Ce jour n'est plus disponible."
             );
         }
 
-        // Deuxième enregistrement pour sauvegarder les liens
-        $this->entityManager->flush();
-
-        return $reservations;
+        return [
+            'disponibilite' => $disponibilite,
+            'jour' => $jourNormalise,
+            'dates' => $datesSeances,
+        ];
     }
 
     /**

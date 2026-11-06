@@ -302,16 +302,20 @@ jobs:
           cache-to: type=gha,mode=max
 
       # Bloque sur toute faille CRITICAL ou HIGH pour laquelle un correctif existe
-      # - name: Trivy image scan
-      #   uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
-      #   with:
-      #     scan-type: image
-      #     image-ref: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
-      #     severity: CRITICAL,HIGH
-      #     ignore-unfixed: true
-      #     vuln-type: os,library
-      #     format: table
-      #     exit-code: "1"
+      # (paquets Alpine, dépendances Composer) et sur tout secret laissé dans l'image.
+      # Exécuté avant le login et le push : une image refusée n'est jamais publiée.
+      # SHA vérifié : commit signé de la version immuable v0.36.0 (Trivy 0.70.0).
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: image
+          image-ref: ${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          scanners: vuln,secret
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          vuln-type: os,library
+          format: table
+          exit-code: "1"
 
       # Publication à chaque push, sauf un push direct sur main ou develop
       - name: Login to Docker Hub

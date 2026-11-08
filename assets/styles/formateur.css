@@ -56,37 +56,244 @@
 
 
 /* =========================================================
+   EN-TÊTE DE LA PAGE FORMATEURS
+   ========================================================= */
+
+.formateurs-hero {
+    padding: 56px 0 48px;
+    background: #FAF8F5; /* blanc cassé */
+    text-align: center;
+}
+
+.formateurs-hero-label {
+    display: inline-block;
+    margin-bottom: 12px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    background: #E4DEFD;
+    color: var(--mentor-primary-hover);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.formateurs-hero h1 {
+    max-width: 720px;
+    margin: 0 auto;
+    font-family: "Inter", Arial, sans-serif;
+    font-size: clamp(30px, 4vw, 46px);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    color: var(--mentor-text);
+}
+
+.formateurs-hero h1 span {
+    color: var(--mentor-primary);
+}
+
+.formateurs-hero p {
+    max-width: 600px;
+    margin: 14px auto 0;
+    color: var(--mentor-text-muted);
+    font-size: 17px;
+    line-height: 1.6;
+}
+
+.formateurs-hero-search {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 600px;
+    height: 56px;
+    margin: 28px auto 0;
+    padding: 0 12px 0 20px;
+
+    border: 1px solid #C7D2FE;
+    border-radius: 999px;
+    background: #FFFFFF;
+    box-shadow: 0 10px 30px rgba(49, 46, 129, 0.10);
+    transition: border-color var(--mentor-transition), box-shadow var(--mentor-transition);
+}
+
+.formateurs-hero-search:focus-within {
+    border-color: var(--mentor-primary);
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+}
+
+.formateurs-hero-search > i {
+    color: var(--mentor-text-muted);
+    font-size: 18px;
+}
+
+.formateurs-hero-search input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: var(--mentor-text);
+    font-size: 16px;
+}
+
+.formateurs-hero-search input:focus-visible {
+    outline: none;
+}
+
+/* Deux colonnes : texte + recherche à gauche, photo à droite */
+.formateurs-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: 48px;
+    text-align: left;
+}
+
+.formateurs-hero-grid h1,
+.formateurs-hero-grid p,
+.formateurs-hero-grid .formateurs-hero-search {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.formateurs-hero-photo {
+    position: relative;
+}
+
+/* Le bloc décoratif déborde : on évite le défilement horizontal */
+.formateurs-hero {
+    overflow: hidden;
+}
+
+/* Bloc indigo décalé derrière la photo, comme sur l'accueil */
+.formateurs-hero-photo::before {
+    content: "";
+    position: absolute;
+    top: -16px;
+    right: -16px;
+    width: 70%;
+    height: 80%;
+    border-radius: var(--mentor-radius-lg);
+    background: #DDD6FE;
+}
+
+.formateurs-hero-photo img {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border: 6px solid #FFFFFF;
+    border-radius: var(--mentor-radius-lg);
+    box-shadow: var(--mentor-shadow-lg);
+}
+
+@media (max-width: 900px) {
+
+    .formateurs-hero-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .formateurs-hero-photo {
+        max-width: 520px;
+    }
+
+    .formateurs-hero-photo::before {
+        top: -10px;
+        right: -10px;
+    }
+
+}
+
+/* ---------- LISTE ---------- */
+
+.formateurs-list {
+    padding: 40px 0 80px;
+}
+
+.formateurs-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.formateurs-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Filtre actif en indigo plutôt qu'en noir */
+.formateurs-filters .catalog-chip[aria-pressed="true"] {
+    border-color: var(--mentor-primary);
+    background: var(--mentor-primary);
+    color: #FFFFFF;
+}
+
+.formateurs-count {
+    margin: 0;
+    color: var(--mentor-text-muted);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
    CARTE FORMATEUR
    ========================================================= */
 
+
+/* Carte horizontale : photo + identité en haut, pastilles, bouton */
 .formateur-card {
+    position: relative; /* conteneur du stretched-link */
     display: flex;
     flex-direction: column;
-    align-items: center;
 
     height: 100%;
-    padding: 24px 20px;
+    padding: 22px 22px 20px;
 
-    border: 1px solid var(--mentor-border);
+    border: 1px solid #ECEBF5;
     border-radius: var(--mentor-radius);
     background: var(--mentor-surface);
+    box-shadow: 0 6px 20px rgba(49, 46, 129, 0.06);
 
-    text-align: center;
-
-    transition: box-shadow var(--mentor-transition);
+    transition: box-shadow var(--mentor-transition), transform var(--mentor-transition), border-color var(--mentor-transition);
 }
 
 .formateur-card:hover {
-    box-shadow: var(--mentor-shadow);
+    border-color: #C7D2FE;
+    box-shadow: 0 16px 36px rgba(49, 46, 129, 0.12);
+    transform: translateY(-3px);
 }
 
+/* Le lien couvre la carte : on montre le focus sur la carte entière */
+.formateur-card:focus-within {
+    outline: 3px solid rgba(79, 70, 229, 0.45);
+    outline-offset: 2px;
+}
+
+.formateur-card-name a:focus-visible {
+    outline: none;
+}
+
+.formateur-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+/* Photo carrée aux coins arrondis */
 .formateur-card-photo {
-    width: 88px;
-    height: 88px;
-    margin-bottom: 14px;
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
     overflow: hidden;
 
-    border-radius: 50%;
+    border-radius: 14px;
     background: var(--mentor-primary-soft);
 }
 
@@ -105,40 +312,147 @@
     height: 100%;
 
     color: var(--mentor-primary);
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 700;
+}
+
+.formateur-card-identity {
+    flex: 1;
+    min-width: 0;
+    padding-top: 6px;
 }
 
 .formateur-card-name {
-    margin: 0 0 4px;
-
-    color: var(--mentor-text);
+    margin: 0;
+    font-family: "Inter", Arial, sans-serif;
     font-size: 17px;
     font-weight: 700;
+    line-height: 1.3;
+}
+
+.formateur-card-name a {
+    color: var(--mentor-text);
 }
 
 .formateur-card-subtitle {
-    margin: 0 0 6px;
-
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 14px;
+    margin: 4px 0 0;
     color: var(--mentor-text-muted);
     font-size: 14px;
 }
 
-.formateur-card-location {
-    margin: 0;
+.formateur-card-subtitle i {
+    margin-right: 3px;
+    color: var(--mentor-primary);
+}
 
+.formateur-card-highlight {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 8px 0 0;
     color: var(--mentor-text-muted);
+    font-size: 14px;
+}
+
+.formateur-card-highlight i {
+    margin-right: 2px;
+    color: #F59E0B;
+}
+
+.formateur-card-highlight strong {
+    color: var(--mentor-text);
+    font-weight: 700;
+}
+
+/* Pastilles lavande */
+.formateur-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.formateur-card-tags li {
+    max-width: 100%;
+    padding: 4px 12px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #EEF0FF;
+    color: #312E81;
     font-size: 13px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
+.formateur-card-tags .formateur-card-tags-more {
+    background: #F3F4F6;
+    color: var(--mentor-text-muted);
+}
+
+/* Bouton contour indigo, aligné à gauche, en bas de la carte */
 .formateur-card-button {
-    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 8px;
+
+    min-height: 40px;
     margin-top: auto;
+    padding: 0 18px;
+
+    border: 1.5px solid var(--mentor-primary);
+    border-radius: var(--mentor-radius-sm);
+    color: var(--mentor-primary-hover);
+
+    font-size: 15px;
+    font-weight: 600;
+
+    transition: background-color var(--mentor-transition), color var(--mentor-transition);
 }
 
-/* Espace entre le texte et le bouton (poussé en bas de la carte) */
-.formateur-card > p:last-of-type {
-    margin-bottom: 18px;
+/* Espace minimal au-dessus du bouton */
+.formateur-card > :nth-last-child(2) {
+    margin-bottom: 20px;
+}
+
+.formateur-card:hover .formateur-card-button {
+    background: var(--mentor-primary);
+    color: #FFFFFF;
+}
+
+.formateur-card-button i {
+    transition: transform var(--mentor-transition);
+}
+
+.formateur-card:hover .formateur-card-button i {
+    transform: translateX(3px);
+}
+
+@media (max-width: 576px) {
+
+    .formateurs-hero {
+        padding: 40px 0 36px;
+    }
+
+    .formateurs-hero p {
+        font-size: 16px;
+    }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .formateur-card,
+    .formateur-card:hover {
+        transform: none;
+    }
+
 }
 
 /* =========================================================

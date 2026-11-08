@@ -1,0 +1,469 @@
+/* =====================================================================
+   PROFIL FORMATEUR & LECTEUR VIDÉO (templates/formateur/profil.html.twig,
+   templates/components/video_player.html.twig)
+   ===================================================================== */
+
+/* Théâtre sombre */
+.trainer-stage {
+    padding-block: var(--space-8) var(--space-12);
+    background: var(--gradient-ink);
+    color: #fff;
+}
+
+.trainer-stage__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    gap: var(--space-8);
+    margin-top: var(--space-6);
+    align-items: start;
+}
+
+.trainer-stage__caption { margin-top: var(--space-6); }
+
+.trainer-stage__caption .m-eyebrow { color: var(--iris-300); }
+
+.trainer-stage__caption h1 { margin-top: var(--space-2); font-size: clamp(1.8rem, 3.4vw, 2.6rem); }
+
+.trainer-stage__caption p { margin-top: var(--space-2); font-size: var(--text-lg); color: var(--color-text-inverse-muted); }
+
+
+/* ---------------------------------------------------------------------
+   Lecteur vidéo
+   --------------------------------------------------------------------- */
+
+.m-player {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    background: #000;
+    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, .6), 0 0 0 1px rgba(255, 255, 255, .08);
+    isolation: isolate;
+}
+
+.m-player:focus-visible { outline: 3px solid var(--iris-400); outline-offset: 3px; }
+
+.m-player.is-fullscreen { border-radius: 0; }
+
+.m-player__video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+}
+
+/* Les contrôles Mentor n'apparaissent qu'une fois le JS chargé */
+.m-player__cover,
+.m-player__controls { display: none; }
+
+.m-player.is-enhanced .m-player__cover,
+.m-player.is-enhanced .m-player__controls { display: flex; }
+
+/* Écran d'accueil */
+.m-player__cover {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-6);
+    padding: var(--space-6);
+    background:
+        radial-gradient(circle at 50% 45%, rgba(91, 59, 236, .35), transparent 60%),
+        linear-gradient(180deg, rgba(20, 19, 42, .25), rgba(20, 19, 42, .85));
+    text-align: center;
+    transition: opacity var(--duration-slow) var(--ease-out), visibility var(--duration-slow);
+}
+
+.m-player.has-started .m-player__cover { opacity: 0; visibility: hidden; }
+
+.m-player__cover-text { display: grid; justify-items: center; gap: var(--space-2); }
+
+.m-player__cover-text strong { font-family: var(--font-display); font-size: clamp(1.1rem, 2.4vw, 1.6rem); }
+
+.m-player__cover-text > span:last-child:not(.m-badge) { color: var(--color-text-inverse-muted); }
+
+.m-player__big-play {
+    display: grid;
+    place-items: center;
+    width: 84px;
+    height: 84px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    color: var(--iris-700);
+    font-size: 2.6rem;
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, .15), var(--shadow-lg);
+    cursor: pointer;
+    transition: transform var(--duration) var(--ease-out), box-shadow var(--duration);
+}
+
+.m-player__big-play .bi { margin-left: 5px; }
+
+.m-player__big-play:hover { transform: scale(1.06); box-shadow: 0 0 0 16px rgba(255, 255, 255, .18), var(--shadow-lg); }
+
+.m-player__big-play:focus-visible { outline: 3px solid var(--iris-300); outline-offset: 4px; }
+
+/* Barre de contrôle */
+.m-player__controls {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 3;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-8) var(--space-4) var(--space-3);
+    background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .78));
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity var(--duration) var(--ease-out), transform var(--duration) var(--ease-out);
+}
+
+.m-player.has-started:hover .m-player__controls,
+.m-player.has-started:focus-within .m-player__controls,
+.m-player.has-started:not(.is-playing) .m-player__controls {
+    opacity: 1;
+    transform: none;
+}
+
+.m-player__bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.m-player__btn {
+    display: grid;
+    place-items: center;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 var(--space-2);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: #fff;
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+.m-player__btn:hover { background: rgba(255, 255, 255, .14); }
+
+.m-player__btn:focus-visible { outline: 2px solid var(--iris-300); outline-offset: 0; }
+
+.m-player__speed { font-size: var(--text-sm); font-weight: var(--weight-bold); margin-left: auto; }
+
+.m-player__time {
+    display: inline-flex;
+    gap: var(--space-1);
+    margin-left: var(--space-2);
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    color: rgba(255, 255, 255, .85);
+}
+
+/* Bascule des icônes selon l'état */
+.m-player__icon-pause,
+.m-player__icon-muted,
+.m-player__icon-shrink { display: none; }
+
+.m-player.is-playing .m-player__icon-play { display: none; }
+.m-player.is-playing .m-player__icon-pause { display: inline; }
+.m-player.is-muted .m-player__icon-sound { display: none; }
+.m-player.is-muted .m-player__icon-muted { display: inline; }
+.m-player.is-fullscreen .m-player__icon-expand { display: none; }
+.m-player.is-fullscreen .m-player__icon-shrink { display: inline; }
+
+/* Curseurs */
+.m-player input[type="range"] {
+    --progress: 0%;
+    height: 4px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(90deg, var(--iris-400) var(--progress), rgba(255, 255, 255, .3) var(--progress));
+    appearance: none;
+    cursor: pointer;
+}
+
+.m-player input[type="range"]::-webkit-slider-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    appearance: none;
+}
+
+.m-player input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.m-player__progress { width: 100%; transition: height var(--duration-fast); }
+
+.m-player__progress:hover { height: 6px; }
+
+.m-player__volume { display: flex; align-items: center; }
+
+.m-player__volume input {
+    width: 0;
+    opacity: 0;
+    background: rgba(255, 255, 255, .5) !important;
+    transition: width var(--duration) var(--ease-out), opacity var(--duration);
+}
+
+.m-player__volume:hover input,
+.m-player__volume:focus-within input { width: 80px; opacity: 1; margin-right: var(--space-2); }
+
+/* Erreur / absence de vidéo */
+.m-player__error {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    background: var(--gradient-ink);
+    color: var(--color-text-inverse-muted);
+    text-align: center;
+}
+
+.m-player__error .bi { font-size: 2.4rem; color: var(--iris-300); }
+
+.m-player.is-error .m-player__error,
+.m-player--empty .m-player__error { display: flex; }
+
+.m-player--empty { background: var(--gradient-ink); }
+
+
+/* ---------------------------------------------------------------------
+   Panneau formateur
+   --------------------------------------------------------------------- */
+
+.trainer-panel {
+    padding: var(--space-6);
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: var(--radius-xl);
+    background: rgba(255, 255, 255, .04);
+}
+
+.trainer-panel__head { display: flex; align-items: center; gap: var(--space-4); }
+
+.trainer-panel__head strong { display: block; font-family: var(--font-display); font-size: var(--text-xl); }
+
+.trainer-panel__head span:not(.m-avatar) { font-size: var(--text-sm); color: var(--iris-300); font-weight: var(--weight-semibold); }
+
+.trainer-panel__facts {
+    display: grid;
+    gap: var(--space-3);
+    margin: var(--space-6) 0 0;
+    padding-top: var(--space-5);
+    border-top: 1px solid rgba(255, 255, 255, .1);
+}
+
+.trainer-panel__facts div { display: flex; justify-content: space-between; gap: var(--space-4); }
+
+.trainer-panel__facts dt { display: flex; gap: var(--space-2); font-weight: var(--weight-regular); color: var(--color-text-inverse-muted); }
+
+.trainer-panel__facts dd { margin: 0; font-weight: var(--weight-semibold); text-align: right; }
+
+.trainer-panel__tags { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-5); }
+
+.trainer-panel__actions { display: grid; gap: var(--space-2); margin-top: var(--space-6); }
+
+.trainer-panel__ghost {
+    --btn-color: #fff;
+    --btn-border: rgba(255, 255, 255, .25);
+    --btn-bg-hover: rgba(255, 255, 255, .08);
+    --btn-border-hover: #fff;
+}
+
+/* Playlist des formations */
+.trainer-playlist {
+    margin-top: var(--space-6);
+    padding-top: var(--space-5);
+    border-top: 1px solid rgba(255, 255, 255, .1);
+}
+
+.trainer-playlist__title {
+    margin-bottom: var(--space-3);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--color-text-inverse-muted);
+}
+
+.trainer-playlist ul { display: grid; gap: var(--space-1); max-height: 260px; overflow-y: auto; margin: 0; padding: 0; list-style: none; }
+
+.trainer-playlist__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    color: #fff;
+}
+
+.trainer-playlist__item:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+
+.trainer-playlist__item strong { display: block; font-size: var(--text-sm); line-height: 1.35; }
+
+.trainer-playlist__item small { font-size: var(--text-xs); color: var(--color-text-inverse-muted); }
+
+.trainer-playlist__thumb {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 72px;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    background: var(--gradient-brand);
+}
+
+.trainer-playlist__thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+
+/* ---------------------------------------------------------------------
+   Disponibilités (contrôleur Stimulus reservation)
+   --------------------------------------------------------------------- */
+
+.disponibilites-list { display: grid; gap: var(--space-4); }
+
+.disponibilite-block {
+    padding: var(--space-6);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: #fff;
+}
+
+.disponibilite-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-4);
+    margin-bottom: var(--space-5);
+}
+
+.disponibilite-formation { font-size: var(--text-lg); }
+
+.disponibilite-infos { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+.disponibilite-infos span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    background: var(--color-bg-subtle);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+}
+
+.disponibilite-jours {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--space-3);
+}
+
+.disponibilite-jour {
+    position: relative;
+    display: grid;
+    gap: 2px;
+    padding: var(--space-4);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: #fff;
+    color: var(--color-text);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--duration), background-color var(--duration), box-shadow var(--duration);
+}
+
+.disponibilite-jour:hover { border-color: var(--iris-300); }
+
+.disponibilite-jour:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+.disponibilite-jour-name { font-weight: var(--weight-bold); }
+
+.disponibilite-jour-horaire { font-size: var(--text-sm); color: var(--color-text-muted); }
+
+.disponibilite-jour-action {
+    position: absolute;
+    top: var(--space-3);
+    right: var(--space-3);
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid var(--color-border-strong);
+    border-radius: 50%;
+    color: transparent;
+    font-size: .8rem;
+}
+
+.disponibilite-jour.selected {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    box-shadow: 0 0 0 3px rgba(113, 82, 251, .14);
+}
+
+.disponibilite-jour.selected .disponibilite-jour-action {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.reservation-summary {
+    position: sticky;
+    bottom: var(--space-4);
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+}
+
+.reservation-summary:has(.disponibilite-selection:not([hidden])) {
+    padding: var(--space-4) var(--space-5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: var(--shadow-lg);
+}
+
+.disponibilite-selection { display: flex; align-items: center; gap: var(--space-3); }
+
+.disponibilite-selection[hidden],
+.reservation-action[hidden] { display: none; }
+
+.disponibilite-selection strong { display: block; }
+
+.disponibilite-selection span:not(.m-icon-box) { color: var(--color-text-secondary); }
+
+
+/* Responsive */
+@media (max-width: 991.98px) {
+    .trainer-stage__grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 575.98px) {
+    .trainer-stage { padding-top: var(--space-6); }
+    .trainer-stage__grid { margin-inline: calc(var(--gutter) * -1); }
+    .m-player { border-radius: 0; }
+    .trainer-stage__caption, .trainer-panel { margin-inline: var(--gutter); }
+    .m-player__time, .m-player__volume input { display: none; }
+    .m-player__big-play { width: 64px; height: 64px; font-size: 2rem; }
+    .m-player__cover-text strong { font-size: var(--text-md); }
+    .reservation-summary .m-btn { width: 100%; }
+}

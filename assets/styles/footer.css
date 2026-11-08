@@ -7,28 +7,11 @@
 
     overflow: hidden;
 
-    background-color: var(--mentor-dark);
+    background-color: #000000;
 
     color: #FFFFFF;
 }
 
-/* Léger halo indigo en haut du footer */
-.mentor-footer::before {
-    content: "";
-
-    position: absolute;
-    top: -160px;
-    left: 50%;
-
-    width: 640px;
-    height: 320px;
-
-    transform: translateX(-50%);
-
-    background: radial-gradient(closest-side, rgba(79, 70, 229, 0.28), transparent);
-
-    pointer-events: none;
-}
 
 .mentor-footer .container-mentor {
     position: relative;
@@ -119,7 +102,7 @@
 
     padding-top: 20px;
 
-    border-top: 1px solid #374151;
+    border-top: 1px solid #262626;
 
     text-align: center;
 }

@@ -19,7 +19,9 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
         'opcache.memory_consumption=256' \
         'opcache.max_accelerated_files=20000' \
         'opcache.validate_timestamps=0' \
-        > "$PHP_INI_DIR/conf.d/zz-opcache.ini"
+        > "$PHP_INI_DIR/conf.d/zz-opcache.ini" \
+    && printf '%s\n' 'upload_max_filesize=100M' 'post_max_size=110M' \
+        > "$PHP_INI_DIR/conf.d/zz-uploads.ini"
 
 # DATABASE_URL, APP_SECRET, MAILER_DSN, etc. sont fournis au lancement du conteneur
 ENV APP_ENV=prod \

@@ -1,0 +1,133 @@
+/* =====================================================================
+   CONNEXION & INSCRIPTION (templates/security/login.html.twig,
+   templates/registration/register.html.twig)
+   ===================================================================== */
+
+.auth {
+    padding-block: var(--space-10);
+    background:
+        radial-gradient(700px 360px at 100% 100%, var(--iris-50), transparent 70%),
+        var(--color-bg);
+}
+
+.auth__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-12);
+    min-height: calc(100vh - var(--header-h) - 2 * var(--space-10));
+}
+
+/* Panneau de marque */
+.auth__aside {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius-2xl);
+    background: var(--gradient-ink);
+    color: #fff;
+}
+
+.auth__aside::before,
+.auth__aside::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.auth__aside::before {
+    top: -120px;
+    right: -120px;
+    width: 380px;
+    height: 380px;
+    background: radial-gradient(circle, rgba(144, 121, 255, .5), transparent 70%);
+}
+
+.auth__aside::after {
+    bottom: -160px;
+    left: -100px;
+    width: 360px;
+    height: 360px;
+    background: radial-gradient(circle, rgba(163, 71, 230, .35), transparent 70%);
+}
+
+.auth__aside-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: var(--space-10);
+    height: 100%;
+    padding: var(--space-12);
+}
+
+.auth__aside .m-logo { color: #fff; }
+
+.auth__aside-title {
+    max-width: 16ch;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: var(--weight-extrabold);
+    letter-spacing: var(--tracking-tight);
+    line-height: var(--leading-tight);
+}
+
+.auth__aside-list {
+    display: grid;
+    gap: var(--space-4);
+    margin: var(--space-8) 0 0;
+    padding: 0;
+    list-style: none;
+    color: var(--color-text-inverse-muted);
+}
+
+.auth__aside-list li { display: flex; align-items: center; gap: var(--space-4); }
+
+.auth__aside-foot { font-size: var(--text-sm); color: var(--color-text-inverse-muted); }
+
+/* Formulaire */
+.auth__panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: var(--space-6);
+}
+
+.auth__card { width: 100%; max-width: 460px; }
+
+.auth__header h1 { font-size: clamp(1.75rem, 3vw, var(--text-4xl)); }
+
+.auth__header p { margin-top: var(--space-2); color: var(--color-text-secondary); font-size: var(--text-md); }
+
+.auth__form {
+    display: grid;
+    gap: var(--space-5);
+    margin-top: var(--space-8);
+}
+
+.auth__form .row { --bs-gutter-y: var(--space-5); }
+
+.auth__form .alert { margin: 0; }
+
+.auth__form .m-input-group .form-control[type="password"],
+.auth__form .m-input-group .form-control[data-password-visibility-target] { padding-right: var(--space-12); }
+
+.auth__form .form-check { margin: 0; }
+
+.auth__form .form-check-label { color: var(--color-text-secondary); }
+
+.auth__switch {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    text-align: center;
+}
+
+.auth__switch a { font-weight: var(--weight-bold); }
+
+@media (max-width: 991.98px) {
+    .auth__grid { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+    .auth__aside { display: none; }
+    .auth__panel { padding-block: var(--space-4) var(--space-10); }
+}

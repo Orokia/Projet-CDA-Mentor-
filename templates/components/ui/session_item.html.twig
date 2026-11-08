@@ -1,0 +1,40 @@
+{#
+    Ligne de séance (tableaux de bord).
+
+    Paramètres :
+      reservation  (Reservation)
+      pour         (string) 'student' : affiche le formateur
+                            'formateur' : affiche l'étudiant
+#}
+{% import 'components/ui/_dates.html.twig' as dates %}
+{% set debut = reservation.dateHeureDebut %}
+{% set pour = pour ?? 'student' %}
+
+<li class="m-session">
+    <time class="m-session__date" datetime="{{ debut|date('Y-m-d\\TH:i') }}">
+        <strong>{{ debut|date('d') }}</strong>
+        <small>{{ dates.mois_court(debut) }}</small>
+    </time>
+
+    <div class="m-session__body">
+        <p class="m-session__title">{{ reservation.formation ? reservation.formation.titre : 'Séance' }}</p>
+        <p class="m-session__meta">
+            <span><i class="bi bi-clock" aria-hidden="true"></i> {{ dates.jour_semaine(debut)|capitalize }}, {{ debut|date('H:i') }}{% if reservation.dateHeureFin %} - {{ reservation.dateHeureFin|date('H:i') }}{% endif %}</span>
+            {% if pour == 'formateur' and reservation.student %}
+                <span><i class="bi bi-person" aria-hidden="true"></i> {{ reservation.student.prenom }} {{ reservation.student.nom }}</span>
+            {% elseif reservation.formateur %}
+                <span><i class="bi bi-person-video3" aria-hidden="true"></i> {{ reservation.formateur.prenom }} {{ reservation.formateur.nom }}</span>
+            {% endif %}
+        </p>
+    </div>
+
+    {% if reservation.lienVisio and reservation.statut == 'confirmée' %}
+        <a href="{{ reservation.lienVisio }}" class="m-btn m-btn--secondary m-btn--sm" target="_blank" rel="noopener noreferrer">
+            <i class="bi bi-camera-video" aria-hidden="true"></i>
+            Rejoindre
+            <span class="visually-hidden">la séance du {{ debut|date('d/m/Y') }} (nouvel onglet)</span>
+        </a>
+    {% else %}
+        <span class="reservation-status">{{ reservation.statut|capitalize }}</span>
+    {% endif %}
+</li>

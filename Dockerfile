@@ -14,10 +14,15 @@ RUN apk add --no-cache \
 
 RUN docker-php-ext-install \
     pdo_mysql \
+    bcmath \
     intl \
     zip \
     xsl \
     opcache
+
+# Upload de la vidéo de présentation des formateurs (aligné avec client_max_body_size de nginx)
+RUN printf '%s\n' 'upload_max_filesize=100M' 'post_max_size=110M' \
+    > "$PHP_INI_DIR/conf.d/zz-uploads.ini"
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

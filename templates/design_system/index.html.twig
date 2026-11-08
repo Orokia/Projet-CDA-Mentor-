@@ -1,0 +1,265 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Design system - Mentor{% endblock %}
+
+{% block body %}
+
+{% set palettes = {
+    'Iris (marque)': ['iris-50', 'iris-100', 'iris-200', 'iris-300', 'iris-400', 'iris-500', 'iris-600', 'iris-700', 'iris-800', 'iris-900'],
+    'Encre (neutres)': ['ink-0', 'ink-50', 'ink-100', 'ink-200', 'ink-300', 'ink-400', 'ink-500', 'ink-600', 'ink-700', 'ink-900']
+} %}
+
+{% set semantiques = [
+    {token: 'color-primary', label: 'Primaire'},
+    {token: 'color-surface-inverse', label: 'Bandeau sombre'},
+    {token: 'color-success', label: 'Succès'},
+    {token: 'color-warning', label: 'Alerte'},
+    {token: 'color-danger', label: 'Erreur'},
+    {token: 'color-info', label: 'Info'}
+] %}
+
+{% set typo = [
+    {token: 'text-5xl', label: 'Titre de page', sample: 'Apprenez sans limites', display: true},
+    {token: 'text-3xl', label: 'Titre de section', sample: 'Développez vos compétences', display: true},
+    {token: 'text-xl', label: 'Titre de carte', sample: 'Symfony pour les débutants', display: true},
+    {token: 'text-lg', label: 'Chapô', sample: 'Réservez vos séances avec un professionnel.', display: false},
+    {token: 'text-base', label: 'Texte courant', sample: 'Chaque séance a sa salle de visioconférence.', display: false},
+    {token: 'text-sm', label: 'Méta', sample: '20 h · En visio · 3 formateurs', display: false}
+] %}
+
+{% set espaces = ['1', '2', '3', '4', '6', '8', '12', '16'] %}
+
+{% set icones = ['search', 'mortarboard', 'person-video3', 'calendar-check', 'camera-video', 'clock', 'grid', 'people', 'journal-bookmark', 'check2-circle', 'wallet2', 'sliders', 'play-fill', 'broadcast', 'geo-alt', 'translate'] %}
+
+{# Données d'exemple (tableaux) pour afficher les vrais composants #}
+{% set formationDemo = {
+    id: 1, titre: 'Développement web moderne avec Symfony', image: null,
+    specialite: 'Développement', formateurs: ['Aminata Diallo', 'Karim Benali'], duree: 20, prix: '249.00'
+} %}
+{% set formateurDemo = {
+    id: 1, prenom: 'Aminata', nom: 'Diallo', image: null, specialites: ['Développement', 'Data'],
+    experience: '8 ans', localisation: 'Lyon', videoPresentation: 'demo.mp4'
+} %}
+
+<section class="catalog-hero">
+    <div class="container-mentor">
+        <span class="m-eyebrow">Skin Mentor · v1</span>
+        <h1 class="catalog-hero__title">Design system</h1>
+        <p class="m-lead catalog-hero__lead">
+            Tokens et composants du skin. Chaque valeur vient de
+            <code>assets/styles/design-system/tokens.css</code> ; chaque composant
+            est un partiel Twig de <code>templates/components/</code>.
+        </p>
+        <nav class="ds-toc" aria-label="Sommaire">
+            {% for ancre, nom in {couleurs: 'Couleurs', typographie: 'Typographie', espacements: 'Espacements', formes: 'Formes', boutons: 'Boutons', badges: 'Badges', champs: 'Champs', cartes: 'Cartes', donnees: 'Données', icones: 'Icônes'} %}
+                <a href="#{{ ancre }}" class="m-chip">{{ nom }}</a>
+            {% endfor %}
+        </nav>
+    </div>
+</section>
+
+<div class="container-mentor ds">
+
+    {# COULEURS #}
+    <section id="couleurs" class="ds-section">
+        <h2>Couleurs</h2>
+        <p class="ds-intro">Iris porte la marque (actions, liens, focus). L'encre structure le texte et les fonds ; les bandeaux sombres utilisent <code>--color-surface-inverse</code>.</p>
+
+        {% for nom, tokens in palettes %}
+            <h3 class="ds-sub">{{ nom }}</h3>
+            <div class="ds-swatches">
+                {% for token in tokens %}
+                    <div class="ds-swatch">
+                        <span class="ds-swatch__chip" style="background: var(--{{ token }})"></span>
+                        <code>--{{ token }}</code>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <h3 class="ds-sub">Rôles sémantiques</h3>
+        <div class="ds-swatches ds-swatches--lg">
+            {% for item in semantiques %}
+                <div class="ds-swatch">
+                    <span class="ds-swatch__chip" style="background: var(--{{ item.token }})"></span>
+                    <strong>{{ item.label }}</strong>
+                    <code>--{{ item.token }}</code>
+                </div>
+            {% endfor %}
+            <div class="ds-swatch">
+                <span class="ds-swatch__chip" style="background: var(--gradient-brand)"></span>
+                <strong>Dégradé de marque</strong>
+                <code>--gradient-brand</code>
+            </div>
+        </div>
+    </section>
+
+    {# TYPOGRAPHIE #}
+    <section id="typographie" class="ds-section">
+        <h2>Typographie</h2>
+        <p class="ds-intro"><strong>Plus Jakarta Sans</strong> (600–800) pour les titres, <strong>Inter</strong> (400–700) pour le texte. Échelle au ratio ~1,2.</p>
+        <div class="ds-type">
+            {% for item in typo %}
+                <div class="ds-type__row">
+                    <div class="ds-type__meta"><strong>{{ item.label }}</strong><code>--{{ item.token }}</code></div>
+                    <p style="font-size: var(--{{ item.token }}){{ item.display ? '; font-family: var(--font-display); font-weight: 800; letter-spacing: -.02em; line-height: 1.15' }}">{{ item.sample }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# ESPACEMENTS #}
+    <section id="espacements" class="ds-section">
+        <h2>Espacements</h2>
+        <p class="ds-intro">Grille de 4 px. Les sections respirent avec <code>--section-y</code>, le conteneur fait 1240 px avec une gouttière fluide.</p>
+        <div class="ds-spaces">
+            {% for n in espaces %}
+                <div class="ds-space">
+                    <code>--space-{{ n }}</code>
+                    <span class="ds-space__bar" style="width: var(--space-{{ n }})"></span>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# FORMES #}
+    <section id="formes" class="ds-section">
+        <h2>Rayons &amp; ombres</h2>
+        <div class="ds-shapes">
+            {% for r in ['sm', 'md', 'lg', 'xl', '2xl'] %}
+                <div class="ds-shape" style="border-radius: var(--radius-{{ r }})"><code>--radius-{{ r }}</code></div>
+            {% endfor %}
+        </div>
+        <div class="ds-shapes mt-4">
+            {% for s in ['xs', 'sm', 'md', 'lg'] %}
+                <div class="ds-shape ds-shape--shadow" style="box-shadow: var(--shadow-{{ s }})"><code>--shadow-{{ s }}</code></div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# BOUTONS #}
+    <section id="boutons" class="ds-section">
+        <h2>Boutons</h2>
+        <p class="ds-intro"><code>.m-btn</code> + une variante. Un seul bouton primaire par zone d'action.</p>
+        <div class="ds-row">
+            <button type="button" class="m-btn m-btn--primary">Primaire</button>
+            <button type="button" class="m-btn m-btn--secondary">Secondaire</button>
+            <button type="button" class="m-btn m-btn--outline">Contour</button>
+            <button type="button" class="m-btn m-btn--ghost">Discret</button>
+            <button type="button" class="m-btn m-btn--dark">Sombre</button>
+            <button type="button" class="m-btn m-btn--danger">Danger</button>
+            <button type="button" class="m-btn m-btn--primary" disabled>Désactivé</button>
+        </div>
+        <div class="ds-row">
+            <button type="button" class="m-btn m-btn--primary m-btn--sm">Petit</button>
+            <button type="button" class="m-btn m-btn--primary">Moyen</button>
+            <button type="button" class="m-btn m-btn--primary m-btn--lg">Grand <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+            <button type="button" class="m-btn m-btn--outline m-btn--icon" aria-label="Rechercher"><i class="bi bi-search" aria-hidden="true"></i></button>
+        </div>
+        <div class="ds-row ds-row--dark">
+            <button type="button" class="m-btn m-btn--light">Clair sur fond sombre</button>
+            <button type="button" class="m-btn trainer-panel__ghost">Contour inversé</button>
+        </div>
+    </section>
+
+    {# BADGES & PUCES #}
+    <section id="badges" class="ds-section">
+        <h2>Badges &amp; puces</h2>
+        <div class="ds-row">
+            <span class="m-badge">Neutre</span>
+            <span class="m-badge m-badge--primary">Développement</span>
+            <span class="m-badge m-badge--success">En cours</span>
+            <span class="m-badge m-badge--warning">Bientôt complet</span>
+            <span class="m-badge m-badge--danger">Annulée</span>
+            <span class="m-badge m-badge--info">Nouveau</span>
+            <span class="reservation-status reservation-status-success"><i class="bi bi-check-circle" aria-hidden="true"></i> Confirmée</span>
+        </div>
+        <div class="ds-row">
+            <button type="button" class="m-chip" aria-pressed="true">Toutes</button>
+            <button type="button" class="m-chip" aria-pressed="false">Design</button>
+            <button type="button" class="m-chip" aria-pressed="false">Langues</button>
+        </div>
+    </section>
+
+    {# CHAMPS #}
+    <section id="champs" class="ds-section">
+        <h2>Champs</h2>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label" for="ds-email">Adresse e-mail</label>
+                <div class="m-input-group">
+                    <i class="bi bi-envelope" aria-hidden="true"></i>
+                    <input id="ds-email" type="email" class="form-control" placeholder="vous@exemple.fr">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label" for="ds-erreur">Champ en erreur</label>
+                <input id="ds-erreur" type="text" class="form-control is-invalid" value="ab" aria-describedby="ds-erreur-msg">
+                <div id="ds-erreur-msg" class="invalid-feedback d-block">Le nom doit contenir au moins 2 caractères.</div>
+            </div>
+            <div class="col-12">
+                <form class="m-search" role="search" onsubmit="return false">
+                    <i class="bi bi-search" aria-hidden="true"></i>
+                    <input type="search" aria-label="Recherche" placeholder="Que voulez-vous apprendre ?">
+                    <button type="submit" class="m-btn m-btn--primary">Rechercher</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    {# CARTES #}
+    <section id="cartes" class="ds-section">
+        <h2>Cartes</h2>
+        <p class="ds-intro"><code>components/formation_card.html.twig</code> et <code>components/formateur_card.html.twig</code>, entièrement cliquables.</p>
+        <div class="row g-4">
+            <div class="col-sm-6 col-lg-4">
+                {% include 'components/formation_card.html.twig' with {formation: formationDemo, heading_level: 'h3'} only %}
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                {% include 'components/formateur_card.html.twig' with {formateur: formateurDemo, heading_level: 'h3'} only %}
+            </div>
+            <div class="col-lg-4">
+                {% include 'components/ui/empty_state.html.twig' with {
+                    icon: 'calendar-x', title: 'Aucune réservation', text: 'État vide avec action.',
+                    cta_label: 'Découvrir', cta_url: '#cartes', compact: true
+                } only %}
+            </div>
+        </div>
+    </section>
+
+    {# DONNÉES #}
+    <section id="donnees" class="ds-section">
+        <h2>Données</h2>
+        <div class="m-dash__stats">
+            {% include 'components/ui/stat_card.html.twig' with {icon: 'journal-bookmark', label: 'Formations', value: 4} only %}
+            {% include 'components/ui/stat_card.html.twig' with {icon: 'calendar-event', label: 'À venir', value: 6, tone: 'info'} only %}
+            {% include 'components/ui/stat_card.html.twig' with {icon: 'check2-circle', label: 'Terminées', value: 12, tone: 'success'} only %}
+            {% include 'components/ui/stat_card.html.twig' with {icon: 'hourglass-split', label: 'Heures', value: '18 h', tone: 'warning'} only %}
+        </div>
+        <div class="ds-progress">
+            <div class="m-progress-label"><span>3 / 8 séances</span><span>38 %</span></div>
+            <div class="m-progress" role="progressbar" aria-label="Exemple de progression" aria-valuenow="38" aria-valuemin="0" aria-valuemax="100">
+                <div class="m-progress__bar" style="width: 38%"></div>
+            </div>
+        </div>
+        <div class="ds-row mt-4">
+            {% for taille in ['xs', 'sm', '', 'lg', 'xl'] %}
+                {% include 'components/ui/avatar.html.twig' with {prenom: 'Aminata', nom: 'Diallo', size: taille} only %}
+            {% endfor %}
+        </div>
+    </section>
+
+    {# ICÔNES #}
+    <section id="icones" class="ds-section">
+        <h2>Icônes</h2>
+        <p class="ds-intro">Bootstrap Icons 1.13 — trait régulier, version <em>-fill</em> pour les états actifs. Toujours <code>aria-hidden="true"</code> quand un texte accompagne l'icône.</p>
+        <div class="ds-icons">
+            {% for icone in icones %}
+                <div class="ds-icon"><i class="bi bi-{{ icone }}" aria-hidden="true"></i><code>{{ icone }}</code></div>
+            {% endfor %}
+        </div>
+    </section>
+
+</div>
+
+{% endblock %}

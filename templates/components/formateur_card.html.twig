@@ -1,43 +1,92 @@
+{# Carte formateur horizontale : utilisée sur l'accueil et sur la page des formateurs.
+   Toute la carte est cliquable (le lien du nom s'étend sur la carte).
+   Paramètre facultatif : heading_level (h2 par défaut).
+   Chaque information n'apparaît qu'une fois : lieu/langue sous le nom,
+   expérience en dessous, puis les pastilles (spécialités, sinon formations). #}
 <article class="formateur-card">
 
-    {# PHOTO OU INITIALES #}
-    <div class="formateur-card-photo">
-        {% if formateur.image %}
-            <img
-                src="{{ asset('assets/images/utilisateurs/' ~ formateur.image) }}"
-                alt=""
-                loading="lazy"
-                decoding="async"
-            >
-        {% else %}
-            <span class="formateur-card-avatar" aria-hidden="true">
-                {{ formateur.prenom|first|upper }}{{ formateur.nom|first|upper }}
-            </span>
-        {% endif %}
-    </div>
+    {# Valeurs facultatives : la page design system passe un tableau de démonstration #}
+    {% set formations = formateur.formation ?? [] %}
+    {% set specialites = formateur.specialites ?? [] %}
+    {% set titre = heading_level ?? 'h2' %}
 
-    {# NOM ET SPÉCIALITÉS #}
-    <h2 class="formateur-card-name">
-        {{ formateur.prenom }} {{ formateur.nom }}
-    </h2>
-
-    <p class="formateur-card-subtitle">
-        {{ formateur.specialites|slice(0, 2)|join(' · ') ?: 'Formateur' }}
-    </p>
-
-    {% if formateur.localisation %}
-        <p class="formateur-card-location">
-            <i class="bi bi-geo-alt" aria-hidden="true"></i>
-            {{ formateur.localisation }}
-        </p>
+    {# Pastilles : spécialités si elles existent, sinon titres des formations #}
+    {% set pastilles = [] %}
+    {% for specialite in specialites %}
+        {% set pastilles = pastilles|merge([specialite ~ '']) %}
+    {% endfor %}
+    {% set libellePastilles = 'Spécialités' %}
+    {% if pastilles is empty %}
+        {% for formation in formations %}
+            {% set pastilles = pastilles|merge([formation.titre ?? formation]) %}
+        {% endfor %}
+        {% set libellePastilles = 'Formations enseignées' %}
     {% endif %}
 
-    {# BOUTON #}
-    <a
-        href="{{ path('app_formateur_profil', {id: formateur.id}) }}"
-        class="btn btn-outline-primary formateur-card-button"
-    >
-        Voir le profil<span class="visually-hidden"> de {{ formateur.prenom }} {{ formateur.nom }}</span>
-    </a>
+    {# EN-TÊTE : PHOTO + IDENTITÉ #}
+    <div class="formateur-card-header">
+
+        <div class="formateur-card-photo">
+            {% if formateur.image %}
+                <img
+                    src="{{ asset('assets/images/utilisateurs/' ~ formateur.image) }}"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                >
+            {% else %}
+                <span class="formateur-card-avatar" aria-hidden="true">
+                    {{ formateur.prenom|first|upper }}{{ formateur.nom|first|upper }}
+                </span>
+            {% endif %}
+        </div>
+
+        <div class="formateur-card-identity">
+            <{{ titre }} class="formateur-card-name">
+                <a href="{{ path('app_formateur_profil', {id: formateur.id}) }}" class="stretched-link">
+                    {{ formateur.prenom }} {{ formateur.nom }}
+                </a>
+            </{{ titre }}>
+
+            {# Lieu et langue #}
+            {% if (formateur.localisation ?? null) or (formateur.langue ?? null) %}
+                <p class="formateur-card-subtitle">
+                    {% if formateur.localisation ?? null %}
+                        <span><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ formateur.localisation|capitalize }}</span>
+                    {% endif %}
+                    {% if formateur.langue ?? null %}
+                        <span><i class="bi bi-translate" aria-hidden="true"></i> {{ formateur.langue|capitalize }}</span>
+                    {% endif %}
+                </p>
+            {% endif %}
+
+            {# Expérience #}
+            {% if formateur.experience ?? null %}
+                <p class="formateur-card-highlight">
+                    <i class="bi bi-award-fill" aria-hidden="true"></i>
+                    <strong>{{ formateur.experience|lower }}</strong> d'expérience
+                </p>
+            {% endif %}
+        </div>
+
+    </div>
+
+    {# PASTILLES #}
+    {% if pastilles is not empty %}
+        <ul class="formateur-card-tags" aria-label="{{ libellePastilles }}">
+            {% for pastille in pastilles|slice(0, 3) %}
+                <li>{{ pastille }}</li>
+            {% endfor %}
+            {% if pastilles|length > 3 %}
+                <li class="formateur-card-tags-more">+{{ pastilles|length - 3 }}</li>
+            {% endif %}
+        </ul>
+    {% endif %}
+
+    {# BOUTON (décoratif : le lien du nom couvre déjà la carte) #}
+    <span class="formateur-card-button" aria-hidden="true">
+        Voir le profil
+        <i class="bi bi-arrow-right"></i>
+    </span>
 
 </article>

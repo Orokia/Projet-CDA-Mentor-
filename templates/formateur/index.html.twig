@@ -4,41 +4,48 @@
 
 {% block body %}
 
-<section class="formateurs-page page-section">
+{# Spécialités de tous les formateurs, sans doublon, pour les filtres #}
+{% set specialites = [] %}
+{% for formateur in formateurs %}
+    {% for specialite in formateur.specialites %}
+        {% if (specialite ~ '') not in specialites %}
+            {% set specialites = specialites|merge([specialite ~ '']) %}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
 
-    <div class="container-mentor">
+<div class="formateurs-page" data-controller="formateur-search">
 
-        {# EN-TÊTE DE LA PAGE #}
-        <header class="catalog-header formateurs-page-header">
-            <h1>
-                Trouvez le formateur qui vous correspond
-            </h1>
+    {# EN-TÊTE : titre + recherche #}
+    <header class="formateurs-hero">
 
-            <p>
-                Découvrez nos formateurs et choisissez celui qui
-                vous accompagnera dans votre apprentissage.
-            </p>
-        </header>
+        <div class="container-mentor formateurs-hero-grid">
 
-        {# VÉRIFICATION DE LA PRÉSENCE DE FORMATEURS #}
-        {% if formateurs|length > 0 %}
+            <div class="formateurs-hero-text">
 
-            {# Le contrôleur Stimulus englobe la recherche ET les cartes #}
-            <div data-controller="formateur-search">
+                <span class="formateurs-hero-label">Nos formateurs</span>
 
-                {# RECHERCHE ET FILTRES #}
-                <div class="catalog-toolbar">
+                <h1>
+                    Trouvez le formateur <span>qui vous correspond</span>
+                </h1>
 
-                    <div class="catalog-search">
+                <p>
+                    Des professionnels expérimentés, disponibles en visio
+                    pour vous accompagner dans votre apprentissage.
+                </p>
+
+                {% if formateurs|length > 0 %}
+
+                    <div class="formateurs-hero-search">
                         <i class="bi bi-search" aria-hidden="true"></i>
 
                         <input
                             type="search"
-                            placeholder="Rechercher par nom ou spécialité"
+                            placeholder="Rechercher par nom, spécialité ou ville"
                             aria-label="Rechercher un formateur"
                             autocomplete="off"
                             data-formateur-search-target="input"
-                            data-action="input->formateur-search#filter"
+                            data-action="input->formateur-search#search"
                         >
 
                         <button
@@ -53,15 +60,75 @@
                         </button>
                     </div>
 
+                {% endif %}
+
+            </div>
+
+            <div class="formateurs-hero-photo">
+                <img
+                    src="{{ asset('assets/images/istockphoto-496565939-612x612.jpg') }}"
+                    alt="Un formateur anime une séance devant un groupe"
+                    width="612"
+                    height="408"
+                >
+            </div>
+
+        </div>
+
+    </header>
+
+    <section class="formateurs-list">
+
+        <div class="container-mentor">
+
+            {% if formateurs|length > 0 %}
+
+                {# TITRE DE LA LISTE + NOMBRE DE RÉSULTATS #}
+                <div class="formateurs-list-heading">
+                    <h2>Tous nos formateurs</h2>
+                    <p
+                        class="formateurs-count"
+                        data-formateur-search-target="count"
+                        aria-live="polite"
+                    >
+                        {{ formateurs|length }} formateur{{ formateurs|length > 1 ? 's' : '' }}
+                    </p>
                 </div>
 
-                {# NOMBRE DE RÉSULTATS #}
-                <p
-                    class="catalog-count"
-                    data-formateur-search-target="count"
-                    aria-live="polite"
-                    hidden
-                ></p>
+                {# FILTRES PAR SPÉCIALITÉ #}
+                <div class="formateurs-toolbar">
+
+                    {% if specialites is not empty %}
+                        <div class="formateurs-filters" role="group" aria-label="Filtrer par spécialité">
+
+                            <button
+                                type="button"
+                                class="catalog-chip"
+                                aria-pressed="true"
+                                data-formateur-search-target="category"
+                                data-categorie=""
+                                data-action="formateur-search#selectCategory"
+                            >
+                                Toutes
+                            </button>
+
+                            {% for specialite in specialites %}
+                                <button
+                                    type="button"
+                                    class="catalog-chip"
+                                    aria-pressed="false"
+                                    data-formateur-search-target="category"
+                                    data-categorie="{{ specialite }}"
+                                    data-action="formateur-search#selectCategory"
+                                >
+                                    {{ specialite }}
+                                </button>
+                            {% endfor %}
+
+                        </div>
+                    {% endif %}
+
+                </div>
 
                 {# GRILLE DES FORMATEURS #}
                 <div class="row g-4">
@@ -70,9 +137,10 @@
 
                         {# La colonne entière est masquée pour ne pas laisser de trou dans la grille #}
                         <div
-                            class="col-12 col-sm-6 col-lg-3"
+                            class="col-12 col-md-6 col-xl-4"
                             data-formateur-search-target="item"
                             data-formateur-search="{{ (formateur.prenom ~ ' ' ~ formateur.nom ~ ' ' ~ (formateur.specialites|join(' ')) ~ ' ' ~ (formateur.localisation ?? ''))|lower|e('html_attr') }}"
+                            data-specialites="{{ formateur.specialites|join('|')|e('html_attr') }}"
                         >
 
                             {% include 'components/formateur_card.html.twig' with {
@@ -85,6 +153,19 @@
 
                 </div>
 
+                {# AFFICHER PLUS : la liste est découpée par paquets de 8 #}
+                <div class="formateurs-more">
+                    <button
+                        type="button"
+                        class="btn-mentor btn-mentor-outline"
+                        data-formateur-search-target="more"
+                        data-action="formateur-search#showMore"
+                        hidden
+                    >
+                        Afficher plus de formateurs
+                    </button>
+                </div>
+
                 {# MESSAGE SI LA RECHERCHE NE DONNE RIEN #}
                 <div class="empty-state mt-4" data-formateur-search-target="empty" hidden>
                     <span class="empty-state-icon" aria-hidden="true">
@@ -92,29 +173,29 @@
                     </span>
                     <h3>Aucun résultat</h3>
                     <p>
-                        Essayez un autre nom ou une autre spécialité.
+                        Essayez un autre nom, une autre ville ou une autre spécialité.
                     </p>
                 </div>
 
-            </div>
+            {% else %}
 
-        {% else %}
+                {# MESSAGE SI AUCUN FORMATEUR N'EST DISPONIBLE #}
+                <div class="empty-state">
+                    <span class="empty-state-icon" aria-hidden="true">
+                        <i class="bi bi-person-x"></i>
+                    </span>
+                    <h3>Aucun formateur disponible</h3>
+                    <p>
+                        Aucun formateur n'est actuellement disponible.
+                    </p>
+                </div>
 
-            {# MESSAGE SI AUCUN FORMATEUR N'EST DISPONIBLE #}
-            <div class="empty-state">
-                <span class="empty-state-icon" aria-hidden="true">
-                    <i class="bi bi-person-x"></i>
-                </span>
-                <h3>Aucun formateur disponible</h3>
-                <p>
-                    Aucun formateur n'est actuellement disponible.
-                </p>
-            </div>
+            {% endif %}
 
-        {% endif %}
+        </div>
 
-    </div>
+    </section>
 
-</section>
+</div>
 
 {% endblock %}

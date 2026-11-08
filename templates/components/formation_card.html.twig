@@ -31,14 +31,15 @@
 
         {% if formation.formateurs|length > 0 %}
             <p class="formation-trainers">
+                <i class="bi bi-person" aria-hidden="true"></i>
                 {{ formation.formateurs|slice(0, 2)|join(', ') }}{% if formation.formateurs|length > 2 %} et {{ formation.formateurs|length - 2 }} autre{{ formation.formateurs|length > 3 ? 's' }}{% endif %}
             </p>
         {% endif %}
 
         <div class="formation-meta">
-            <span>{{ formation.duree }} heures</span>
+            <span><i class="bi bi-clock" aria-hidden="true"></i> {{ formation.duree }} heures</span>
             <span aria-hidden="true">·</span>
-            <span>En ligne</span>
+            <span><i class="bi bi-camera-video" aria-hidden="true"></i> En ligne</span>
         </div>
 
         <div class="formation-footer">

@@ -1,4 +1,3 @@
-
 {% extends 'base.html.twig' %}
 
 {% block title %}
@@ -7,148 +6,130 @@
 
 {% block body %}
 
-<div class="container-mentor page-section">
+{% set maintenant = date() %}
+
+<div class="container-mentor page-section reservations-page">
 
     {# EN-TÊTE DE LA PAGE #}
-    <header class="page-header page-header-left">
-        <span class="page-eyebrow">
-            Mon espace
-        </span>
-
-        <h1>
-            Mes réservations
-        </h1>
-
-        <p>
-            Retrouvez toutes vos séances, regroupées par formation.
-        </p>
+    <header class="reservations-header">
+        <span class="reservations-eyebrow">Mon espace</span>
+        <h1>Mes réservations</h1>
+        <p>Retrouvez toutes vos séances, regroupées par formation. Cliquez sur une formation pour voir ses séances.</p>
     </header>
 
-    {# VÉRIFICATION DES RÉSERVATIONS #}
     {% if reservationsParFormation|length > 0 %}
 
         <div class="reservations-groups">
 
-            {# UNE CARTE PAR FORMATION #}
+            {# UN MENU DÉROULANT PAR FORMATION (details/summary : sans JavaScript, accessible au clavier) #}
             {% for groupe in reservationsParFormation %}
 
-                <section class="reservation-group mb-4" aria-labelledby="formation-{{ loop.index }}">
+                {% set seances = groupe.reservations|sort((a, b) => a.dateHeureDebut <=> b.dateHeureDebut) %}
+                {% set aVenir = seances|filter(r => r.dateHeureDebut >= maintenant and r.statut != 'annulée') %}
+                {% set prochaine = aVenir|first %}
 
-                    {# EN-TÊTE DE LA FORMATION #}
-                    <div class="reservation-group-header">
+                {# Formateurs distincts de la formation #}
+                {% set formateurs = [] %}
+                {% for reservation in seances %}
+                    {% set nom = reservation.formateur.prenom ~ ' ' ~ reservation.formateur.nom %}
+                    {% if nom not in formateurs %}
+                        {% set formateurs = formateurs|merge([nom]) %}
+                    {% endif %}
+                {% endfor %}
 
-                        <div class="reservation-group-icon" aria-hidden="true">
+                <details class="reservation-group" {% if reservationsParFormation|length == 1 %}open{% endif %}>
+
+                    <summary class="reservation-group-summary">
+
+                        <span class="reservation-group-icon" aria-hidden="true">
                             <i class="bi bi-mortarboard"></i>
-                        </div>
+                        </span>
 
-                        <div class="reservation-group-title">
-                            <small>Formation</small>
+                        <span class="reservation-group-title">
+                            <strong>{{ groupe.formation.titre }}</strong>
+                            <span>
+                                {{ formateurs|join(', ') }}
+                                ·
+                                {{ seances|length }} séance{{ seances|length > 1 ? 's' : '' }}
+                            </span>
+                        </span>
 
-                            <h2 id="formation-{{ loop.index }}">
-                                {{ groupe.formation.titre }}
-                            </h2>
+                        <span class="reservation-group-next">
+                            {% if prochaine %}
+                                <small>Prochaine séance</small>
+                                <span>{{ prochaine.dateHeureDebut|date('d/m/Y') }} à {{ prochaine.dateHeureDebut|date('H:i') }}</span>
+                            {% else %}
+                                <small>Aucune séance à venir</small>
+                            {% endif %}
+                        </span>
 
-                            <p>
-                                {{ groupe.reservations|length }}
-                                séance(s) réservée(s)
-                            </p>
-                        </div>
+                        <span class="reservation-group-chevron" aria-hidden="true">
+                            <i class="bi bi-chevron-down"></i>
+                        </span>
 
-                    </div>
+                    </summary>
 
-                    {# LISTE DES SÉANCES DE CETTE FORMATION #}
+                    {# SÉANCES DE CETTE FORMATION #}
                     <div class="reservation-sessions">
 
-                        {% for reservation in groupe.reservations %}
+                        {% for reservation in seances %}
 
-                            <article class="reservation-session">
+                            {% set passee = reservation.dateHeureFin < maintenant %}
 
-                                {# DATE ET HORAIRES #}
+                            <article class="reservation-session{{ passee ? ' is-past' : '' }}">
+
                                 <div class="reservation-session-date">
-
-                                    <div class="reservation-date-icon" aria-hidden="true">
-                                        <i class="bi bi-calendar3"></i>
-                                    </div>
-
+                                    <span class="reservation-session-day" aria-hidden="true">
+                                        <span>{{ reservation.dateHeureDebut|date('d') }}</span>
+                                        <small>{{ reservation.dateHeureDebut|date('m/Y') }}</small>
+                                    </span>
                                     <div>
-                                        <small class="reservation-label">
-                                            Date et heure
-                                        </small>
-
                                         <strong>
-                                            <time datetime="{{ reservation.dateHeureDebut|date('Y-m-d') }}">
+                                            <time datetime="{{ reservation.dateHeureDebut|date('Y-m-d\\TH:i') }}">
                                                 {{ reservation.dateHeureDebut|date('d/m/Y') }}
                                             </time>
                                         </strong>
-
                                         <span>
                                             {{ reservation.dateHeureDebut|date('H:i') }}
                                             -
                                             {{ reservation.dateHeureFin|date('H:i') }}
                                         </span>
                                     </div>
-
                                 </div>
 
-                                {# FORMATEUR #}
                                 <div class="reservation-session-trainer">
-
-                                    <i class="bi bi-person" aria-hidden="true"></i>
-
-                                    <div>
-                                        <small class="reservation-label">
-                                            Formateur
-                                        </small>
-
-                                        <span>
-                                            {{ reservation.formateur.prenom }}
-                                            {{ reservation.formateur.nom }}
-                                        </span>
-                                    </div>
-
+                                    <small class="reservation-label">Formateur</small>
+                                    <span>{{ reservation.formateur.prenom }} {{ reservation.formateur.nom }}</span>
                                 </div>
 
-                                {# STATUT : couleur + icône + texte, pour ne pas dépendre de la couleur seule #}
+                                {# STATUT : icône + texte, sans couleur #}
                                 <div class="reservation-session-status">
-
-                                    <small class="reservation-label mb-2">
-                                        Statut
-                                    </small>
-
                                     {% if reservation.statut == 'confirmée' %}
-
-                                        <span class="reservation-status reservation-status-success">
+                                        <span class="reservation-status">
                                             <i class="bi bi-check-circle" aria-hidden="true"></i>
                                             Confirmée
                                         </span>
-
                                     {% elseif reservation.statut == 'annulée' %}
-
-                                        <span class="reservation-status reservation-status-danger">
+                                        <span class="reservation-status reservation-status--muted">
                                             <i class="bi bi-x-circle" aria-hidden="true"></i>
                                             Annulée
                                         </span>
-
                                     {% else %}
-
                                         <span class="reservation-status">
                                             <i class="bi bi-hourglass-split" aria-hidden="true"></i>
                                             {{ reservation.statut|capitalize }}
                                         </span>
-
                                     {% endif %}
-
+                                    {% if passee %}
+                                        <span class="reservation-label">Terminée</span>
+                                    {% endif %}
                                 </div>
 
-                                {# VISIOCONFÉRENCE #}
                                 <div class="reservation-session-action">
-
-                                    {% if reservation.lienVisio
-                                        and reservation.statut == 'confirmée' %}
-
+                                    {% if reservation.lienVisio and reservation.statut == 'confirmée' %}
                                         <a
                                             href="{{ reservation.lienVisio }}"
-                                            class="btn-mentor btn-mentor-primary"
+                                            class="reservation-join"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
@@ -156,15 +137,9 @@
                                             Rejoindre
                                             <span class="visually-hidden">la séance du {{ reservation.dateHeureDebut|date('d/m/Y') }} (nouvel onglet)</span>
                                         </a>
-
                                     {% else %}
-
-                                        <span class="reservation-label">
-                                            Visioconférence indisponible
-                                        </span>
-
+                                        <span class="reservation-label">Visioconférence indisponible</span>
                                     {% endif %}
-
                                 </div>
 
                             </article>
@@ -173,7 +148,7 @@
 
                     </div>
 
-                </section>
+                </details>
 
             {% endfor %}
 
@@ -182,27 +157,13 @@
     {% else %}
 
         {# AUCUNE RÉSERVATION #}
-        <div class="empty-state">
-
-            <span class="empty-state-icon" aria-hidden="true">
-                <i class="bi bi-calendar-x"></i>
-            </span>
-
-            <h3>
-                Aucune réservation
-            </h3>
-
-            <p>
-                Vous n'avez pas encore réservé de formation.
-            </p>
-
-            <a
-                href="{{ path('app_formation') }}"
-                class="btn-mentor btn-mentor-primary"
-            >
+        <div class="reservations-empty">
+            <i class="bi bi-calendar-x" aria-hidden="true"></i>
+            <h3>Aucune réservation</h3>
+            <p>Vous n'avez pas encore réservé de formation.</p>
+            <a href="{{ path('app_formation') }}" class="reservation-join">
                 Découvrir les formations
             </a>
-
         </div>
 
     {% endif %}

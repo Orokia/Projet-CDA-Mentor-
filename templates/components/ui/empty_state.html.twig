@@ -1,0 +1,26 @@
+{#
+    État vide : icône, titre (h3), texte et action optionnelle.
+
+    Paramètres :
+      icon                 (string)  nom Bootstrap Icons sans « bi- »
+      title, text          (string)
+      cta_label, cta_url   (string|null)
+      class                (string)  classes supplémentaires (ex. formation-empty)
+      compact              (bool)
+      attr                 (string)  attributs bruts (ex. data-*-target="empty" hidden)
+#}
+<div class="m-empty{{ (compact ?? false) ? ' m-empty--compact' }}{{ (class ?? '') ? ' ' ~ class }}" {{ (attr ?? '')|raw }}>
+    <span class="m-empty__icon" aria-hidden="true">
+        <i class="bi bi-{{ icon ?? 'inbox' }}"></i>
+    </span>
+
+    <h3>{{ title }}</h3>
+
+    {% if text ?? null %}
+        <p>{{ text }}</p>
+    {% endif %}
+
+    {% if (cta_url ?? null) and (cta_label ?? null) %}
+        <a href="{{ cta_url }}" class="m-btn m-btn--primary">{{ cta_label }}</a>
+    {% endif %}
+</div>

@@ -1,0 +1,22 @@
+{#
+    Carte de statistique (tableaux de bord).
+
+    Paramètres :
+      icon   (string)  nom Bootstrap Icons sans « bi- »
+      label  (string)
+      value  (string|int)
+      hint   (string|null)
+      tone   (string)  (vide) | success | warning | info
+#}
+<div class="m-stat{{ (tone ?? '') ? ' m-stat--' ~ tone }}">
+    <span class="m-stat__icon" aria-hidden="true">
+        <i class="bi bi-{{ icon }}"></i>
+    </span>
+    <div>
+        <p class="m-stat__label">{{ label }}</p>
+        <p class="m-stat__value">{{ value }}</p>
+        {% if hint ?? null %}
+            <p class="m-stat__hint">{{ hint }}</p>
+        {% endif %}
+    </div>
+</div>

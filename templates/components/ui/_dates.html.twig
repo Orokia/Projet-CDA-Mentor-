@@ -1,0 +1,18 @@
+{#
+    Formats de date en français, sans dépendre de l'extension Intl de Twig.
+    Usage : {% import 'components/ui/_dates.html.twig' as dates %}
+            {{ dates.mois_court(reservation.dateHeureDebut) }}
+#}
+
+{% macro mois_court(date) -%}
+    {{ ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'][date|date('n') - 1] }}
+{%- endmacro %}
+
+{% macro jour_semaine(date) -%}
+    {{ ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'][date|date('w')] }}
+{%- endmacro %}
+
+{# « lundi 19 oct. » #}
+{% macro longue(date) -%}
+    {{ _self.jour_semaine(date) }} {{ date|date('j') }} {{ _self.mois_court(date) }}
+{%- endmacro %}

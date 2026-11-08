@@ -1,0 +1,81 @@
+/* =====================================================================
+   PIED DE PAGE & MESSAGES FLASH
+   ===================================================================== */
+
+.m-footer {
+    margin-top: auto;
+    padding-top: var(--space-16);
+    background: var(--color-surface-inverse);
+    color: var(--color-text-inverse-muted);
+}
+
+.m-footer__grid {
+    display: grid;
+    grid-template-columns: 1.6fr repeat(3, 1fr);
+    gap: var(--space-10);
+    padding-bottom: var(--space-12);
+}
+
+.m-footer .m-logo { color: #fff; }
+
+.m-footer__tagline {
+    max-width: 300px;
+    margin-top: var(--space-4);
+    font-size: var(--text-base);
+}
+
+.m-footer__title {
+    margin-bottom: var(--space-4);
+    color: #fff;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+}
+
+.m-footer__links {
+    display: grid;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.m-footer a {
+    color: var(--color-text-inverse-muted);
+    font-size: var(--text-base);
+}
+
+.m-footer a:hover { color: #fff; }
+
+.m-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding-block: var(--space-6);
+    border-top: 1px solid rgba(255, 255, 255, .1);
+    font-size: var(--text-sm);
+}
+
+@media (max-width: 991.98px) {
+    .m-footer__grid { grid-template-columns: repeat(3, 1fr); }
+    .m-footer__brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 575.98px) {
+    .m-footer__grid { grid-template-columns: 1fr 1fr; gap: var(--space-8); }
+}
+
+
+/* Messages flash */
+.m-flashes {
+    display: grid;
+    gap: var(--space-3);
+    padding-top: var(--space-6);
+}
+
+.m-flashes .alert { margin: 0; }
+
+.m-flashes .alert > .bi { font-size: 1.15rem; line-height: 1.3; }

@@ -19,3 +19,7 @@ import './styles/dashboard.css';
 import './styles/auth.css';
 import './styles/app.css';
 import './styles/theme.css';
+import './styles/header-dark.css';
+import './styles/home-page.css';
+import './styles/formateur-profil.css';
+import './styles/formations-catalogue.css';

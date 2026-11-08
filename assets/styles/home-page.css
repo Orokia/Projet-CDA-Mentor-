@@ -1,0 +1,364 @@
+/* =========================================================
+   PAGE D'ACCUEIL
+   Chargée en dernier (voir app.js). Classes préfixées
+   « home- » pour ne pas entrer en conflit avec .hero
+   (home.css / theme.css). Couleurs : indigo Mentor.
+   ========================================================= */
+
+/* ---------- HAUT DE PAGE ---------- */
+
+.home-hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(180deg, #F7F6FF 0%, #F1EFFE 100%);
+}
+
+/* SVG qui ne sert qu'à définir le clipPath */
+.home-hero-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+/* Photo collée au bord droit de l'écran */
+.home-hero-media {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 55%;
+}
+
+/* Courbe violette visible juste derrière le bord ondulé */
+.home-hero-curve {
+    position: absolute;
+    inset: 0;
+    background: #DDD6FE;
+    clip-path: url(#home-hero-wave);
+    transform: translateX(-28px);
+}
+
+.home-hero-image {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    object-position: 30% center;
+    clip-path: url(#home-hero-wave);
+}
+
+/* Côté gauche : encart blanc centré verticalement.
+   La hauteur fixe garde la photo (qui suit la hauteur du bloc) à sa taille actuelle. */
+.home-hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    min-height: 576px;
+    padding: 48px 0;
+}
+
+.home-banner-card {
+    width: min(490px, 100%);
+    padding: 36px;
+
+    border-radius: var(--mentor-radius);
+    background: #FFFFFF;
+    box-shadow: 0 24px 60px rgba(49, 46, 129, 0.16);
+}
+
+.home-banner-card h1 {
+    margin: 0;
+    font-family: "Inter", Arial, sans-serif;
+    font-size: clamp(30px, 3vw, 40px);
+    font-weight: 800;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    color: var(--mentor-text);
+}
+
+/* Mot clé surligné en indigo */
+.home-banner-accent {
+    color: var(--mentor-primary);
+    background: linear-gradient(transparent 68%, #E0E7FF 68%, #E0E7FF 92%, transparent 92%);
+}
+
+.home-banner-card > p {
+    margin: 14px 0 0;
+    color: var(--mentor-text-muted);
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* Liens vers le catalogue et les formateurs */
+.home-banner-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 24px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--mentor-border);
+}
+
+.home-banner-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--mentor-primary);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.home-banner-links a:hover {
+    color: var(--mentor-primary-hover);
+}
+
+.home-banner-links a i {
+    transition: transform var(--mentor-transition);
+}
+
+.home-banner-links a:hover i {
+    transform: translateX(3px);
+}
+
+/* ---------- BANDEAU D'ATOUTS ---------- */
+
+.home-strip {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--mentor-border);
+    background: #FFFFFF;
+}
+
+.home-strip-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.home-strip-list li {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.home-strip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--mentor-primary-soft);
+    color: var(--mentor-primary);
+    font-size: 20px;
+}
+
+.home-strip-list strong,
+.home-strip-list span:not(.home-strip-icon) {
+    display: block;
+}
+
+.home-strip-list strong {
+    color: var(--mentor-text);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.home-strip-list span:not(.home-strip-icon) {
+    color: var(--mentor-text-soft);
+    font-size: 14px;
+}
+
+/* ---------- SECTIONS ---------- */
+
+.home-section {
+    padding: 56px 0;
+    background: #FFFFFF;
+}
+
+.home-section--soft {
+    background: #F7F9FA;
+}
+
+.home-heading {
+    margin-bottom: 24px;
+}
+
+.home-heading h2 {
+    margin: 0;
+    font-family: var(--mentor-font-display, "Inter", sans-serif);
+    font-size: clamp(24px, 2.6vw, 32px);
+    font-weight: 700;
+    color: var(--mentor-text);
+}
+
+.home-heading p {
+    max-width: 680px;
+    margin: 8px 0 0;
+    color: var(--mentor-text-muted);
+    font-size: 16px;
+}
+
+.home-more {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 28px;
+}
+
+/* ---------- ONGLETS ---------- */
+
+.home-tabs {
+    display: flex;
+    gap: 4px 20px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--mentor-border);
+    scrollbar-width: none;
+}
+
+.home-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.home-tab {
+    flex-shrink: 0;
+    padding: 10px 2px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    background: none;
+    color: var(--mentor-text-muted);
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--mentor-transition), border-color var(--mentor-transition);
+}
+
+.home-tab:hover {
+    color: var(--mentor-text);
+}
+
+.home-tab[aria-selected="true"] {
+    border-bottom-color: var(--mentor-primary);
+    color: var(--mentor-text);
+}
+
+.home-tab-panel {
+    padding: 24px;
+    border: 1px solid var(--mentor-border);
+    border-top: none;
+}
+
+/* ---------- FORMATEURS ---------- */
+
+/* Titre à gauche, lien « Voir tous » à droite */
+.home-heading--split {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px 24px;
+}
+
+.home-heading-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--mentor-primary);
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.home-heading-link:hover {
+    color: var(--mentor-primary-hover);
+}
+
+.home-heading-link i {
+    transition: transform var(--mentor-transition);
+}
+
+.home-heading-link:hover i {
+    transform: translateX(3px);
+}
+
+/* Fond lavande très léger, comme la maquette */
+.home-trainers {
+    background: #F8F8FD;
+}
+
+/* ---------- RESPONSIVE ---------- */
+
+/* Écrans moyens : la photo se réduit pour laisser la place à l'encart */
+@media (max-width: 1200px) {
+
+    .home-hero-media {
+        width: 50%;
+    }
+
+}
+
+/* Tablette et mobile : la photo passe au-dessus de l'encart */
+@media (max-width: 900px) {
+
+    .home-hero-media {
+        position: relative;
+        width: 100%;
+        height: 260px;
+    }
+
+    .home-hero-curve {
+        display: none;
+    }
+
+    .home-hero-image {
+        clip-path: none;
+    }
+
+    /* L'encart remonte légèrement sur la photo */
+    .home-hero-content {
+        min-height: 0;
+        margin-top: -48px;
+        padding: 0 0 32px;
+    }
+
+    .home-banner-card {
+        width: 100%;
+        padding: 24px;
+    }
+
+    .home-strip-list {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+}
+
+@media (max-width: 576px) {
+
+    .home-tab-panel {
+        padding: 16px 0 0;
+        border: none;
+    }
+
+    .home-more {
+        width: 100%;
+        justify-content: center;
+    }
+
+}
+
+/* Petit mobile : encart plus compact */
+@media (max-width: 576px) {
+
+    .home-banner-card {
+        padding: 24px 20px;
+    }
+
+}

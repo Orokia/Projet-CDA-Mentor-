@@ -1,0 +1,102 @@
+{#
+    Lecteur vidéo Mentor (contrôleur Stimulus video-player).
+
+    Paramètres :
+      src       (string) URL de la vidéo (mp4)
+      title     (string) titre affiché sur l'écran d'accueil du lecteur
+      subtitle  (string|null)
+      poster    (string|null) URL d'une image d'aperçu
+#}
+<div
+    class="m-player"
+    data-controller="video-player"
+    data-action="keydown->video-player#keydown"
+    tabindex="0"
+    role="region"
+    aria-label="Lecteur vidéo : {{ title }}"
+>
+    <video
+        class="m-player__video"
+        controls
+        preload="metadata"
+        playsinline
+        {% if poster ?? null %}poster="{{ poster }}"{% endif %}
+        data-video-player-target="video"
+        data-action="click->video-player#togglePlay play->video-player#updateState pause->video-player#updateState ended->video-player#updateState timeupdate->video-player#updateProgress loadedmetadata->video-player#updateDuration durationchange->video-player#updateDuration volumechange->video-player#updateVolume error->video-player#showError"
+    >
+        <source src="{{ src }}" type="video/mp4" data-action="error->video-player#showError">
+        Votre navigateur ne supporte pas la lecture vidéo.
+    </video>
+
+    {# Écran d'accueil : masqué dès le début de la lecture #}
+    <div class="m-player__cover">
+        <button
+            type="button"
+            class="m-player__big-play"
+            aria-label="Lire la vidéo"
+            data-video-player-target="toggle"
+            data-action="video-player#togglePlay"
+        >
+            <i class="bi bi-play-fill" aria-hidden="true"></i>
+        </button>
+        <div class="m-player__cover-text">
+            <span class="m-badge m-badge--inverse"><i class="bi bi-camera-reels" aria-hidden="true"></i> Vidéo de présentation</span>
+            <strong>{{ title }}</strong>
+            {% if subtitle ?? null %}<span>{{ subtitle }}</span>{% endif %}
+        </div>
+    </div>
+
+    {# Message si la vidéo ne peut pas être lue #}
+    <div class="m-player__error" role="status">
+        <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+        <p>La vidéo ne peut pas être lue pour le moment.</p>
+    </div>
+
+    {# Barre de contrôle #}
+    <div class="m-player__controls">
+        <input
+            type="range"
+            class="m-player__progress"
+            min="0" max="100" step="0.1" value="0"
+            aria-label="Position de lecture"
+            data-video-player-target="progress"
+            data-action="input->video-player#seek"
+        >
+
+        <div class="m-player__bar">
+            <button type="button" class="m-player__btn" aria-label="Lire la vidéo" data-video-player-target="toggle" data-action="video-player#togglePlay">
+                <i class="bi bi-play-fill m-player__icon-play" aria-hidden="true"></i>
+                <i class="bi bi-pause-fill m-player__icon-pause" aria-hidden="true"></i>
+            </button>
+
+            <button type="button" class="m-player__btn" aria-label="Reculer de 5 secondes" data-action="video-player#skip" data-video-player-skip-param="-5">
+                <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
+            </button>
+
+            <button type="button" class="m-player__btn" aria-label="Avancer de 5 secondes" data-action="video-player#skip" data-video-player-skip-param="5">
+                <i class="bi bi-arrow-clockwise" aria-hidden="true"></i>
+            </button>
+
+            <div class="m-player__volume">
+                <button type="button" class="m-player__btn" aria-label="Couper le son" data-video-player-target="mute" data-action="video-player#toggleMute">
+                    <i class="bi bi-volume-up-fill m-player__icon-sound" aria-hidden="true"></i>
+                    <i class="bi bi-volume-mute-fill m-player__icon-muted" aria-hidden="true"></i>
+                </button>
+                <input type="range" min="0" max="1" step="0.05" value="1" aria-label="Volume" data-video-player-target="volume" data-action="input->video-player#changeVolume">
+            </div>
+
+            <span class="m-player__time">
+                <span data-video-player-target="current">0:00</span>
+                <span aria-hidden="true">/</span>
+                <span data-video-player-target="duration">0:00</span>
+            </span>
+
+            <button type="button" class="m-player__btn m-player__speed" aria-label="Vitesse de lecture : 1×" data-video-player-target="speed" data-action="video-player#cycleSpeed">1×</button>
+
+            <button type="button" class="m-player__btn" aria-label="Plein écran" data-video-player-target="fullscreen" data-action="video-player#toggleFullscreen">
+                <i class="bi bi-fullscreen m-player__icon-expand" aria-hidden="true"></i>
+                <i class="bi bi-fullscreen-exit m-player__icon-shrink" aria-hidden="true"></i>
+            </button>
+        </div>
+    </div>
+</div>

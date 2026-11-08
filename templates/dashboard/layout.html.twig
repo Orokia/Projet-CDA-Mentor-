@@ -1,0 +1,79 @@
+{#
+    Gabarit de l'espace connecté : barre latérale + contenu.
+
+    Variables attendues dans la page enfant :
+      dash_active  (string)  clé du lien actif : dashboard | reservations | profil
+                             | formateur | formateur_profil
+    Blocs :
+      dash_head    titre + actions de la page
+      dash_content contenu
+#}
+{% extends 'base.html.twig' %}
+
+{% block flashes %}{% endblock %}
+
+{% block body %}
+{% set user = app.user %}
+{% set dash_active = dash_active ?? '' %}
+
+<div class="m-dash">
+    <div class="container-mentor m-dash__grid">
+
+        <aside class="m-dash__aside">
+            <div class="m-dash__user">
+                {% include 'components/ui/avatar.html.twig' with {
+                    image: user.photoUtilisateur, prenom: user.prenomUtilisateur, nom: user.nomUtilisateur
+                } only %}
+                <div>
+                    <strong>{{ user.prenomUtilisateur }} {{ user.nomUtilisateur }}</strong>
+                    <span>{{ user.formateur ? 'Formateur' : 'Étudiant' }}</span>
+                </div>
+            </div>
+
+            <nav class="m-dash__nav" aria-label="Mon espace">
+                {% if user.student %}
+                    <p class="m-dash__nav-label">Apprentissage</p>
+                    <a href="{{ path('app_student_dashboard') }}" class="m-dash__link{{ dash_active == 'dashboard' ? ' is-active' }}"{% if dash_active == 'dashboard' %} aria-current="page"{% endif %}>
+                        <i class="bi bi-grid" aria-hidden="true"></i> Tableau de bord
+                    </a>
+                    <a href="{{ path('app_mes_reservations') }}" class="m-dash__link{{ dash_active == 'reservations' ? ' is-active' }}"{% if dash_active == 'reservations' %} aria-current="page"{% endif %}>
+                        <i class="bi bi-calendar-check" aria-hidden="true"></i> Mes réservations
+                    </a>
+                    <a href="{{ path('app_student_profile') }}" class="m-dash__link{{ dash_active == 'profil' ? ' is-active' }}"{% if dash_active == 'profil' %} aria-current="page"{% endif %}>
+                        <i class="bi bi-person" aria-hidden="true"></i> Mon profil
+                    </a>
+                {% endif %}
+
+                {% if user.formateur %}
+                    <p class="m-dash__nav-label">Enseignement</p>
+                    <a href="{{ path('app_formateur_dashboard') }}" class="m-dash__link{{ dash_active == 'formateur' ? ' is-active' }}"{% if dash_active == 'formateur' %} aria-current="page"{% endif %}>
+                        <i class="bi bi-speedometer2" aria-hidden="true"></i> Espace formateur
+                    </a>
+                    <a href="{{ path('app_formateur_profil', {id: user.formateur.id}) }}" class="m-dash__link">
+                        <i class="bi bi-person-video3" aria-hidden="true"></i> Mon profil public
+                    </a>
+                {% endif %}
+
+                <p class="m-dash__nav-label">Découvrir</p>
+                <a href="{{ path('app_formation') }}" class="m-dash__link">
+                    <i class="bi bi-compass" aria-hidden="true"></i> Catalogue
+                </a>
+                <a href="{{ path('app_formateurs') }}" class="m-dash__link">
+                    <i class="bi bi-people" aria-hidden="true"></i> Formateurs
+                </a>
+            </nav>
+        </aside>
+
+        <div class="m-dash__main">
+            {% include 'components/flashes.html.twig' %}
+
+            <header class="m-dash__head">
+                {% block dash_head %}{% endblock %}
+            </header>
+
+            {% block dash_content %}{% endblock %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

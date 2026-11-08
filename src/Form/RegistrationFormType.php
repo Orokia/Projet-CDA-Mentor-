@@ -14,7 +14,6 @@ use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
-use Symfony\Component\Validator\Constraints\Regex;
 
 class RegistrationFormType extends AbstractType
 {
@@ -107,37 +106,8 @@ class RegistrationFormType extends AbstractType
                     'class' => 'form-control',
                     'autocomplete' => 'new-password',
                 ],
-                'constraints' => [
-                    new NotBlank(
-                        message: 'Veuillez saisir un mot de passe.'
-                    ),
-
-                    new Length(
-                        min: 8,
-                        max: 4096,
-                        minMessage: 'Le mot de passe doit contenir au moins {{ limit }} caractères.'
-                    ),
-
-                    new Regex(
-                        pattern: '/[A-Z]/',
-                        message: 'Le mot de passe doit contenir au moins une lettre majuscule.'
-                    ),
-
-                    new Regex(
-                        pattern: '/[a-z]/',
-                        message: 'Le mot de passe doit contenir au moins une lettre minuscule.'
-                    ),
-
-                    new Regex(
-                        pattern: '/[0-9]/',
-                        message: 'Le mot de passe doit contenir au moins un chiffre.'
-                    ),
-
-                    new Regex(
-                        pattern: '/[^a-zA-Z0-9]/',
-                        message: 'Le mot de passe doit contenir au moins un caractère spécial.'
-                    ),
-                ],
+                // Mêmes règles qu'à la réinitialisation du mot de passe
+                'constraints' => ContraintesMotDePasse::liste(),
             ])
 
             /*

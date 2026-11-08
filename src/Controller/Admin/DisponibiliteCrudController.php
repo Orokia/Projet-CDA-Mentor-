@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Controller\Admin\Field\JoursSemaineField;
 use App\Entity\Disponibilite;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -9,7 +10,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TimeField;
 
@@ -38,17 +38,7 @@ class DisponibiliteCrudController extends AbstractCrudController
     yield TimeField::new('heureDebut', 'Heure de début');
     yield TimeField::new('heureFin', 'Heure de fin');
 
-    yield ChoiceField::new('joursSemaine', 'Jours de la semaine')
-        ->setChoices([
-            'Lundi' => 'lundi',
-            'Mardi' => 'mardi',
-            'Mercredi' => 'mercredi',
-            'Jeudi' => 'jeudi',
-            'Vendredi' => 'vendredi',
-            'Samedi' => 'samedi',
-            'Dimanche' => 'dimanche',
-        ])
-        ->allowMultipleChoices()
-        ->renderExpanded();
+    // joursSemaine : clé = nom du jour, valeur = statut du jour
+    yield JoursSemaineField::new('joursSemaine', 'Jours de la semaine');
 }
 }

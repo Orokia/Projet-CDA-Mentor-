@@ -15,6 +15,9 @@ services:
     volumes:
       - .:/var/www/html
       - mentor_vendor:/var/www/html/vendor
+      # Cache et logs hors du montage Windows : l'accès disque via WSL2 est très lent
+      # et la reconstruction du cache dépassait le délai de Nginx (erreur 504).
+      - mentor_var:/var/www/html/var
     logging:
       driver: json-file
       options:
@@ -78,6 +81,7 @@ volumes:
   mentor_mysql_data:
     name: mentor_mentor_mysql_data
   mentor_vendor:
+  mentor_var:
 
 networks:
   mentor:

@@ -257,22 +257,37 @@
                                                 -
                                                 {{ disponibilite.heureFin|date('H:i') }}
                                             </span>
+                                            {# Prix payé une fois pour toutes les séances du jour choisi #}
+                                            {% if disponibilite.formation %}
+                                                <span class="disponibilite-prix">
+                                                    <i class="bi bi-credit-card" aria-hidden="true"></i>
+                                                    {{ disponibilite.formation.prix|number_format(2, ',', ' ') }} €
+                                                </span>
+                                            {% endif %}
                                         </div>
 
                                     </div>
 
                                     <div class="disponibilite-jours">
 
-                                        {% for jour in disponibilite.joursSemaine %}
+                                        {# joursSemaine : clé = nom du jour, valeur = statut du jour.
+                                           Seuls les jours au statut « disponible » sont sélectionnables. #}
+                                        {% for jour, statut in disponibilite.joursSemaine %}
+
+                                            {% set estDisponible = statut|trim|lower == constant('App\\Entity\\Disponibilite::STATUT_DISPONIBLE') %}
 
                                             <button
                                                 type="button"
-                                                class="disponibilite-jour"
+                                                class="disponibilite-jour{% if not estDisponible %} indisponible{% endif %}"
                                                 data-jour="{{ jour }}"
                                                 data-disponibilite-id="{{ disponibilite.id }}"
-                                                aria-pressed="false"
-                                                data-reservation-target="jour"
-                                                data-action="reservation#choisir"
+                                                {% if estDisponible %}
+                                                    aria-pressed="false"
+                                                    data-reservation-target="jour"
+                                                    data-action="reservation#choisir"
+                                                {% else %}
+                                                    disabled
+                                                {% endif %}
                                             >
                                                 <span class="disponibilite-jour-name">
                                                     {{ joursLabels[jour] ?? jour|capitalize }}
@@ -283,7 +298,7 @@
                                                     {{ disponibilite.heureFin|date('H:i') }}
                                                 </span>
                                                 <span class="disponibilite-jour-action">
-                                                    Choisir
+                                                    {{ estDisponible ? 'Choisir' : 'Plus disponible' }}
                                                 </span>
                                             </button>
 
@@ -347,9 +362,15 @@
                                     data-reservation-target="submit"
                                     data-action="reservation#reserver"
                                 >
-                                    <i class="bi bi-calendar-check" aria-hidden="true"></i>
-                                    Réserver
+                                    <i class="bi bi-credit-card" aria-hidden="true"></i>
+                                    Payer et réserver
                                 </button>
+
+                                <p class="reservation-paiement-info">
+                                    <i class="bi bi-lock" aria-hidden="true"></i>
+                                    Paiement sécurisé par Stripe : vous allez être redirigé vers la page de paiement.
+                                    La réservation est confirmée dès le paiement validé.
+                                </p>
 
                             {% endif %}
                         </div>

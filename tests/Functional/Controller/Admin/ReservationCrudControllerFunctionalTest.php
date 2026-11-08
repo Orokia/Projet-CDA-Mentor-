@@ -2,6 +2,7 @@
 
 namespace App\Tests\Functional\Controller\Admin;
 
+use App\Entity\Reservation;
 use App\Entity\User;
 use App\Service\ReservationService;
 use App\Tests\Support\EntitesDeTestTrait;
@@ -62,7 +63,7 @@ final class ReservationCrudControllerFunctionalTest extends WebTestCase
         $student = $this->creerUtilisateur('etudiant@example.test')->getStudent();
         $disponibilite = $this->creerDisponibilite($formateur, $formation);
         static::getContainer()->get(ReservationService::class)
-            ->creerReservations($student, $disponibilite->getId(), 'lundi');
+            ->creerReservations($student, $disponibilite->getId(), 'lundi', $this->paiementEffectue());
 
         $client->request('GET', $url);
 
@@ -123,7 +124,7 @@ final class ReservationCrudControllerFunctionalTest extends WebTestCase
         $etudiant = $this->creerUtilisateur('fatoumata.keita@exemple.fr');
         $disponibilite = $this->creerDisponibilite($formateur, $formation);
         $reservations = static::getContainer()->get(ReservationService::class)
-            ->creerReservations($etudiant->getStudent(), $disponibilite->getId(), 'lundi');
+            ->creerReservations($etudiant->getStudent(), $disponibilite->getId(), 'lundi', $this->paiementEffectue());
 
         $pages = [
             'user' => $etudiant->getId(),
@@ -140,6 +141,75 @@ final class ReservationCrudControllerFunctionalTest extends WebTestCase
             self::assertResponseIsSuccessful("/admin/$entite/$id/edit");
             self::assertSelectorExists('form');
         }
+    }
+
+    /**
+     * Back-office : une réservation ne passe à « confirmée » qu'avec un paiement effectué.
+     */
+    public function testAdminNePeutPasConfirmerUneReservationSansPaiement(): void
+    {
+        $client = static::createClient();
+        $client->loginUser($this->creerAdmin());
+
+        $reservation = $this->creerReservationEnAttente();
+
+        $crawler = $client->request('GET', '/admin/reservation/'.$reservation->getId().'/edit');
+        $formulaire = $crawler->filter('#edit-Reservation-form')->form();
+        $formulaire['Reservation[statut]'] = Reservation::STATUT_CONFIRMEE;
+        $client->submit($formulaire);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains('body', 'Une réservation ne peut être confirmée que si son paiement est effectué.');
+
+        $this->em()->clear();
+        self::assertSame(
+            Reservation::STATUT_EN_ATTENTE,
+            $this->em()->find(Reservation::class, $reservation->getId())->getStatut()
+        );
+    }
+
+    public function testAdminConfirmeUneReservationDontLePaiementEstEffectue(): void
+    {
+        $client = static::createClient();
+        $client->loginUser($this->creerAdmin());
+
+        $reservation = $this->creerReservationEnAttente();
+        $reservation->setPaiement($this->paiementEffectue());
+        $this->em()->flush();
+
+        $crawler = $client->request('GET', '/admin/reservation/'.$reservation->getId().'/edit');
+        $formulaire = $crawler->filter('#edit-Reservation-form')->form();
+        $formulaire['Reservation[statut]'] = Reservation::STATUT_CONFIRMEE;
+        $client->submit($formulaire);
+
+        self::assertResponseRedirects();
+
+        $this->em()->clear();
+        self::assertSame(
+            Reservation::STATUT_CONFIRMEE,
+            $this->em()->find(Reservation::class, $reservation->getId())->getStatut()
+        );
+    }
+
+    private function creerReservationEnAttente(): Reservation
+    {
+        $formateur = $this->creerFormateur();
+        $formation = $this->creerFormation();
+
+        $reservation = (new Reservation())
+            ->setDateReservation(new \DateTime())
+            ->setDateHeureDebut(new \DateTime('2026-12-07 09:00'))
+            ->setDateHeureFin(new \DateTime('2026-12-07 10:00'))
+            ->setStatut(Reservation::STATUT_EN_ATTENTE)
+            ->setStudent($this->creerUtilisateur('attente@example.test')->getStudent())
+            ->setFormation($formation)
+            ->setFormateur($formateur)
+            ->setDisponibilite($this->creerDisponibilite($formateur, $formation));
+
+        $this->em()->persist($reservation);
+        $this->em()->flush();
+
+        return $reservation;
     }
 
     public function testEditionDUneEntiteInexistanteRenvoie404(): void

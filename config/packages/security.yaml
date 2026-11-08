@@ -26,6 +26,16 @@ security:
             provider: app_user_provider
             custom_authenticator: App\Security\AppCustomAuthenticator
             user_checker: App\Security\UserChecker
+
+            # Protection contre le brute force sur /login (symfony/rate-limiter) :
+            # 5 échecs par e-mail et par IP en 15 minutes, puis connexion bloquée
+            # jusqu'à la fin de la fenêtre. Symfony limite aussi chaque IP
+            # à 5 × max_attempts échecs, tous e-mails confondus.
+            # Une connexion réussie remet le compteur à zéro.
+            login_throttling:
+                max_attempts: 5
+                interval: '15 minutes'
+
             logout:
                 path: app_logout
                 # where to redirect after logout
@@ -51,6 +61,12 @@ security:
          - { path: ^/formateur, roles: PUBLIC_ACCESS }
          - { path: ^/reservation, roles: ROLE_USER }
          - { path: ^/mes-reservations, roles: ROLE_USER }
+         # Retours de Stripe Checkout (navigateur de l'étudiant) : la session est conservée (cookie SameSite=Lax).
+         # Limité à /paiement/ : un vrai webhook Stripe (appel serveur, sans session) devra rester public.
+         - { path: ^/api/stripe/webhook/paiement/, roles: ROLE_USER }
+         # Webhook Stripe : appel serveur à serveur, authentifié par sa signature
+         - { path: ^/api/stripe/webhook$, roles: PUBLIC_ACCESS }
+         - { path: ^/mot-de-passe-oublie, roles: PUBLIC_ACCESS }
          - { path: ^/login, roles: PUBLIC_ACCESS }
          - { path: ^/register, roles: PUBLIC_ACCESS }
         # - { path: ^/profile, roles: ROLE_USER }

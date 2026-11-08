@@ -120,6 +120,63 @@ final class StudentProfileControllerTest extends WebTestCase
         self::assertSelectorTextContains('body', 'Choisis une image JPG, PNG ou WEBP.');
     }
 
+    public function testNomComposeUniquementDEspacesEstRefuse(): void
+    {
+        $client = static::createClient();
+        $user = $this->creerUtilisateur();
+        $client->loginUser($user);
+
+        $client->request('GET', '/student/profil');
+        $client->submitForm('Enregistrer les modifications', [
+            'student_profile[prenom]' => 'Awa',
+            'student_profile[nom]' => '   ',
+        ]);
+
+        self::assertResponseStatusCodeSame(422);
+
+        $this->em()->clear();
+        self::assertSame('Diallo', $this->em()->find(User::class, $user->getId())->getNomUtilisateur());
+    }
+
+    public function testPhotoDePlusDe2MoEstRefusee(): void
+    {
+        $client = static::createClient();
+        $user = $this->creerUtilisateur();
+        $client->loginUser($user);
+
+        // PNG valide suivi de données : 2 Mo + 1 octet (limite haute + 1)
+        $fichier = $this->creerImagePng();
+        file_put_contents($fichier, str_repeat("\0", 2_000_001 - filesize($fichier)), FILE_APPEND);
+
+        $crawler = $client->request('GET', '/student/profil');
+        $form = $crawler->selectButton('Enregistrer les modifications')->form();
+        $form['student_profile[photoFile]']->upload($fichier);
+        $client->submit($form);
+
+        self::assertResponseStatusCodeSame(422);
+
+        $this->em()->clear();
+        self::assertNull($this->em()->find(User::class, $user->getId())->getPhotoUtilisateur());
+    }
+
+    public function testFichierDeguiseEnImageEstRefuse(): void
+    {
+        $client = static::createClient();
+        $client->loginUser($this->creerUtilisateur());
+
+        // Extension .png mais contenu texte : le type MIME réel est vérifié
+        $fichier = $this->cheminTemporaire('photo.png');
+        file_put_contents($fichier, '<?php echo "pas une image";');
+
+        $crawler = $client->request('GET', '/student/profil');
+        $form = $crawler->selectButton('Enregistrer les modifications')->form();
+        $form['student_profile[photoFile]']->upload($fichier);
+        $client->submit($form);
+
+        self::assertResponseStatusCodeSame(422);
+        self::assertSelectorTextContains('body', 'Choisis une image JPG, PNG ou WEBP.');
+    }
+
     protected function tearDown(): void
     {
         // Les photos téléversées par les tests ne doivent pas rester dans public/

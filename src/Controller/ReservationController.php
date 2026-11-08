@@ -2,8 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\Reservation;
 use App\Entity\User;
+use App\Service\JitsiService;
+use App\Service\PaiementService;
 use App\Service\ReservationService;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,12 +16,15 @@ use Symfony\Component\Routing\Attribute\Route;
 final class ReservationController extends AbstractController
 {
     public function __construct(
-        private ReservationService $reservationService
+        private ReservationService $reservationService,
+        private PaiementService $paiementService,
+        private LoggerInterface $logger
     ) {
     }
 
     /**
-     * Crée les réservations de l'étudiant connecté.
+     * Première étape du tunnel : vérifie le créneau choisi et envoie
+     * l'étudiant payer sur Stripe Checkout (voir PaiementController pour le retour).
      */
     #[Route(
         '/reservation/create',
@@ -82,9 +89,10 @@ final class ReservationController extends AbstractController
             return $this->redirectToRoute('app_formateurs');
         }
 
-        // Appel du service pour créer les réservations
+        // Vérification du créneau puis création de la session de paiement Stripe.
+        // Les réservations ne sont créées qu'au retour, après vérification du paiement.
         try {
-            $reservations = $this->reservationService->creerReservations(
+            $urlPaiement = $this->paiementService->demarrerPaiement(
                 $student,
                 (int) $disponibiliteId,
                 (string) $jourChoisi
@@ -93,29 +101,73 @@ final class ReservationController extends AbstractController
             $this->addFlash('error', $exception->getMessage());
 
             return $this->redirectToRoute('app_formateurs');
+        } catch (\Throwable $exception) {
+            // Erreur technique (base de données, Stripe injoignable…) : la transaction
+            // a été annulée par le service. Le détail va dans les logs, pas à l'utilisateur.
+            $this->logger->error('Échec technique au démarrage du paiement d\'une réservation.', [
+                'exception' => $exception,
+                'disponibilite' => $disponibiliteId,
+                'jour' => $jourChoisi,
+            ]);
+
+            $this->addFlash(
+                'error',
+                'Le paiement n\'a pas pu être lancé suite à une erreur technique. Aucun montant n\'a été débité, veuillez réessayer.'
+            );
+
+            return $this->redirectToRoute('app_formateurs');
         }
 
-        // Message de confirmation
-        $this->addFlash(
-            'success',
-            sprintf(
-                'Votre réservation a été créée. Vous êtes inscrit à %d séance(s) chaque %s.',
-                count($reservations),
-                ucfirst(mb_strtolower(trim((string) $jourChoisi)))
-            )
-        );
+        // Page de paiement hébergée par Stripe (formulaire bancaire)
+        return $this->redirect($urlPaiement, Response::HTTP_SEE_OTHER);
+    }
 
-        // Redirection vers le profil du formateur réservé
-        $formateur = $reservations[0]->getFormateur();
+    /**
+     * Affiche la salle de visioconférence d'une réservation dans la page.
+     */
+    #[Route(
+        '/reservation/{id}/visio',
+        name: 'app_reservation_visio',
+        requirements: ['id' => '\d+'],
+        methods: ['GET']
+    )]
+    public function visio(
+        Reservation $reservation,
+        JitsiService $jitsiService
+    ): Response {
+        // Vérification de la connexion
+        $user = $this->getUser();
 
-        return $this->redirectToRoute(
-            'app_formateur_profil',
-            ['id' => $formateur->getId()]
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_login');
+        }
+
+        // Seuls les participants de la séance peuvent y accéder
+        if (!$jitsiService->peutRejoindre($reservation, $user)) {
+            throw $this->createAccessDeniedException();
+        }
+
+        // Sans identifiants JaaS, la salle s'ouvre directement sur Jitsi
+        if (!$jitsiService->estConfigure()) {
+            return $this->redirect((string) $reservation->getLienVisio());
+        }
+
+        try {
+            $salle = $jitsiService->preparerSalle($reservation, $user);
+        } catch (\RuntimeException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+
+            return $this->redirectToRoute('app_mes_reservations');
+        }
+
+        return $this->render(
+            'reservation/visio.html.twig',
+            ['reservation' => $reservation] + $salle
         );
     }
 
     /**
-     * Affiche les réservations de l'étudiant connecté,
+     * Affiche les réservations de l'étudiant ou du formateur connecté,
      * regroupées par formation.
      */
     #[Route(
@@ -132,17 +184,17 @@ final class ReservationController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
        
-        // Récupération du profil étudiant
-        $student = $user->getStudent();
+        // Récupération du profil lié au compte
+        $profil = $user->getStudent() ?? $user->getFormateur();
 
-        if (!$student) {
+        if (!$profil) {
             throw $this->createNotFoundException(
-                'Aucun profil étudiant associé à votre compte.'
+                'Aucun profil étudiant ou formateur associé à votre compte.'
             );
         }
 
-        // Récupération des réservations de l'étudiant
-        $reservations = $student->getReservations();
+        // Récupération des réservations du profil
+        $reservations = $profil->getReservations();
 
         // Regroupement effectué par le service
         $reservationsParFormation =

@@ -25,15 +25,16 @@
             {% for groupe in reservationsParFormation %}
 
                 {% set seances = groupe.reservations|sort((a, b) => a.dateHeureDebut <=> b.dateHeureDebut) %}
-                {% set aVenir = seances|filter(r => r.dateHeureDebut >= maintenant and r.statut != 'annulée') %}
+                {% set aVenir = seances|filter(r => r.dateHeureDebut >= maintenant and r.statut != constant('App\\Entity\\Reservation::STATUT_ANNULEE')) %}
                 {% set prochaine = aVenir|first %}
 
-                {# Formateurs distincts de la formation #}
-                {% set formateurs = [] %}
+                {# Autres participants distincts : les formateurs pour un étudiant, les étudiants pour un formateur #}
+                {% set participants = [] %}
                 {% for reservation in seances %}
-                    {% set nom = reservation.formateur.prenom ~ ' ' ~ reservation.formateur.nom %}
-                    {% if nom not in formateurs %}
-                        {% set formateurs = formateurs|merge([nom]) %}
+                    {% set participant = app.user.student ? reservation.formateur : reservation.student %}
+                    {% set nom = participant.prenom ~ ' ' ~ participant.nom %}
+                    {% if nom not in participants %}
+                        {% set participants = participants|merge([nom]) %}
                     {% endif %}
                 {% endfor %}
 
@@ -48,7 +49,7 @@
                         <span class="reservation-group-title">
                             <strong>{{ groupe.formation.titre }}</strong>
                             <span>
-                                {{ formateurs|join(', ') }}
+                                {{ participants|join(', ') }}
                                 ·
                                 {{ seances|length }} séance{{ seances|length > 1 ? 's' : '' }}
                             </span>
@@ -97,19 +98,21 @@
                                     </div>
                                 </div>
 
+                                {# AUTRE PARTICIPANT : le formateur pour un étudiant, et inversement #}
+                                {% set participant = app.user.student ? reservation.formateur : reservation.student %}
                                 <div class="reservation-session-trainer">
-                                    <small class="reservation-label">Formateur</small>
-                                    <span>{{ reservation.formateur.prenom }} {{ reservation.formateur.nom }}</span>
+                                    <small class="reservation-label">{{ app.user.student ? 'Formateur' : 'Étudiant' }}</small>
+                                    <span>{{ participant.prenom }} {{ participant.nom }}</span>
                                 </div>
 
                                 {# STATUT : icône + texte, sans couleur #}
                                 <div class="reservation-session-status">
-                                    {% if reservation.statut == 'confirmée' %}
+                                    {% if reservation.estConfirmee %}
                                         <span class="reservation-status">
                                             <i class="bi bi-check-circle" aria-hidden="true"></i>
                                             Confirmée
                                         </span>
-                                    {% elseif reservation.statut == 'annulée' %}
+                                    {% elseif reservation.statut == constant('App\\Entity\\Reservation::STATUT_ANNULEE') %}
                                         <span class="reservation-status reservation-status--muted">
                                             <i class="bi bi-x-circle" aria-hidden="true"></i>
                                             Annulée
@@ -126,16 +129,15 @@
                                 </div>
 
                                 <div class="reservation-session-action">
-                                    {% if reservation.lienVisio and reservation.statut == 'confirmée' %}
+                                    {# Salle de visio intégrée (page app_reservation_visio) #}
+                                    {% if reservation.lienVisio and reservation.estConfirmee %}
                                         <a
-                                            href="{{ reservation.lienVisio }}"
+                                            href="{{ path('app_reservation_visio', {id: reservation.id}) }}"
                                             class="reservation-join"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
                                         >
                                             <i class="bi bi-camera-video" aria-hidden="true"></i>
                                             Rejoindre
-                                            <span class="visually-hidden">la séance du {{ reservation.dateHeureDebut|date('d/m/Y') }} (nouvel onglet)</span>
+                                            <span class="visually-hidden">la séance du {{ reservation.dateHeureDebut|date('d/m/Y') }}</span>
                                         </a>
                                     {% else %}
                                         <span class="reservation-label">Visioconférence indisponible</span>

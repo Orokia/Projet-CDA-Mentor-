@@ -44,12 +44,8 @@ class ReservationCrudController extends AbstractCrudController
             ->setRequired(true);
 
         yield ChoiceField::new('statut', 'Statut')
-            ->setChoices([
-                'En attente' => 'EN_ATTENTE',
-                'Confirmée' => 'CONFIRMEE',
-                'Annulée' => 'ANNULEE',
-                'Terminée' => 'TERMINEE',
-            ])
+            ->setChoices(Reservation::STATUTS)
+            ->setHelp('« Confirmée » exige un paiement effectué.')
             ->renderExpanded(false)
             ->setRequired(true);
 

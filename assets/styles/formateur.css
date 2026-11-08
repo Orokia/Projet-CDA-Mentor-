@@ -923,6 +923,22 @@
     background: var(--mentor-primary);
 }
 
+/* Jour au statut « plus disponible » : non sélectionnable */
+.disponibilite-jour:disabled {
+    cursor: not-allowed;
+    border-style: dashed;
+    background: var(--mentor-surface);
+    opacity: 0.55;
+}
+
+.disponibilite-jour:disabled:hover {
+    border-color: var(--mentor-border);
+}
+
+.disponibilite-jour:disabled .disponibilite-jour-action {
+    color: var(--mentor-text-muted);
+}
+
 .disponibilite-jour.selected .disponibilite-jour-name,
 .disponibilite-jour.selected .disponibilite-jour-horaire,
 .disponibilite-jour.selected .disponibilite-jour-action {

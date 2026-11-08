@@ -480,6 +480,41 @@
     margin-top: 14px;
 }
 
+/* Prix de la disponibilité (payé une fois pour toutes les séances du jour) */
+.tp-page .disponibilite-prix {
+    color: var(--mentor-text);
+    font-weight: 700;
+}
+
+/* Jour au statut « plus disponible » : non sélectionnable */
+.tp-page .disponibilite-jour:disabled {
+    cursor: not-allowed;
+    border-style: dashed;
+    background: transparent;
+    box-shadow: none;
+    opacity: 0.55;
+}
+
+.tp-page .disponibilite-jour:disabled:hover {
+    border-color: #E5E0D8;
+    box-shadow: none;
+}
+
+.tp-page .disponibilite-jour:disabled .disponibilite-jour-action {
+    color: var(--mentor-text-muted);
+}
+
+/* Mention du paiement Stripe sous le bouton */
+.tp-page .reservation-paiement-info {
+    display: flex;
+    gap: 8px;
+    max-width: 560px;
+    margin: 12px 0 0;
+    color: var(--mentor-text-muted);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
 /* ---------- COLONNE LATÉRALE ---------- */
 
 .tp-summary {

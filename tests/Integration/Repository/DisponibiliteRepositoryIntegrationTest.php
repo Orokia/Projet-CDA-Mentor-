@@ -31,12 +31,12 @@ final class DisponibiliteRepositoryIntegrationTest extends KernelTestCase
         $react = $this->creerFormation('React et TypeScript');
 
         // Créées dans le désordre pour vérifier le tri
-        $decembre = $this->creerDisponibilite($formateur, $symfony, ['jeudi'], '2026-12-03', '2026-12-17');
-        $novembre = $this->creerDisponibilite($formateur, $symfony, ['mardi'], '2026-11-03', '2026-11-24');
+        $decembre = $this->creerDisponibilite($formateur, $symfony, ['jeudi' => 'disponible'], '2026-12-03', '2026-12-17');
+        $novembre = $this->creerDisponibilite($formateur, $symfony, ['mardi' => 'disponible'], '2026-11-03', '2026-11-24');
 
         // Ni la même formation, ni le même formateur : exclues
-        $this->creerDisponibilite($formateur, $react, ['lundi'], '2026-11-02', '2026-11-30');
-        $this->creerDisponibilite($autreFormateur, $symfony, ['lundi'], '2026-11-02', '2026-11-30');
+        $this->creerDisponibilite($formateur, $react, ['lundi' => 'disponible'], '2026-11-02', '2026-11-30');
+        $this->creerDisponibilite($autreFormateur, $symfony, ['lundi' => 'disponible'], '2026-11-02', '2026-11-30');
 
         $resultat = $this->repository->findByFormationAndFormateur(
             $symfony->getId(),

@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme formulaire 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Nouveau mot de passe - Mentor{% endblock %}
+
+{% block body %}
+
+<section class="auth-page">
+
+    <div class="auth-card">
+
+        <div class="auth-header">
+
+            <span class="auth-icon" aria-hidden="true">
+                <i class="bi bi-shield-lock"></i>
+            </span>
+
+            <h1>Nouveau mot de passe</h1>
+
+            <p>
+                Choisissez le mot de passe de votre compte Mentor.
+            </p>
+
+        </div>
+
+        {{ form_start(formulaire, {attr: {novalidate: 'novalidate'}}) }}
+
+            {{ form_row(formulaire.plainPassword.first) }}
+            {{ form_row(formulaire.plainPassword.second) }}
+
+            <button class="btn-mentor btn-mentor-primary w-100 mt-2" type="submit">
+                Enregistrer le mot de passe
+            </button>
+
+        {{ form_end(formulaire) }}
+
+    </div>
+
+</section>
+
+{% endblock %}

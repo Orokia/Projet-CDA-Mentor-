@@ -1,0 +1,20 @@
+{# Panneau de marque commun aux pages de connexion et d'inscription #}
+<aside class="auth__aside" aria-hidden="true">
+    <div class="auth__aside-inner">
+        <a href="{{ path('app_home') }}" class="m-logo" tabindex="-1">
+            <span class="m-logo__mark"><i class="bi bi-mortarboard-fill"></i></span>
+            <span>mentor<span class="m-logo__dot">.</span></span>
+        </a>
+
+        <div>
+            <p class="auth__aside-title">{{ title }}</p>
+            <ul class="auth__aside-list">
+                <li><span class="m-icon-box m-icon-box--inverse"><i class="bi bi-person-video3"></i></span> Des formateurs experts, choisis par vous</li>
+                <li><span class="m-icon-box m-icon-box--inverse"><i class="bi bi-calendar2-week"></i></span> Une séance par semaine, le jour qui vous convient</li>
+                <li><span class="m-icon-box m-icon-box--inverse"><i class="bi bi-camera-video"></i></span> Chaque séance a sa salle de visioconférence</li>
+            </ul>
+        </div>
+
+        <p class="auth__aside-foot">Apprendre aujourd'hui, réussir demain.</p>
+    </div>
+</aside>

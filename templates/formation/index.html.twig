@@ -4,54 +4,110 @@
 
 {% block body %}
 
-{# Liste des spécialités présentes dans le catalogue, sans doublon #}
+{# Spécialités présentes dans le catalogue (sans doublon) et formateurs distincts #}
 {% set categories = [] %}
+{% set formateursIds = [] %}
 {% for formation in formations %}
     {% if formation.specialite and (formation.specialite ~ '') not in categories %}
         {% set categories = categories|merge([formation.specialite ~ '']) %}
     {% endif %}
+    {% for formateur in formation.formateurs %}
+        {% if formateur.id not in formateursIds %}
+            {% set formateursIds = formateursIds|merge([formateur.id]) %}
+        {% endif %}
+    {% endfor %}
 {% endfor %}
 
-<section class="formations-page page-section">
+<div class="formations-page fc-page" data-controller="formation-search">
 
-    <div class="container-mentor">
+    {# =====================================================
+       EN-TÊTE : titre, recherche et chiffres clés
+       ===================================================== #}
 
-        <header class="catalog-header">
-            <h1>
-                Découvrez nos formations
-            </h1>
+    <header class="fc-hero">
 
-            <p>
-                Développez vos compétences avec nos formations.
-            </p>
-        </header>
+        <div class="container-mentor fc-hero-grid">
 
-        {% if formations|length > 0 %}
+            <div class="fc-hero-text">
 
-            <div data-controller="formation-search">
+                <span class="fc-hero-label">Nos formations</span>
 
-                {# RECHERCHE ET FILTRES #}
-                <div class="catalog-toolbar">
+                <h1>
+                    Développez vos compétences <span>à votre rythme</span>
+                </h1>
 
-                    <div class="catalog-search">
+                <p>
+                    Des formations en ligne animées par des professionnels,
+                    avec des séances en visio selon vos disponibilités.
+                </p>
+
+                {% if formations|length > 0 %}
+                    <div class="fc-search">
                         <i class="bi bi-search" aria-hidden="true"></i>
-
                         <input
                             type="search"
-                            placeholder="Rechercher une formation"
+                            placeholder="Rechercher une formation, une spécialité ou un formateur"
                             aria-label="Rechercher une formation"
                             autocomplete="off"
                             data-formation-search-target="input"
                             data-action="input->formation-search#filter"
                         >
                     </div>
+                {% endif %}
+
+            </div>
+
+            {% if formations|length > 0 %}
+                <dl class="fc-stats">
+                    <div>
+                        <dt>formation{{ formations|length > 1 ? 's' : '' }}</dt>
+                        <dd>{{ formations|length }}</dd>
+                    </div>
+                    <div>
+                        <dt>formateur{{ formateursIds|length > 1 ? 's' : '' }}</dt>
+                        <dd>{{ formateursIds|length }}</dd>
+                    </div>
+                    <div>
+                        <dt>spécialité{{ categories|length > 1 ? 's' : '' }}</dt>
+                        <dd>{{ categories|length }}</dd>
+                    </div>
+                    <div>
+                        <dt>en ligne</dt>
+                        <dd>100 %</dd>
+                    </div>
+                </dl>
+            {% endif %}
+
+        </div>
+
+    </header>
+
+
+    <section class="fc-catalog page-section">
+
+        <div class="container-mentor">
+
+            {% if formations|length > 0 %}
+
+                {# BARRE D'OUTILS : filtres + compteur #}
+                <div class="fc-toolbar">
 
                     {% if categories is not empty %}
-                        <div class="catalog-categories" role="group" aria-label="Filtrer par spécialité">
+                        <div class="fc-chips" role="group" aria-label="Filtrer par spécialité">
+                            <button
+                                type="button"
+                                class="fc-chip"
+                                aria-pressed="true"
+                                data-categorie=""
+                                data-formation-search-target="category"
+                                data-action="formation-search#selectCategory"
+                            >
+                                Toutes
+                            </button>
                             {% for categorie in categories %}
                                 <button
                                     type="button"
-                                    class="catalog-chip"
+                                    class="fc-chip"
                                     aria-pressed="false"
                                     data-categorie="{{ categorie }}"
                                     data-formation-search-target="category"
@@ -63,64 +119,53 @@
                         </div>
                     {% endif %}
 
+                    <p class="fc-total">
+                        <span data-formation-search-target="count" aria-live="polite" hidden></span>
+                        <span class="fc-total-all">{{ formations|length }} formation{{ formations|length > 1 ? 's' : '' }} au catalogue</span>
+                    </p>
+
                 </div>
 
-                <p
-                    class="catalog-count"
-                    data-formation-search-target="count"
-                    aria-live="polite"
-                    hidden
-                ></p>
-
+                {# GRILLE #}
                 <div class="row g-4">
 
                     {% for formation in formations %}
 
                         <div
-                            class="col-12 col-sm-6 col-md-4 col-lg-3"
+                            class="col-12 col-sm-6 col-lg-4 col-xl-3"
                             data-formation-search-target="item"
                             data-categorie="{{ formation.specialite ? formation.specialite ~ '' }}"
                             data-formation-search="{{ (formation.titre ~ ' ' ~ (formation.specialite ?? '') ~ ' ' ~ (formation.formateurs|join(' ')))|e('html_attr') }}"
                         >
-
                             {% include 'components/formation_card.html.twig' with {
                                 formation: formation
                             } %}
-
                         </div>
 
                     {% endfor %}
 
                 </div>
 
-                <div class="empty-state mt-4" data-formation-search-target="empty" hidden>
-                    <span class="empty-state-icon" aria-hidden="true">
-                        <i class="bi bi-search"></i>
-                    </span>
+                <div class="fc-empty" data-formation-search-target="empty" hidden>
+                    <i class="bi bi-search" aria-hidden="true"></i>
                     <h3>Aucun résultat</h3>
-                    <p>
-                        Essayez un autre mot-clé ou retirez le filtre de spécialité.
-                    </p>
+                    <p>Essayez un autre mot-clé ou choisissez « Toutes » les spécialités.</p>
                 </div>
 
-            </div>
+            {% else %}
 
-        {% else %}
+                <div class="fc-empty">
+                    <i class="bi bi-journal-x" aria-hidden="true"></i>
+                    <h3>Aucune formation disponible</h3>
+                    <p>Aucune formation n'est actuellement disponible.</p>
+                </div>
 
-            <div class="empty-state">
-                <span class="empty-state-icon" aria-hidden="true">
-                    <i class="bi bi-journal-x"></i>
-                </span>
-                <h3>Aucune formation disponible</h3>
-                <p>
-                    Aucune formation n'est actuellement disponible.
-                </p>
-            </div>
+            {% endif %}
 
-        {% endif %}
+        </div>
 
-    </div>
+    </section>
 
-</section>
+</div>
 
 {% endblock %}

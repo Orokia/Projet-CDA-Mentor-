@@ -1,0 +1,19 @@
+{#
+    Avatar rond : photo si disponible, sinon initiales sur dégradé de marque.
+
+    Paramètres :
+      image    (string|null) nom du fichier dans public/assets/images/utilisateurs
+      prenom   (string|null)
+      nom      (string|null)
+      size     (string)      xs | sm | (vide) | lg | xl
+      class    (string)      classes supplémentaires
+      alt      (string)      texte alternatif (vide = décoratif)
+#}
+{% set size = size ?? '' %}
+<span class="m-avatar{{ size ? ' m-avatar--' ~ size }}{{ (class ?? '') ? ' ' ~ class }}"{% if not (alt ?? '') %} aria-hidden="true"{% endif %}>
+    {%- if image ?? null -%}
+        <img src="{{ asset('assets/images/utilisateurs/' ~ image) }}" alt="{{ alt ?? '' }}" loading="lazy" decoding="async">
+    {%- else -%}
+        {{ (prenom ?? '')|first|upper }}{{ (nom ?? '')|first|upper }}
+    {%- endif -%}
+</span>

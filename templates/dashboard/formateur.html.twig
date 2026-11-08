@@ -1,0 +1,177 @@
+{% extends 'dashboard/layout.html.twig' %}
+{% import 'components/ui/_dates.html.twig' as dates %}
+
+{% set dash_active = 'formateur' %}
+{% set stats = tableau.stats %}
+{% set prochaine = tableau.prochaine %}
+
+{% block title %}Espace formateur - Mentor{% endblock %}
+
+{% block dash_head %}
+    <div>
+        <span class="m-eyebrow">Espace formateur</span>
+        <h1 class="mt-2">Bonjour {{ formateur.prenom }}</h1>
+        <p>Suivez vos séances, vos étudiants et vos disponibilités.</p>
+    </div>
+    <a href="{{ path('app_formateur_profil', {id: formateur.id}) }}" class="m-btn m-btn--outline">
+        <i class="bi bi-eye" aria-hidden="true"></i> Voir mon profil public
+    </a>
+{% endblock %}
+
+{% block dash_content %}
+
+    {# PROCHAINE SÉANCE #}
+    {% if prochaine %}
+        <section class="m-next" aria-labelledby="titre-prochaine">
+            <div class="m-next__body">
+                <span class="m-eyebrow"><i class="bi bi-broadcast" aria-hidden="true"></i> Prochaine séance à animer</span>
+                <h2 class="m-next__title" id="titre-prochaine">{{ prochaine.formation ? prochaine.formation.titre : 'Séance' }}</h2>
+                <p class="m-next__meta">
+                    <span><i class="bi bi-calendar3" aria-hidden="true"></i> {{ dates.longue(prochaine.dateHeureDebut)|capitalize }}</span>
+                    <span><i class="bi bi-clock" aria-hidden="true"></i> {{ prochaine.dateHeureDebut|date('H:i') }}{% if prochaine.dateHeureFin %} - {{ prochaine.dateHeureFin|date('H:i') }}{% endif %}</span>
+                    {% if prochaine.student %}
+                        <span><i class="bi bi-person" aria-hidden="true"></i> {{ prochaine.student.prenom }} {{ prochaine.student.nom }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            {% if prochaine.lienVisio and prochaine.statut == 'confirmée' %}
+                <a href="{{ prochaine.lienVisio }}" class="m-btn m-btn--light m-btn--lg" target="_blank" rel="noopener noreferrer">
+                    <i class="bi bi-camera-video-fill" aria-hidden="true"></i>
+                    Ouvrir la salle
+                    <span class="visually-hidden">(nouvel onglet)</span>
+                </a>
+            {% endif %}
+        </section>
+    {% endif %}
+
+    {# STATISTIQUES #}
+    <div class="m-dash__stats">
+        {% include 'components/ui/stat_card.html.twig' with {icon: 'journal-bookmark', label: 'Formations animées', value: stats.formations} only %}
+        {% include 'components/ui/stat_card.html.twig' with {icon: 'people', label: 'Étudiants', value: stats.etudiants, tone: 'info'} only %}
+        {% include 'components/ui/stat_card.html.twig' with {icon: 'calendar-event', label: 'Séances à venir', value: stats.aVenir, tone: 'success'} only %}
+        {% include 'components/ui/stat_card.html.twig' with {icon: 'wallet2', label: 'Paiements enregistrés', value: stats.paiements|number_format(0, ',', ' ') ~ ' €', tone: 'warning'} only %}
+    </div>
+
+    <div class="m-dash__cols">
+
+        <div class="m-dash__stack">
+
+            {# SÉANCES À VENIR #}
+            <section class="m-card" aria-labelledby="titre-a-venir">
+                <div class="m-card__header">
+                    <h2 class="m-card__title" id="titre-a-venir">Prochaines séances</h2>
+                    <span class="m-badge m-badge--primary m-badge--pill">{{ stats.aVenir }}</span>
+                </div>
+
+                {% if tableau.aVenir is not empty %}
+                    <ul class="m-session-list">
+                        {% for reservation in tableau.aVenir %}
+                            {% include 'components/ui/session_item.html.twig' with {reservation: reservation, pour: 'formateur'} only %}
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="m-card__body">
+                        {% include 'components/ui/empty_state.html.twig' with {
+                            icon: 'calendar2-x',
+                            title: 'Aucune séance planifiée',
+                            text: 'Les réservations de vos étudiants apparaîtront ici.',
+                            compact: true
+                        } only %}
+                    </div>
+                {% endif %}
+            </section>
+
+            {# DISPONIBILITÉS #}
+            <section class="m-card" aria-labelledby="titre-disponibilites">
+                <div class="m-card__header">
+                    <h2 class="m-card__title" id="titre-disponibilites">Mes disponibilités</h2>
+                </div>
+
+                {% if tableau.disponibilites is not empty %}
+                    <div class="m-table-wrap">
+                        <table class="m-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Formation</th>
+                                    <th scope="col">Période</th>
+                                    <th scope="col">Jours</th>
+                                    <th scope="col">Séances</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ligne in tableau.disponibilites %}
+                                    {% set dispo = ligne.disponibilite %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ dispo.formation ? dispo.formation.titre : '—' }}</strong>
+                                            <div class="m-muted small">{{ dispo.heureDebut|date('H:i') }} - {{ dispo.heureFin|date('H:i') }}</div>
+                                        </td>
+                                        <td>
+                                            {{ dispo.dateDebut|date('d/m/Y') }} → {{ dispo.dateFin|date('d/m/Y') }}
+                                            <div>
+                                                {% if ligne.active %}
+                                                    <span class="m-badge m-badge--success">En cours</span>
+                                                {% else %}
+                                                    <span class="m-badge">Terminée</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="m-days">
+                                                {% for jour in dispo.joursSemaine %}
+                                                    <span class="m-badge m-badge--primary">{{ jour|capitalize|slice(0, 3) }}</span>
+                                                {% endfor %}
+                                            </span>
+                                        </td>
+                                        <td>{{ ligne.reservations }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="m-card__body">
+                        {% include 'components/ui/empty_state.html.twig' with {
+                            icon: 'calendar-plus',
+                            title: 'Aucune disponibilité',
+                            text: "Vos disponibilités sont créées par l'équipe Mentor. Contactez-la pour ouvrir une période.",
+                            compact: true
+                        } only %}
+                    </div>
+                {% endif %}
+            </section>
+
+        </div>
+
+        {# FORMATIONS ANIMÉES #}
+        <section class="m-card" aria-labelledby="titre-formations">
+            <div class="m-card__header">
+                <h2 class="m-card__title" id="titre-formations">Mes formations</h2>
+            </div>
+
+            {% for ligne in tableau.formations %}
+                <div class="m-course-row">
+                    <span class="m-course-row__thumb">
+                        {% if ligne.formation.image %}
+                            <img src="{{ asset('assets/images/formations/' ~ ligne.formation.image) }}" alt="" loading="lazy">
+                        {% else %}
+                            <i class="bi bi-mortarboard" aria-hidden="true"></i>
+                        {% endif %}
+                    </span>
+                    <div>
+                        <a href="{{ path('app_formation_show', {id: ligne.formation.id}) }}" class="m-course-row__title">{{ ligne.formation.titre }}</a>
+                        <p class="m-course-row__sub mb-0">
+                            {{ ligne.seances }} séance{{ ligne.seances > 1 ? 's' }} · {{ ligne.etudiants }} étudiant{{ ligne.etudiants > 1 ? 's' }}
+                        </p>
+                    </div>
+                </div>
+            {% else %}
+                <div class="m-card__body">
+                    <p class="m-muted text-center">Aucune formation associée à votre profil.</p>
+                </div>
+            {% endfor %}
+        </section>
+
+    </div>
+
+{% endblock %}

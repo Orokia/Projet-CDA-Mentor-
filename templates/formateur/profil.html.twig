@@ -7,500 +7,447 @@
 {% block body %}
 
 {% set nbDisponibilites = formateur.disponibilites|length %}
+{% set nbFormations = formateur.formation|length %}
+{% set nomComplet = formateur.prenom ~ ' ' ~ formateur.nom %}
 
-<div class="formateur-profile">
+{# Libellés des jours (les valeurs stockées sont en minuscules) #}
+{% set joursLabels = {
+    lundi: 'Lundi', mardi: 'Mardi', mercredi: 'Mercredi', jeudi: 'Jeudi',
+    vendredi: 'Vendredi', samedi: 'Samedi', dimanche: 'Dimanche'
+} %}
 
-    <div class="container py-5">
+{# Sous-titre : spécialités, sinon titres des formations #}
+{% set sousTitre = [] %}
+{% for specialite in formateur.specialites %}
+    {% set sousTitre = sousTitre|merge([specialite ~ '']) %}
+{% endfor %}
+{% if sousTitre is empty %}
+    {% for formation in formateur.formation|slice(0, 3) %}
+        {% set sousTitre = sousTitre|merge([formation.titre]) %}
+    {% endfor %}
+{% endif %}
 
-        <nav class="formateur-breadcrumb" aria-label="Fil d'Ariane">
-            <a href="{{ path('app_formateurs') }}">Formateurs</a>
-            <i class="bi bi-chevron-right" aria-hidden="true"></i>
-            <span>{{ formateur.prenom }} {{ formateur.nom }}</span>
-        </nav>
+<div class="tp-page">
 
+    {# =====================================================
+       EN-TÊTE DU PROFIL
+       ===================================================== #}
 
-        {# =====================================================
-           VIDÉO DE PRÉSENTATION
-           ===================================================== #}
+    <section class="tp-hero">
 
-        <section class="formateur-video-section">
+        <div class="container-mentor">
 
-            {% if formateur.videoPresentation %}
+            <nav class="tp-breadcrumb" aria-label="Fil d'Ariane">
+                <a href="{{ path('app_home') }}">Accueil</a>
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                <a href="{{ path('app_formateurs') }}">Formateurs</a>
+                <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                <span aria-current="page">{{ nomComplet }}</span>
+            </nav>
 
-                <div class="formateur-video">
+            <div class="tp-hero-inner">
 
-                    {# preload="metadata" : la vidéo n'est téléchargée qu'à la lecture #}
-                    <video controls preload="metadata">
-                        <source
-                            src="{{ asset('assets/videos/formateurs/' ~ formateur.videoPresentation) }}"
-                            type="video/mp4"
+                <div class="tp-photo">
+                    {% if formateur.image %}
+                        <img
+                            src="{{ asset('assets/images/utilisateurs/' ~ formateur.image) }}"
+                            alt="{{ nomComplet }}"
                         >
-
-                        Votre navigateur ne supporte pas la lecture vidéo.
-                    </video>
-
+                    {% else %}
+                        <span class="tp-avatar" aria-hidden="true">
+                            {{ formateur.prenom|first|upper }}{{ formateur.nom|first|upper }}
+                        </span>
+                    {% endif %}
                 </div>
 
-            {% else %}
+                <div class="tp-identity">
 
-                <div class="formateur-video-empty">
+                    <span class="tp-eyebrow">
+                        <i class="bi bi-patch-check-fill" aria-hidden="true"></i>
+                        Formateur Mentor
+                    </span>
 
-                    <i class="bi bi-camera-video-off" aria-hidden="true"></i>
+                    <h1>{{ nomComplet }}</h1>
 
-                    <p>
-                        Aucune vidéo de présentation disponible.
-                    </p>
+                    {% if sousTitre is not empty %}
+                        <p class="tp-subtitle">{{ sousTitre|join(' · ') }}</p>
+                    {% endif %}
 
-                </div>
+                    <ul class="tp-chips">
+                        {% if formateur.localisation %}
+                            <li><i class="bi bi-geo-alt" aria-hidden="true"></i> {{ formateur.localisation|capitalize }}</li>
+                        {% endif %}
+                        {% if formateur.langue %}
+                            <li><i class="bi bi-translate" aria-hidden="true"></i> {{ formateur.langue|capitalize }}</li>
+                        {% endif %}
+                        {% if formateur.experience %}
+                            <li><i class="bi bi-award" aria-hidden="true"></i> {{ formateur.experience|lower }} d'expérience</li>
+                        {% endif %}
+                        <li><i class="bi bi-camera-video" aria-hidden="true"></i> Séances en visio</li>
+                    </ul>
 
-            {% endif %}
-
-        </section>
-
-
-        {# =====================================================
-           INFORMATIONS PRINCIPALES
-           ===================================================== #}
-
-        <section class="formateur-profile-header">
-
-            <div class="formateur-profile-photo">
-
-                {% if formateur.image %}
-
-                    <img
-                        src="{{ asset('assets/images/utilisateurs/' ~ formateur.image) }}"
-                        alt="{{ formateur.prenom }} {{ formateur.nom }}"
-                    >
-
-                {% else %}
-
-                    <div class="formateur-profile-avatar">
-                        {{ formateur.prenom|first|upper }}{{ formateur.nom|first|upper }}
-                    </div>
-
-                {% endif %}
-
-            </div>
-
-            <h1>
-                {{ formateur.prenom }} {{ formateur.nom }}
-            </h1>
-
-            <p class="formateur-profile-role">
-                Formateur Mentor
-            </p>
-
-            <div class="formateur-profile-actions">
-
-                <a href="#reservation" class="btn btn-primary">
-                    <i class="bi bi-calendar-check me-2" aria-hidden="true"></i>
-                    Réserver une session
-                </a>
-
-                {% if formateur.email %}
-                    <a href="mailto:{{ formateur.email }}" class="btn btn-outline-primary">
-                        <i class="bi bi-envelope me-2" aria-hidden="true"></i>
-                        Contacter
-                    </a>
-                {% endif %}
-
-            </div>
-
-        </section>
-
-
-        {# =====================================================
-           INFORMATIONS
-           ===================================================== #}
-
-        <section class="formateur-profile-informations">
-
-            <div class="row g-3">
-
-                <div class="col-md-6">
-
-                    <div class="formateur-info-item">
-
-                        <i class="bi bi-briefcase" aria-hidden="true"></i>
-
-                        <div>
-                            <span>Expérience</span>
-
-                            <strong>
-                                {{ formateur.experience ?: 'Non renseignée' }}
-                            </strong>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="col-md-6">
-
-                    <div class="formateur-info-item">
-
-                        <i class="bi bi-translate" aria-hidden="true"></i>
-
-                        <div>
-                            <span>Langue</span>
-
-                            <strong>
-                                {{ formateur.langue ?: 'Non renseignée' }}
-                            </strong>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="col-md-6">
-
-                    <div class="formateur-info-item">
-
-                        <i class="bi bi-geo-alt" aria-hidden="true"></i>
-
-                        <div>
-                            <span>Localisation</span>
-
-                            <strong>
-                                {{ formateur.localisation ?: 'Non renseignée' }}
-                            </strong>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="col-md-6">
-
-                    <div class="formateur-info-item">
-
-                        <i class="bi bi-book" aria-hidden="true"></i>
-
-                        <div>
-
-                            <span>Spécialités</span>
-
-                            <strong>
-                                {% for specialite in formateur.specialites %}
-                                    {{ specialite }}{% if not loop.last %}, {% endif %}
-                                {% else %}
-                                    Non renseignées
-                                {% endfor %}
-                            </strong>
-
-                        </div>
-
+                    <div class="tp-actions">
+                        <a href="#reservation" class="tp-btn tp-btn--primary">
+                            <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                            Réserver une session
+                        </a>
+                        {% if formateur.email %}
+                            <a href="mailto:{{ formateur.email }}" class="tp-btn tp-btn--ghost">
+                                <i class="bi bi-envelope" aria-hidden="true"></i>
+                                Contacter
+                            </a>
+                        {% endif %}
                     </div>
 
                 </div>
 
             </div>
 
-        </section>
+        </div>
+
+    </section>
 
 
-        {# =====================================================
-           FORMATIONS
-           ===================================================== #}
+    <div class="container-mentor tp-layout">
 
-        <section class="formateur-formations-section">
+        <div class="row g-4 g-xl-5">
 
-            <div class="formateur-section-header">
+            {# =================================================
+               COLONNE PRINCIPALE
+               ================================================= #}
 
-                <span class="formation-section-label">
-                    Formations
-                </span>
+            <div class="col-12 col-lg-8">
 
-                <h2>
-                    Formations animées
-                </h2>
+                {# PRÉSENTATION VIDÉO #}
+                <section class="tp-section" aria-labelledby="tp-video-title">
 
-            </div>
+                    <h2 id="tp-video-title" class="tp-section-title">Présentation</h2>
 
-            <div class="row g-4">
-
-                {% for formation in formateur.formation %}
-
-                    <div class="col-12 col-sm-6 col-lg-3">
-
-                        <div class="formateur-formation-card">
-
-                            <div class="formateur-formation-image">
-                                {% if formation.image %}
-                                    <img
-                                        src="{{ asset('assets/images/formations/' ~ formation.image) }}"
-                                        alt=""
-                                        loading="lazy"
-                                    >
-                                {% else %}
-                                    <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
-                                {% endif %}
-                            </div>
-
-                            <div class="formateur-formation-body">
-
-                                <h3>
-                                    {{ formation.titre }}
-                                </h3>
-
-                                <p class="formateur-formation-meta">
-                                    <span><i class="bi bi-clock" aria-hidden="true"></i> {{ formation.duree }} h</span>
-                                    <span>{{ formation.prix|number_format(0, ',', ' ') }} €</span>
-                                </p>
-
-                                <a
-                                    href="{{ path('app_formation_show', { id: formation.id }) }}"
-                                    class="btn btn-outline-primary btn-sm"
+                    {% if formateur.videoPresentation %}
+                        <div class="tp-video">
+                            {# preload="metadata" : la vidéo n'est téléchargée qu'à la lecture #}
+                            <video
+                                controls
+                                preload="metadata"
+                                playsinline
+                                {% if formateur.image %}poster="{{ asset('assets/images/utilisateurs/' ~ formateur.image) }}"{% endif %}
+                            >
+                                <source
+                                    src="{{ asset('assets/videos/formateurs/' ~ formateur.videoPresentation) }}"
+                                    type="video/mp4"
                                 >
-                                    Voir la formation
-                                </a>
-
-                            </div>
-
+                                Votre navigateur ne supporte pas la lecture vidéo.
+                            </video>
                         </div>
+                    {% else %}
+                        <div class="tp-empty">
+                            <i class="bi bi-camera-video-off" aria-hidden="true"></i>
+                            <p>{{ formateur.prenom }} n'a pas encore ajouté de vidéo de présentation.</p>
+                        </div>
+                    {% endif %}
 
+                </section>
+
+
+                {# FORMATIONS ANIMÉES #}
+                <section class="tp-section" aria-labelledby="tp-formations-title">
+
+                    <div class="tp-section-head">
+                        <h2 id="tp-formations-title" class="tp-section-title">Formations animées</h2>
+                        <span class="tp-count">{{ nbFormations }}</span>
                     </div>
 
-                {% else %}
+                    {% if nbFormations > 0 %}
 
-                    <div class="col-12">
+                        <div class="row g-3">
 
-                        <p class="text-muted mb-0">
-                            Aucune formation disponible.
-                        </p>
+                            {% for formation in formateur.formation %}
 
-                    </div>
+                                <div class="col-12 col-sm-6 col-xl-4">
 
-                {% endfor %}
+                                    <article class="tp-formation">
 
-            </div>
+                                        <div class="tp-formation-image">
+                                            {% if formation.image %}
+                                                <img
+                                                    src="{{ asset('assets/images/formations/' ~ formation.image) }}"
+                                                    alt=""
+                                                    loading="lazy"
+                                                >
+                                            {% else %}
+                                                <i class="bi bi-journal-bookmark" aria-hidden="true"></i>
+                                            {% endif %}
+                                        </div>
 
-        </section>
+                                        <div class="tp-formation-body">
 
+                                            <h3>
+                                                <a href="{{ path('app_formation_show', {id: formation.id}) }}" class="stretched-link">
+                                                    {{ formation.titre }}
+                                                </a>
+                                            </h3>
 
-        {# =====================================================
-           DISPONIBILITÉS
-           ===================================================== #}
+                                            <p class="tp-formation-meta">
+                                                <span><i class="bi bi-clock" aria-hidden="true"></i> {{ formation.duree }} h</span>
+                                                <strong>{{ formation.prix|number_format(0, ',', ' ') }} €</strong>
+                                            </p>
 
-        <section
-            id="reservation"
-            class="formateur-disponibilites-section"
-            data-controller="reservation"
-        >
+                                        </div>
 
-            <div class="formateur-section-header">
-
-                <span class="formation-section-label">
-                    Disponibilités
-                </span>
-
-                <h2>
-                    Choisissez votre jour de formation
-                </h2>
-
-                <p>
-                    Une séance est réservée pour chaque semaine de la période,
-                    le jour choisi. Les horaires sont définis par le formateur.
-                </p>
-
-            </div>
-
-
-            {% if nbDisponibilites > 0 %}
-
-                <div class="disponibilites-list">
-
-                    {% for disponibilite in formateur.disponibilites %}
-
-                        <div class="disponibilite-block">
-
-                            <div class="disponibilite-header">
-
-                                {% if disponibilite.formation %}
-                                    <strong class="disponibilite-formation">
-                                        {{ disponibilite.formation.titre }}
-                                    </strong>
-                                {% endif %}
-
-                                <div class="disponibilite-infos">
-
-                                    {# Période #}
-                                    <span>
-                                        <i class="bi bi-calendar3" aria-hidden="true"></i>
-                                        Du {{ disponibilite.dateDebut|date('d/m/Y') }}
-                                        au {{ disponibilite.dateFin|date('d/m/Y') }}
-                                    </span>
-
-                                    {# Horaire #}
-                                    <span>
-                                        <i class="bi bi-clock" aria-hidden="true"></i>
-                                        {{ disponibilite.heureDebut|date('H:i') }}
-                                        -
-                                        {{ disponibilite.heureFin|date('H:i') }}
-                                    </span>
-
-                                    {# Prix payé une fois pour toutes les séances du jour choisi #}
-                                    {% if disponibilite.formation %}
-                                        <span class="disponibilite-prix">
-                                            <i class="bi bi-credit-card" aria-hidden="true"></i>
-                                            {{ disponibilite.formation.prix|number_format(2, ',', ' ') }} €
-                                        </span>
-                                    {% endif %}
+                                    </article>
 
                                 </div>
 
-                            </div>
-
-
-                            {# Jours disponibles #}
-                            <div class="disponibilite-jours">
-
-                                {# joursSemaine : clé = nom du jour, valeur = statut du jour.
-                                   Seuls les jours au statut « disponible » sont sélectionnables. #}
-                                {% for jour, statut in disponibilite.joursSemaine %}
-
-                                    {% set estDisponible = statut|trim|lower == constant('App\\Entity\\Disponibilite::STATUT_DISPONIBLE') %}
-
-                                    <button
-                                        type="button"
-                                        class="disponibilite-jour{% if not estDisponible %} indisponible{% endif %}"
-                                        data-jour="{{ jour }}"
-                                        data-disponibilite-id="{{ disponibilite.id }}"
-                                        {% if estDisponible %}
-                                            aria-pressed="false"
-                                            data-reservation-target="jour"
-                                            data-action="reservation#choisir"
-                                        {% else %}
-                                            disabled
-                                        {% endif %}
-                                    >
-
-                                        <span class="disponibilite-jour-name">
-                                            {{ jour|capitalize }}
-                                        </span>
-
-                                        <span class="disponibilite-jour-horaire">
-                                            {{ disponibilite.heureDebut|date('H:i') }}
-                                            -
-                                            {{ disponibilite.heureFin|date('H:i') }}
-                                        </span>
-
-                                        <span class="disponibilite-jour-action">
-                                            {{ estDisponible ? 'Choisir' : 'Plus disponible' }}
-                                        </span>
-
-                                    </button>
-
-                                {% endfor %}
-
-                            </div>
+                            {% endfor %}
 
                         </div>
 
-                    {% endfor %}
-
-                </div>
-
-
-                {# =================================================
-                   DISPONIBILITÉ SÉLECTIONNÉE + BOUTON RÉSERVER
-                   (affichés par le contrôleur Stimulus après le choix d'un jour)
-                   ================================================= #}
-
-                <div
-                    id="disponibilite-selection"
-                    class="disponibilite-selection"
-                    hidden
-                    data-reservation-target="selection"
-                >
-
-                    <i class="bi bi-check-circle" aria-hidden="true"></i>
-
-                    <div>
-                        <strong>
-                            Disponibilité sélectionnée
-                        </strong>
-
-                        <span
-                            id="disponibilite-selection-text"
-                            data-reservation-target="selectionText"
-                        ></span>
-                    </div>
-
-                </div>
-
-                <div
-                    id="reservation-action"
-                    class="reservation-action"
-                    hidden
-                    data-reservation-target="action"
-                >
-
-                    {# Seul un compte étudiant peut réserver : un visiteur est invité
-                       à se connecter, sinon le POST finirait en GET (405) après la connexion #}
-                    {% if not app.user %}
-
-                        <a href="{{ path('app_login') }}" class="btn btn-primary">
-                            <i class="bi bi-box-arrow-in-right me-2" aria-hidden="true"></i>
-                            Connectez-vous pour réserver
-                        </a>
-
-                    {% elseif not app.user.student %}
-
-                        <p class="text-muted mb-0">
-                            Seul un compte étudiant peut réserver une session.
-                        </p>
-
                     {% else %}
 
-                        <button
-                            type="button"
-                            id="btn-reserver"
-                            class="btn btn-primary"
-                            data-action-url="{{ path('app_reservation_create') }}"
-                            data-csrf-token="{{ csrf_token('reservation') }}"
-                            data-reservation-target="submit"
-                            data-action="reservation#reserver"
-                        >
-                            <i class="bi bi-credit-card me-2" aria-hidden="true"></i>
-                            Payer et réserver
-                        </button>
-
-                        <p class="reservation-paiement-info text-muted mb-0">
-                            <i class="bi bi-lock" aria-hidden="true"></i>
-                            Paiement sécurisé par Stripe : vous allez être redirigé vers la page de paiement.
-                            La réservation est confirmée dès le paiement validé.
-                        </p>
+                        <div class="tp-empty">
+                            <i class="bi bi-journal-x" aria-hidden="true"></i>
+                            <p>Aucune formation pour le moment.</p>
+                        </div>
 
                     {% endif %}
 
-                </div>
+                </section>
 
-            {% else %}
 
-                <div class="formateurs-empty text-center">
+                {# DISPONIBILITÉS + RÉSERVATION #}
+                <section
+                    id="reservation"
+                    class="tp-section tp-booking"
+                    aria-labelledby="tp-booking-title"
+                    data-controller="reservation"
+                >
 
-                    <i class="bi bi-calendar-x" aria-hidden="true"></i>
+                    <h2 id="tp-booking-title" class="tp-section-title">Choisissez votre jour de formation</h2>
 
-                    <h3>
-                        Aucune disponibilité
-                    </h3>
+                    <p class="tp-section-intro">
+                        Une séance est réservée pour chaque semaine de la période,
+                        le jour choisi. Les horaires sont définis par le formateur.
+                    </p>
 
-                    <p>
-                        Ce formateur n'a pas encore défini
-                        ses disponibilités.
+                    {% if nbDisponibilites > 0 %}
+
+                        <div class="disponibilites-list">
+
+                            {% for disponibilite in formateur.disponibilites %}
+
+                                <div class="disponibilite-block">
+
+                                    <div class="disponibilite-header">
+
+                                        {% if disponibilite.formation %}
+                                            <strong class="disponibilite-formation">
+                                                {{ disponibilite.formation.titre }}
+                                            </strong>
+                                        {% endif %}
+
+                                        <div class="disponibilite-infos">
+                                            <span>
+                                                <i class="bi bi-calendar3" aria-hidden="true"></i>
+                                                Du {{ disponibilite.dateDebut|date('d/m/Y') }}
+                                                au {{ disponibilite.dateFin|date('d/m/Y') }}
+                                            </span>
+                                            <span>
+                                                <i class="bi bi-clock" aria-hidden="true"></i>
+                                                {{ disponibilite.heureDebut|date('H:i') }}
+                                                -
+                                                {{ disponibilite.heureFin|date('H:i') }}
+                                            </span>
+                                            {# Prix payé une fois pour toutes les séances du jour choisi #}
+                                            {% if disponibilite.formation %}
+                                                <span class="disponibilite-prix">
+                                                    <i class="bi bi-credit-card" aria-hidden="true"></i>
+                                                    {{ disponibilite.formation.prix|number_format(2, ',', ' ') }} €
+                                                </span>
+                                            {% endif %}
+                                        </div>
+
+                                    </div>
+
+                                    <div class="disponibilite-jours">
+
+                                        {# joursSemaine : clé = nom du jour, valeur = statut du jour.
+                                           Seuls les jours au statut « disponible » sont sélectionnables. #}
+                                        {% for jour, statut in disponibilite.joursSemaine %}
+
+                                            {% set estDisponible = statut|trim|lower == constant('App\\Entity\\Disponibilite::STATUT_DISPONIBLE') %}
+
+                                            <button
+                                                type="button"
+                                                class="disponibilite-jour{% if not estDisponible %} indisponible{% endif %}"
+                                                data-jour="{{ jour }}"
+                                                data-disponibilite-id="{{ disponibilite.id }}"
+                                                {% if estDisponible %}
+                                                    aria-pressed="false"
+                                                    data-reservation-target="jour"
+                                                    data-action="reservation#choisir"
+                                                {% else %}
+                                                    disabled
+                                                {% endif %}
+                                            >
+                                                <span class="disponibilite-jour-name">
+                                                    {{ joursLabels[jour] ?? jour|capitalize }}
+                                                </span>
+                                                <span class="disponibilite-jour-horaire">
+                                                    {{ disponibilite.heureDebut|date('H:i') }}
+                                                    -
+                                                    {{ disponibilite.heureFin|date('H:i') }}
+                                                </span>
+                                                <span class="disponibilite-jour-action">
+                                                    {{ estDisponible ? 'Choisir' : 'Plus disponible' }}
+                                                </span>
+                                            </button>
+
+                                        {% endfor %}
+
+                                    </div>
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                        {# Disponibilité sélectionnée + bouton Réserver
+                           (affichés par le contrôleur Stimulus après le choix d'un jour) #}
+                        <div
+                            id="disponibilite-selection"
+                            class="disponibilite-selection"
+                            hidden
+                            data-reservation-target="selection"
+                        >
+                            <i class="bi bi-check-circle" aria-hidden="true"></i>
+                            <div>
+                                <strong>Disponibilité sélectionnée</strong>
+                                <span
+                                    id="disponibilite-selection-text"
+                                    data-reservation-target="selectionText"
+                                ></span>
+                            </div>
+                        </div>
+
+                        <div
+                            id="reservation-action"
+                            class="reservation-action"
+                            hidden
+                            data-reservation-target="action"
+                        >
+                            {# Seul un compte étudiant peut réserver : un visiteur est invité
+                               à se connecter, sinon le POST finirait en GET (405) après la connexion #}
+                            {% if not app.user %}
+
+                                <a href="{{ path('app_login') }}" class="tp-btn tp-btn--primary">
+                                    <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                                    Connectez-vous pour réserver
+                                </a>
+
+                            {% elseif not app.user.student %}
+
+                                <p class="text-muted mb-0">
+                                    Seul un compte étudiant peut réserver une session.
+                                </p>
+
+                            {% else %}
+
+                                <button
+                                    type="button"
+                                    id="btn-reserver"
+                                    class="tp-btn tp-btn--primary"
+                                    data-action-url="{{ path('app_reservation_create') }}"
+                                    data-csrf-token="{{ csrf_token('reservation') }}"
+                                    data-reservation-target="submit"
+                                    data-action="reservation#reserver"
+                                >
+                                    <i class="bi bi-credit-card" aria-hidden="true"></i>
+                                    Payer et réserver
+                                </button>
+
+                                <p class="reservation-paiement-info">
+                                    <i class="bi bi-lock" aria-hidden="true"></i>
+                                    Paiement sécurisé par Stripe : vous allez être redirigé vers la page de paiement.
+                                    La réservation est confirmée dès le paiement validé.
+                                </p>
+
+                            {% endif %}
+                        </div>
+
+                    {% else %}
+
+                        <div class="tp-empty">
+                            <i class="bi bi-calendar-x" aria-hidden="true"></i>
+                            <p>
+                                <strong>Aucune disponibilité</strong><br>
+                                Ce formateur n'a pas encore défini ses disponibilités.
+                            </p>
+                        </div>
+
+                    {% endif %}
+
+                </section>
+
+            </div>
+
+
+            {# =================================================
+               COLONNE LATÉRALE : RÉSUMÉ
+               ================================================= #}
+
+            <aside class="col-12 col-lg-4" aria-label="Résumé du formateur">
+
+                <div class="tp-summary">
+
+                    <h2 class="tp-summary-title">En bref</h2>
+
+                    <dl class="tp-facts">
+                        <div>
+                            <dt><i class="bi bi-award" aria-hidden="true"></i> Expérience</dt>
+                            <dd>{{ formateur.experience ? formateur.experience|lower : 'Non renseignée' }}</dd>
+                        </div>
+                        <div>
+                            <dt><i class="bi bi-translate" aria-hidden="true"></i> Langue</dt>
+                            <dd>{{ formateur.langue ? formateur.langue|capitalize : 'Non renseignée' }}</dd>
+                        </div>
+                        <div>
+                            <dt><i class="bi bi-geo-alt" aria-hidden="true"></i> Localisation</dt>
+                            <dd>{{ formateur.localisation ? formateur.localisation|capitalize : 'Non renseignée' }}</dd>
+                        </div>
+                        <div>
+                            <dt><i class="bi bi-journal-text" aria-hidden="true"></i> Formations</dt>
+                            <dd>{{ nbFormations }}</dd>
+                        </div>
+                        <div>
+                            <dt><i class="bi bi-calendar3" aria-hidden="true"></i> Périodes ouvertes</dt>
+                            <dd>{{ nbDisponibilites }}</dd>
+                        </div>
+                    </dl>
+
+                    {% if formateur.specialites|length > 0 %}
+                        <ul class="tp-tags" aria-label="Spécialités">
+                            {% for specialite in formateur.specialites %}
+                                <li>{{ specialite }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+
+                    <a href="#reservation" class="tp-btn tp-btn--primary tp-btn--block">
+                        <i class="bi bi-calendar-check" aria-hidden="true"></i>
+                        Réserver une session
+                    </a>
+
+                    <p class="tp-summary-note">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i>
+                        Chaque séance a lieu en visio : un lien de salle est attribué à chaque réservation.
                     </p>
 
                 </div>
 
-            {% endif %}
+            </aside>
 
-        </section>
+        </div>
 
     </div>
 

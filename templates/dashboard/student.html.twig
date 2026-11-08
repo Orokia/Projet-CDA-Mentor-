@@ -1,0 +1,128 @@
+{% extends 'dashboard/layout.html.twig' %}
+{% import 'components/ui/_dates.html.twig' as dates %}
+
+{% set dash_active = 'dashboard' %}
+{% set stats = tableau.stats %}
+{% set prochaine = tableau.prochaine %}
+
+{% block title %}Tableau de bord - Mentor{% endblock %}
+
+{% block dash_head %}
+    <div>
+        <span class="m-eyebrow">Mon apprentissage</span>
+        <h1 class="mt-2">Bonjour {{ student.prenom }}</h1>
+        <p>Voici où vous en êtes dans vos formations.</p>
+    </div>
+    <a href="{{ path('app_formation') }}" class="m-btn m-btn--primary">
+        <i class="bi bi-plus-lg" aria-hidden="true"></i> Nouvelle formation
+    </a>
+{% endblock %}
+
+{% block dash_content %}
+
+    {# PROCHAINE SÉANCE #}
+    {% if prochaine %}
+        <section class="m-next" aria-labelledby="titre-prochaine">
+            <div class="m-next__body">
+                <span class="m-eyebrow"><i class="bi bi-broadcast" aria-hidden="true"></i> Prochaine séance</span>
+                <h2 class="m-next__title" id="titre-prochaine">{{ prochaine.formation ? prochaine.formation.titre : 'Séance' }}</h2>
+                <p class="m-next__meta">
+                    <span><i class="bi bi-calendar3" aria-hidden="true"></i> {{ dates.longue(prochaine.dateHeureDebut)|capitalize }}</span>
+                    <span><i class="bi bi-clock" aria-hidden="true"></i> {{ prochaine.dateHeureDebut|date('H:i') }}{% if prochaine.dateHeureFin %} - {{ prochaine.dateHeureFin|date('H:i') }}{% endif %}</span>
+                    {% if prochaine.formateur %}
+                        <span><i class="bi bi-person-video3" aria-hidden="true"></i> {{ prochaine.formateur.prenom }} {{ prochaine.formateur.nom }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            {% if prochaine.lienVisio and prochaine.statut == 'confirmée' %}
+                <a href="{{ prochaine.lienVisio }}" class="m-btn m-btn--light m-btn--lg" target="_blank" rel="noopener noreferrer">
+                    <i class="bi bi-camera-video-fill" aria-hidden="true"></i>
+                    Rejoindre la séance
+                    <span class="visually-hidden">(nouvel onglet)</span>
+                </a>
+            {% endif %}
+        </section>
+    {% endif %}
+
+    {# STATISTIQUES #}
+    <div class="m-dash__stats">
+        {% include 'components/ui/stat_card.html.twig' with {icon: 'journal-bookmark', label: 'Formations suivies', value: stats.formations} only %}
+        {% include 'components/ui/stat_card.html.twig' with {icon: 'calendar-event', label: 'Séances à venir', value: stats.aVenir, tone: 'info'} only %}
+        {% include 'components/ui/stat_card.html.twig' with {icon: 'check2-circle', label: 'Séances terminées', value: stats.terminees, tone: 'success'} only %}
+        {% include 'components/ui/stat_card.html.twig' with {icon: 'hourglass-split', label: "Heures d'apprentissage", value: stats.heures|number_format(1, ',', ' ')|replace({',0': ''}) ~ ' h', tone: 'warning'} only %}
+    </div>
+
+    <div class="m-dash__cols">
+
+        {# PROGRESSION PAR FORMATION #}
+        <section class="m-card" aria-labelledby="titre-parcours">
+            <div class="m-card__header">
+                <h2 class="m-card__title" id="titre-parcours">Mes formations</h2>
+                <a href="{{ path('app_mes_reservations') }}" class="m-btn m-btn--ghost m-btn--sm">Tout voir</a>
+            </div>
+
+            {% for ligne in tableau.parcours %}
+                <div class="m-course-row">
+                    <span class="m-course-row__thumb">
+                        {% if ligne.formation.image %}
+                            <img src="{{ asset('assets/images/formations/' ~ ligne.formation.image) }}" alt="" loading="lazy">
+                        {% else %}
+                            <i class="bi bi-mortarboard" aria-hidden="true"></i>
+                        {% endif %}
+                    </span>
+                    <div>
+                        <a href="{{ path('app_formation_show', {id: ligne.formation.id}) }}" class="m-course-row__title">{{ ligne.formation.titre }}</a>
+                        <p class="m-course-row__sub">
+                            {% if ligne.formateur %}avec {{ ligne.formateur.prenom }} {{ ligne.formateur.nom }} · {% endif %}
+                            {% if ligne.prochaine %}
+                                prochaine séance le {{ ligne.prochaine.dateHeureDebut|date('d/m') }}
+                            {% else %}
+                                toutes les séances sont passées
+                            {% endif %}
+                        </p>
+                        <div class="m-progress-label">
+                            <span>{{ ligne.terminees }} / {{ ligne.total }} séance{{ ligne.total > 1 ? 's' }}</span>
+                            <span>{{ ligne.progression }} %</span>
+                        </div>
+                        <div class="m-progress" role="progressbar" aria-label="Progression : {{ ligne.formation.titre }}" aria-valuenow="{{ ligne.progression }}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="m-progress__bar" style="width: {{ ligne.progression }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="m-card__body">
+                    {% include 'components/ui/empty_state.html.twig' with {
+                        icon: 'journal-plus',
+                        title: 'Aucune formation en cours',
+                        text: 'Choisissez une formation et réservez votre première séance.',
+                        cta_label: 'Explorer le catalogue',
+                        cta_url: path('app_formation'),
+                        compact: true
+                    } only %}
+                </div>
+            {% endfor %}
+        </section>
+
+        {# SÉANCES À VENIR #}
+        <section class="m-card" aria-labelledby="titre-a-venir">
+            <div class="m-card__header">
+                <h2 class="m-card__title" id="titre-a-venir">À venir</h2>
+                <span class="m-badge m-badge--primary m-badge--pill">{{ stats.aVenir }}</span>
+            </div>
+
+            {% if tableau.aVenir is not empty %}
+                <ul class="m-session-list">
+                    {% for reservation in tableau.aVenir %}
+                        {% include 'components/ui/session_item.html.twig' with {reservation: reservation, pour: 'student'} only %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="m-card__body">
+                    <p class="m-muted text-center">Aucune séance planifiée.</p>
+                </div>
+            {% endif %}
+        </section>
+
+    </div>
+
+{% endblock %}

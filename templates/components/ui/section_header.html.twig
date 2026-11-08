@@ -1,0 +1,29 @@
+{#
+    En-tête de section : sur-titre, titre, description et lien optionnel.
+
+    Paramètres :
+      eyebrow, title, text  (string)
+      link_label, link_url  (string|null)  lien « Voir tout » aligné à droite
+      center                (bool)
+      level                 (string)       balise du titre, h2 par défaut
+      id                    (string|null)  id du titre (pour aria-labelledby)
+#}
+{% set level = level ?? 'h2' %}
+<div class="m-section-head{{ (center ?? false) ? ' m-section-head--center' }}">
+    <div class="m-section-head__text">
+        {% if eyebrow ?? null %}
+            <span class="m-eyebrow">{{ eyebrow }}</span>
+        {% endif %}
+        <{{ level }} class="m-section-head__title"{% if id ?? null %} id="{{ id }}"{% endif %}>{{ title }}</{{ level }}>
+        {% if text ?? null %}
+            <p class="m-section-head__desc">{{ text }}</p>
+        {% endif %}
+    </div>
+
+    {% if (link_url ?? null) and (link_label ?? null) %}
+        <a href="{{ link_url }}" class="m-btn m-btn--outline">
+            {{ link_label }}
+            <i class="bi bi-arrow-right" aria-hidden="true"></i>
+        </a>
+    {% endif %}
+</div>

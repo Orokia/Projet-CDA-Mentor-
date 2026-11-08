@@ -1,173 +1,372 @@
+/* =========================================================
+   MES RÉSERVATIONS (templates/reservation/index.html.twig)
+   Volontairement sans couleur : noir, gris et blanc uniquement.
+   Une formation = un menu déroulant <details>.
+   ========================================================= */
 
-/* Groupe d'une formation */
-
-.reservation-group {
-    overflow: hidden;
-    background: var(--mentor-surface);
-    border: 1px solid var(--mentor-border);
-    border-radius: var(--mentor-radius);
-    box-shadow: var(--mentor-shadow-sm);
+.reservations-page {
+    --res-text: #111111;
+    --res-muted: #6B6B6B;
+    --res-border: #E3E3E3;
+    --res-soft: #F5F5F5;
 }
 
-.reservation-group-header {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 22px 24px;
-    background: var(--mentor-primary-soft);
-    border-bottom: 1px solid #E0E7FF;
+/* ---------- EN-TÊTE ---------- */
+
+.reservations-header {
+    margin-bottom: 28px;
 }
 
-.reservation-group-icon,
-.reservation-date-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 44px;
-    height: 44px;
-    border-radius: var(--mentor-radius-sm);
-    background: #E0E7FF;
-    color: var(--mentor-primary);
-    font-size: 20px;
-}
-
-.reservation-group-title small {
-    color: var(--mentor-primary);
+.reservations-eyebrow {
+    display: inline-block;
+    color: var(--res-muted);
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
-.reservation-group-title h2 {
-    margin: 4px 0;
-    color: var(--mentor-text);
+.reservations-header h1 {
+    margin: 6px 0 0;
+    color: var(--res-text);
+    font-family: "Inter", Arial, sans-serif;
+    font-size: clamp(28px, 3vw, 36px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.reservations-header p {
+    max-width: 680px;
+    margin: 8px 0 0;
+    color: var(--res-muted);
+    font-size: 16px;
+}
+
+/* ---------- GROUPE (MENU DÉROULANT) ---------- */
+
+.reservations-groups {
+    display: grid;
+    gap: 12px;
+}
+
+.reservation-group {
+    overflow: hidden;
+    border: 1px solid var(--res-border);
+    border-radius: 12px;
+    background: #FFFFFF;
+}
+
+.reservation-group[open] {
+    border-color: #CFCFCF;
+}
+
+/* En-tête cliquable */
+.reservation-group-summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 20px;
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.15s ease;
+}
+
+/* Masque le triangle natif */
+.reservation-group-summary::-webkit-details-marker {
+    display: none;
+}
+
+.reservation-group-summary:hover {
+    background: var(--res-soft);
+}
+
+.reservation-group-summary:focus-visible {
+    outline: 2px solid var(--res-text);
+    outline-offset: -2px;
+}
+
+.reservation-group[open] > .reservation-group-summary {
+    border-bottom: 1px solid var(--res-border);
+}
+
+.reservation-group-icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--res-border);
+    border-radius: 10px;
+    background: var(--res-soft);
+    color: var(--res-text);
     font-size: 20px;
+}
+
+.reservation-group-title {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.reservation-group-title strong {
+    color: var(--res-text);
+    font-size: 18px;
     font-weight: 700;
 }
 
-.reservation-group-title p {
-    margin: 0;
-    color: var(--mentor-text-muted);
+.reservation-group-title span {
+    margin-top: 2px;
+    overflow: hidden;
+    color: var(--res-muted);
     font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* Chaque séance */
+.reservation-group-next {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    text-align: right;
+}
+
+.reservation-group-next small {
+    color: var(--res-muted);
+    font-size: 12px;
+}
+
+.reservation-group-next span {
+    color: var(--res-text);
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.reservation-group-chevron {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: var(--res-text);
+    transition: transform 0.2s ease, background-color 0.15s ease;
+}
+
+.reservation-group[open] .reservation-group-chevron {
+    transform: rotate(180deg);
+    background: var(--res-soft);
+}
+
+/* ---------- SÉANCES ---------- */
 
 .reservation-session {
     display: grid;
-    grid-template-columns: 1.1fr 1fr 0.7fr auto;
+    grid-template-columns: 1.2fr 1fr 0.9fr auto;
     align-items: center;
     gap: 20px;
-    padding: 22px 24px;
-    border-bottom: 1px solid #F1F2F5;
+    padding: 16px 20px;
+    border-bottom: 1px solid #EFEFEF;
 }
 
 .reservation-session:last-child {
     border-bottom: none;
 }
 
+/* Séance passée : légèrement estompée */
+.reservation-session.is-past {
+    opacity: 0.6;
+}
+
 .reservation-label {
     display: block;
-    color: var(--mentor-text-muted);
+    color: var(--res-muted);
     font-size: 13px;
 }
 
 .reservation-session-date {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
-.reservation-date-icon {
-    width: 40px;
-    height: 40px;
-    background: var(--mentor-primary-soft);
-    font-size: 17px;
+/* Pavé date façon calendrier */
+.reservation-session-day {
+    display: flex;
+    flex-shrink: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border: 1px solid var(--res-border);
+    border-radius: 10px;
+    background: #FFFFFF;
+    line-height: 1;
 }
 
-.reservation-session-date strong,
-.reservation-session-date span,
-.reservation-session-trainer span {
+.reservation-session-day span {
+    color: var(--res-text);
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.reservation-session-day small {
+    margin-top: 3px;
+    color: var(--res-muted);
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.reservation-session-date strong {
     display: block;
-    color: var(--mentor-text);
+    color: var(--res-text);
     font-size: 15px;
 }
 
-.reservation-session-date span {
+.reservation-session-date div > span {
+    display: block;
     margin-top: 2px;
-    color: var(--mentor-text-muted);
+    color: var(--res-muted);
     font-size: 14px;
 }
 
-.reservation-session-trainer {
+.reservation-session-trainer span {
+    display: block;
+    color: var(--res-text);
+    font-size: 15px;
+}
+
+/* Statut : contour gris, sans couleur */
+.reservation-session-status {
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
 }
-
-.reservation-session-trainer > i {
-    color: var(--mentor-primary);
-    font-size: 20px;
-}
-
-/* Badge de statut */
 
 .reservation-status {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 12px;
+    padding: 4px 12px;
+    border: 1px solid var(--res-border);
     border-radius: 999px;
-    background: #F3F4F6;
-    color: var(--mentor-text-soft);
+    background: #FFFFFF;
+    color: var(--res-text);
     font-size: 13px;
     font-weight: 600;
     white-space: nowrap;
 }
 
-.reservation-status-success {
-    background: #DCFCE7;
-    color: #166534;
+.reservation-status--muted {
+    color: var(--res-muted);
+    text-decoration: line-through;
 }
 
-.reservation-status-danger {
-    background: #FEE2E2;
-    color: #991B1B;
-}
-
-.reservation-session-action .btn-mentor {
-    min-height: 44px;
+/* Bouton noir */
+.reservation-join {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 0 18px;
+    border: 1px solid var(--res-text);
+    border-radius: 8px;
+    background: var(--res-text);
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 700;
     white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-/* Adaptation aux écrans plus petits */
+.reservation-join:hover {
+    background: #FFFFFF;
+    color: var(--res-text);
+}
+
+.reservation-join:focus-visible {
+    outline: 2px solid var(--res-text);
+    outline-offset: 2px;
+}
+
+/* ---------- AUCUNE RÉSERVATION ---------- */
+
+.reservations-empty {
+    padding: 48px 24px;
+    border: 1px dashed #D0D0D0;
+    border-radius: 12px;
+    background: #FFFFFF;
+    text-align: center;
+}
+
+.reservations-empty > i {
+    color: var(--res-muted);
+    font-size: 36px;
+}
+
+.reservations-empty h3 {
+    margin: 12px 0 6px;
+    color: var(--res-text);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.reservations-empty p {
+    margin: 0 0 20px;
+    color: var(--res-muted);
+}
+
+/* ---------- RESPONSIVE ---------- */
 
 @media (max-width: 900px) {
+
     .reservation-session {
         grid-template-columns: 1fr 1fr;
-        gap: 18px;
+        gap: 16px;
     }
+
 }
 
 @media (max-width: 576px) {
-    .reservation-group-header {
-        padding: 18px;
+
+    .reservation-group-summary {
+        flex-wrap: wrap;
+        padding: 16px;
     }
 
-    .reservation-group-title h2 {
-        font-size: 18px;
+    /* La prochaine séance passe sous le titre */
+    .reservation-group-next {
+        order: 4;
+        flex-basis: 100%;
+        align-items: flex-start;
+        padding-left: 60px;
+        text-align: left;
     }
 
     .reservation-session {
         grid-template-columns: 1fr;
-        padding: 18px;
+        padding: 16px;
     }
 
-    .reservation-session-action .btn-mentor {
+    .reservation-join {
         width: 100%;
     }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .reservation-group-chevron {
+        transition: none;
+    }
+
 }
 
 /* Salle de visioconférence intégrée */

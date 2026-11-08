@@ -1,0 +1,116 @@
+/* =========================================================
+   EN-TÊTE NOIR
+   Chargé après theme.css (voir app.js) : surcharge les
+   couleurs de navbar.css et theme.css. Le menu déroulant
+   du profil reste blanc.
+   ========================================================= */
+
+.mentor-header {
+    background-color: #000000;
+    border-bottom: 1px solid #262626;
+    box-shadow: none;
+}
+
+/* ---------- LOGO ---------- */
+
+.mentor-header .mentor-logo-text strong {
+    color: #FFFFFF;
+}
+
+.mentor-header .mentor-logo-text span {
+    color: #A1A1AA;
+}
+
+/* ---------- RECHERCHE ---------- */
+
+.mentor-header .mentor-search {
+    border-color: #3F3F46;
+    background: #18181B;
+}
+
+.mentor-header .mentor-search:focus-within {
+    border-color: #FFFFFF;
+    background: #000000;
+}
+
+.mentor-header .mentor-search input {
+    color: #FFFFFF;
+}
+
+.mentor-header .mentor-search input::placeholder {
+    color: #A1A1AA;
+}
+
+.mentor-header .mentor-search-submit {
+    color: #A1A1AA;
+}
+
+.mentor-header .mentor-search-submit:hover {
+    color: #FFFFFF;
+}
+
+/* ---------- LIENS ---------- */
+
+/* Indigo clair : l'indigo du site est trop sombre pour être lu sur du noir */
+.mentor-header .mentor-navigation a {
+    color: #E4E4E7;
+}
+
+.mentor-header .mentor-navigation a:hover,
+.mentor-header .mentor-navigation a.is-active {
+    background-color: transparent;
+    color: #A5B4FC;
+}
+
+.mentor-header .mentor-navigation a.is-active {
+    box-shadow: inset 0 -2px 0 #A5B4FC;
+}
+
+/* ---------- ACTIONS ---------- */
+
+/* « Se connecter » : contour blanc */
+.mentor-header .mentor-header-actions > a:not(.btn-mentor),
+.mentor-header .mentor-header-actions > a:not(.btn-mentor):hover {
+    border-color: #FFFFFF;
+    color: #FFFFFF;
+}
+
+.mentor-header .mentor-header-actions > a:not(.btn-mentor):hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.mentor-header .profile-avatar {
+    box-shadow: 0 0 0 1px #3F3F46;
+}
+
+/* Bouton du menu mobile */
+.mentor-header .mentor-menu-toggle {
+    background: transparent;
+    color: #FFFFFF;
+}
+
+.mentor-header .mentor-menu-toggle:hover,
+.mentor-header.nav-open .mentor-menu-toggle {
+    background: #18181B;
+    color: #FFFFFF;
+}
+
+/* ---------- MENU MOBILE OUVERT ---------- */
+
+@media (max-width: 900px) {
+
+    .mentor-header.nav-open .mentor-navigation {
+        background: #000000;
+        border-bottom: 1px solid #262626;
+    }
+
+    .mentor-header.nav-open .mentor-navigation a:hover,
+    .mentor-header.nav-open .mentor-navigation a.is-active {
+        background-color: #18181B;
+    }
+
+    .mentor-header.nav-open .mentor-navigation a.is-active {
+        box-shadow: inset 3px 0 0 #A5B4FC;
+    }
+
+}

@@ -11,7 +11,6 @@
     class="m-player"
     data-controller="video-player"
     data-action="keydown->video-player#keydown"
-    tabindex="0"
     role="region"
     aria-label="Lecteur vidéo : {{ title }}"
 >
@@ -22,7 +21,7 @@
         playsinline
         {% if poster ?? null %}poster="{{ poster }}"{% endif %}
         data-video-player-target="video"
-        data-action="click->video-player#togglePlay play->video-player#updateState pause->video-player#updateState ended->video-player#updateState timeupdate->video-player#updateProgress loadedmetadata->video-player#updateDuration durationchange->video-player#updateDuration volumechange->video-player#updateVolume error->video-player#showError"
+        data-action="click->video-player#clickVideo play->video-player#updateState pause->video-player#updateState ended->video-player#updateState timeupdate->video-player#updateProgress loadedmetadata->video-player#updateDuration durationchange->video-player#updateDuration volumechange->video-player#updateVolume error->video-player#showError"
     >
         <source src="{{ src }}" type="video/mp4" data-action="error->video-player#showError">
         Votre navigateur ne supporte pas la lecture vidéo.

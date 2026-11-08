@@ -6,7 +6,8 @@ import { Controller } from '@hotwired/stimulus';
 // dans le HTML. Au chargement, ce contrôleur le retire et affiche la barre
 // de contrôle Mentor. Sans JavaScript, les contrôles natifs restent visibles.
 //
-// Raccourcis (quand le lecteur a le focus) :
+// Raccourcis (quand un contrôle du lecteur a le focus ; cliquer sur la vidéo
+// le donne au bouton lecture-pause) :
 //   Espace / K : lecture-pause    ← / → : -5 s / +5 s
 //   M : couper le son             F : plein écran
 export default class extends Controller {
@@ -33,6 +34,13 @@ export default class extends Controller {
     }
 
     // --- Actions ------------------------------------------------------
+
+    // Clic sur l'image : lecture-pause, puis focus sur le bouton de la barre
+    // pour que les raccourcis clavier restent actifs
+    clickVideo() {
+        this.togglePlay();
+        this.toggleTargets.at(-1)?.focus({ preventScroll: true });
+    }
 
     togglePlay() {
         if (this.video.paused || this.video.ended) {
@@ -79,10 +87,12 @@ export default class extends Controller {
     }
 
     toggleFullscreen() {
+        // Le navigateur peut refuser le plein écran (iframe, réglages) : la vidéo
+        // reste lisible dans la page, il n'y a rien d'autre à faire.
         if (document.fullscreenElement) {
-            document.exitFullscreen();
+            document.exitFullscreen().catch(() => {});
         } else if (this.element.requestFullscreen) {
-            this.element.requestFullscreen();
+            this.element.requestFullscreen().catch(() => {});
         }
     }
 
